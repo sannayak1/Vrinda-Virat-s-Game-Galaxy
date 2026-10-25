@@ -67,6 +67,7 @@ a{color:inherit}
 .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
 .btn svg{width:20px;height:20px;flex:none}
 .btn.pink{--b:var(--pink)}
+.btn.white{--b:#fff}
 .btn.small{font-size:19px;padding:9px 20px 9px 16px;box-shadow:0 4px 0 var(--ink)}
 .btn.small:hover{box-shadow:0 6px 0 var(--ink)}
 .btn.small:active{box-shadow:0 1px 0 var(--ink)}
@@ -129,6 +130,7 @@ a{color:inherit}
 .card p{margin:0;color:var(--muted);font-size:15px;flex:1}
 .meta{display:flex;flex-wrap:wrap;gap:6px}
 .tag{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:999px;background:var(--tb);color:var(--tf)}
+.tag.laptop{background:var(--ink);color:#fff;text-decoration:none}
 .row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:6px}
 .card .btn{--b:var(--a)}
 .date{font-size:13px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
@@ -178,6 +180,7 @@ footer .heart{display:inline-block;color:#e0457f;animation:beat 1.2s ease-in-out
     <div class="actions">
       <a class="btn pink" id="playNewest" href="#" data-play><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>Play the newest</a>
       <button class="btn" id="surprise" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="#fff" stroke="currentColor" stroke-width="2.5"/><circle cx="8.5" cy="8.5" r="1.7" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.7" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.7" fill="currentColor"/></svg>Surprise me!</button>
+      <a class="btn white" href="help.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#fff" stroke="currentColor" stroke-width="2.5"/><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.3-2.8 4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.5" fill="currentColor"/></svg>How to play</a>
     </div>
   </header>
 
@@ -200,366 +203,12 @@ footer .heart{display:inline-block;color:#e0457f;animation:beat 1.2s ease-in-out
     <main class="grid" id="grid"></main>
   </section>
 
-  <footer>Made with lots of ideas <span class="heart" aria-hidden="true">♥</span> by Vrinda and Virat</footer>
+  <footer>Made with lots of ideas <span class="heart" aria-hidden="true">♥</span> by Vrinda and Virat · <a href="help.html">How to play</a></footer>
 </div>
 <div id="fx" aria-hidden="true"></div>
 
+<script src="games.js"></script>
 <script>
-/* ───────────── EDIT ME ─────────────
-   Each game has:  title, file, thumb, blurb, tags, by ("Vrinda", "Virat" or "Vrinda & Virat"), updated (YYYY-MM-DD), older (earlier versions)
-   To add a game: put its .html in the games folder, a picture in thumbs, and copy one entry below. */
-const GAMES = [
- {
-  "title": "Galactic Run",
-  "file": "games/galactic-run.html",
-  "thumb": "thumbs/galactic-run.jpg",
-  "blurb": "Robo Chungus stole Queen Galactia! Race across 10 universes, make slime friends and beat the space bosses.",
-  "tags": [
-   "Adventure"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": []
- },
- {
-  "title": "Princess Celeste's Rescue",
-  "file": "games/princess-celeste-rescue.html",
-  "thumb": "thumbs/princess-celeste-rescue.jpg",
-  "blurb": "A kawaii running quest across ten universes. Jump, throw stars and rescue Princess Celeste.",
-  "tags": [
-   "Adventure"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": []
- },
- {
-  "title": "Candy Run Kingdom 2D",
-  "file": "games/candy-run-kingdom-2d.html",
-  "thumb": "thumbs/candy-run-kingdom-2d.jpg",
-  "blurb": "Hester set the Candy Festival on fire! Make your hero, cross five candy worlds and save Princess Peppermint.",
-  "tags": [
-   "Adventure"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": []
- },
- {
-  "title": "Akshar Quest 2D",
-  "file": "games/akshar-quest-2d.html",
-  "thumb": "thumbs/akshar-quest-2d.jpg",
-  "blurb": "Explore the Marketplace of Illusions, where letters whisper and a masked trickster named Bhram is up to mischief.",
-  "tags": [
-   "Learning"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": []
- },
- {
-  "title": "The Legends of Algebra",
-  "file": "games/legends-of-algebra.html",
-  "thumb": "thumbs/legends-of-algebra.jpg",
-  "blurb": "Solve for x to beat goblins, giants and dragons, build your village and make magical friends.",
-  "tags": [
-   "Learning"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": []
- },
- {
-  "title": "Stickman Ninja Katana Duel",
-  "file": "games/stickman-ninja-katana-duel.html",
-  "thumb": "thumbs/stickman-ninja-katana-duel.jpg",
-  "blurb": "Design your ninja, pick a secret technique and win a best-of-3 katana duel on a moonlit rooftop.",
-  "tags": [
-   "Fighting"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": []
- },
- {
-  "title": "Butterfly & Frost",
-  "file": "games/butterfly-and-frost.html",
-  "thumb": "thumbs/butterfly-and-frost.jpg",
-  "blurb": "Stand between the ice demon and the girl behind you. Deflect his frost, then sting!",
-  "tags": [
-   "Fighting"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": []
- },
- {
-  "title": "Wooble Monster Run",
-  "file": "games/wooble-monster-run.html",
-  "thumb": "thumbs/wooble-monster-run.jpg",
-  "blurb": "Design your own wooble and race through 9 candy universes to rescue Queen Celeste from Chunky.",
-  "tags": [
-   "Adventure"
-  ],
-  "by": "",
-  "updated": "2026-10-22",
-  "older": []
- },
- {
-  "title": "Super Roblox Story 2",
-  "file": "games/super-roblox-story-2.html",
-  "thumb": "thumbs/super-roblox-story-2.jpg",
-  "blurb": "King Null is back! Build your avatar, meet the squad and rescue Queen Tech across five universes.",
-  "tags": [
-   "Adventure"
-  ],
-  "by": "",
-  "updated": "2026-10-02",
-  "older": []
- },
- {
-  "title": "Super Roblox Story",
-  "file": "games/super-roblox-story.html",
-  "thumb": "thumbs/super-roblox-story.jpg",
-  "blurb": "A villain is on the loose and Queen Tech is missing. Make your avatar and save the day.",
-  "tags": [
-   "Adventure"
-  ],
-  "by": "",
-  "updated": "2026-09-26",
-  "older": []
- },
- {
-  "title": "Candy Run Kingdom 3D",
-  "file": "games/candy-run-kingdom-3d.html",
-  "thumb": "thumbs/candy-run-kingdom-3d.jpg",
-  "blurb": "A 3D candy run starring Celeste. Dash, jump and grab the sweets.",
-  "tags": [
-   "Adventure",
-   "3D"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": []
- },
- {
-  "title": "Candy Run Kingdom Quest",
-  "file": "games/candy-run-kingdom-quest.html",
-  "thumb": "thumbs/candy-run-kingdom-quest.jpg",
-  "blurb": "Ride, dash and duel the darkness to rescue Princess Peppermint from Hester.",
-  "tags": [
-   "Adventure",
-   "3D"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": [
-   "games/candy-run-kingdom-quest-v1.html",
-   "games/candy-run-kingdom-quest-v2.html",
-   "games/candy-run-kingdom-quest-v3.html",
-   "games/candy-run-kingdom-quest-v4.html"
-  ]
- },
- {
-  "title": "Glitch Circus",
-  "file": "games/glitch-circus.html",
-  "thumb": "thumbs/glitch-circus.jpg",
-  "blurb": "Build your own performer and step into a very strange big top.",
-  "tags": [
-   "Spooky",
-   "3D"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": [
-   "games/glitch-circus-v1.html"
-  ]
- },
- {
-  "title": "Stickmen Fist Fight",
-  "file": "games/stickmen-fist-fight.html",
-  "thumb": "thumbs/stickmen-fist-fight.jpg",
-  "blurb": "Pick a stickman, throw hands and send bodies flying around the ring.",
-  "tags": [
-   "Fighting",
-   "2 players"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": []
- },
- {
-  "title": "99 Nights at Aunt Chippy's",
-  "file": "games/99-nights-at-aunt-chippys.html",
-  "thumb": "thumbs/99-nights-at-aunt-chippys.jpg",
-  "blurb": "Three kids went into the woods. Can you survive 99 nights at the camp?",
-  "tags": [
-   "Spooky",
-   "3D"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": [
-   "games/99-nights-at-aunt-chippys-v1.html",
-   "games/99-nights-at-aunt-chippys-v2.html",
-   "games/99-nights-at-aunt-chippys-v3.html"
-  ]
- },
- {
-  "title": "Prank the Upper Moons",
-  "file": "games/prank-the-upper-moons.html",
-  "thumb": "thumbs/prank-the-upper-moons.jpg",
-  "blurb": "Sneak through Infinity Castle and pull off pranks without getting caught.",
-  "tags": [
-   "Sneaky"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": [
-   "games/prank-the-upper-moons-v1.html"
-  ]
- },
- {
-  "title": "Super Roblox Bux Squad",
-  "file": "games/super-roblox-bux-squad.html",
-  "thumb": "thumbs/super-roblox-bux-squad.jpg",
-  "blurb": "Pick your hero, clear the corrupted waves and take down King Null.",
-  "tags": [
-   "Fighting"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": [
-   "games/super-roblox-bux-squad-v1.html"
-  ]
- },
- {
-  "title": "Hollowframe",
-  "file": "games/hollowframe.html",
-  "thumb": "thumbs/hollowframe.jpg",
-  "blurb": "Wake up, build a body from scrap and battle the drones.",
-  "tags": [
-   "Fighting",
-   "3D"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": []
- },
- {
-  "title": "Escape Meemeows",
-  "file": "games/escape-meemeows.html",
-  "thumb": "thumbs/escape-meemeows.jpg",
-  "blurb": "Slip through the Meemeow maze, dodge them in the dark and reach the door.",
-  "tags": [
-   "Sneaky",
-   "Maze"
-  ],
-  "by": "",
-  "updated": "2026-09-02",
-  "older": []
- },
- {
-  "title": "Yuki's Prison Escape",
-  "file": "games/yukis-prison-escape.html",
-  "thumb": "thumbs/yukis-prison-escape.jpg",
-  "blurb": "Sneak past the wardens, find the keys and help Yuki break out.",
-  "tags": [
-   "Sneaky"
-  ],
-  "by": "",
-  "updated": "2026-09-01",
-  "older": [
-   "games/yukis-prison-escape-v1.html",
-   "games/yukis-prison-escape-v2.html",
-   "games/yukis-prison-escape-v3.html",
-   "games/yukis-prison-escape-v4.html",
-   "games/yukis-prison-escape-v5.html",
-   "games/yukis-prison-escape-v6.html",
-   "games/yukis-prison-escape-v7.html",
-   "games/yukis-prison-escape-v8.html",
-   "games/yukis-prison-escape-v9.html"
-  ]
- },
- {
-  "title": "Entertainment District",
-  "file": "games/entertainment-district.html",
-  "thumb": "thumbs/entertainment-district.jpg",
-  "blurb": "Build your slayer, join the squad and bring down the demon of the district.",
-  "tags": [
-   "Adventure"
-  ],
-  "by": "",
-  "updated": "2026-09-01",
-  "older": [
-   "games/entertainment-district-v1.html"
-  ]
- },
- {
-  "title": "Potty Panic Maze",
-  "file": "games/potty-panic-maze.html",
-  "thumb": "thumbs/potty-panic-maze.jpg",
-  "blurb": "Find the bathroom before it's too late! A race through a shifting maze.",
-  "tags": [
-   "Maze",
-   "Funny"
-  ],
-  "by": "",
-  "updated": "2026-09-01",
-  "older": []
- },
- {
-  "title": "Stickfight Arena",
-  "file": "games/stickfight-arena.html",
-  "thumb": "thumbs/stickfight-arena.jpg",
-  "blurb": "Pick an elemental stickman and battle a friend in the arena.",
-  "tags": [
-   "Fighting",
-   "2 players"
-  ],
-  "by": "",
-  "updated": "2026-09-01",
-  "older": []
- },
- {
-  "title": "Toilet Terror",
-  "file": "games/toilet-terror.html",
-  "thumb": "thumbs/toilet-terror.jpg",
-  "blurb": "The toilet monster is angry! Dodge it and grab toilet paper for a shield.",
-  "tags": [
-   "Funny"
-  ],
-  "by": "",
-  "updated": "2026-08-31",
-  "older": []
- },
- {
-  "title": "The Last Player",
-  "file": "games/the-last-player.html",
-  "thumb": "thumbs/the-last-player.jpg",
-  "blurb": "A card arrived with no return address. The only rule: survive.",
-  "tags": [
-   "Spooky"
-  ],
-  "by": "",
-  "updated": "2026-10-25",
-  "older": [
-   "games/the-last-player-v1.html"
-  ]
- },
- {
-  "title": "Bux Squad",
-  "file": "games/bux-squad.html",
-  "thumb": "thumbs/bux-squad.jpg",
-  "blurb": "The very first Bux Squad. Pick a hero and stop King Null.",
-  "tags": [
-   "Fighting"
-  ],
-  "by": "",
-  "updated": "2026-08-30",
-  "older": []
- }
-];
 
 const ICON_PLAY='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>';
 const BURST='<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 3l9 14 16-6 1 17 17 3-8 15 12 12-16 7 3 17-17-1-6 16-12-12-14 10-4-17-17-2 7-16-13-11 15-8-4-17 17 1 5-16 13 11z" fill="#ffc83d" stroke="#2b1e4f" stroke-width="4" stroke-linejoin="round"/></svg>';
@@ -572,6 +221,7 @@ const ACCENTS=['var(--pink)','var(--sky)','var(--mint)','var(--sun)','var(--grap
 const TAG_COLORS={Adventure:['#dcecff','#1d5aa8'],'3D':['#ece3ff','#5530bd'],Spooky:['#2b1e4f','#fff'],Fighting:['#ffe2d3','#a8410c'],
   Sneaky:['#d4f6ea','#0f7055'],Maze:['#fff0c2','#7d5900'],Funny:['#ffe0ee','#a82866'],'2 players':['#dff2ff','#0d6491'],Learning:['#e3f7d4','#3b6e12']};
 const tagColor=t=>TAG_COLORS[t]||['#efeaff','#4a3f73'];
+const LAPTOP_TAG='<a class="tag laptop" href="help.html#laptop-only" title="Needs a keyboard">Laptop only</a>';
 const tagHTML=t=>{const [b,f]=tagColor(t);return `<span class="tag" style="--tb:${b};--tf:${f}">${esc(t)}</span>`;};
 
 /* hero stats */
@@ -596,7 +246,7 @@ spot.innerHTML=spotGames.map((g,i)=>`<article class="slide" aria-roledescription
     <span class="eyebrow">${i===0?'Newest game':'Recently updated'}</span>
     <h2>${esc(g.title)}</h2>
     <p>${esc(g.blurb)}</p>
-    <div class="meta">${g.by?tagHTML('By '+g.by):''}${g.tags.map(tagHTML).join('')}</div>
+    <div class="meta">${g.phone===false?LAPTOP_TAG:''}${g.by?tagHTML('By '+g.by):''}${g.tags.map(tagHTML).join('')}</div>
     <a class="btn" href="${esc(g.file)}" data-play>${ICON_PLAY} Play</a>
   </div></article>`).join('');
 dotsEl.innerHTML=spotGames.map((g,i)=>`<button class="dot" type="button" aria-label="Show ${esc(g.title)}"></button>`).join('');
@@ -632,7 +282,7 @@ function card(g,n){
   return `<article class="card" style="--a:${ACCENTS[k%ACCENTS.length]};--tilt:${k%2?'.8deg':'-.8deg'};--n:${n}">
     <a class="shot" href="${esc(g.file)}" data-play tabindex="-1" aria-hidden="true"><img src="${esc(g.thumb)}" alt="" loading="lazy">${isNew(g.updated)?'<span class="new">NEW</span>':''}</a>
     <div class="body">
-      <div class="meta">${g.by?tagHTML('By '+g.by):''}${g.tags.map(tagHTML).join('')}</div>
+      <div class="meta">${g.phone===false?LAPTOP_TAG:''}${g.by?tagHTML('By '+g.by):''}${g.tags.map(tagHTML).join('')}</div>
       <h3>${esc(g.title)}</h3>
       <p>${esc(g.blurb)}</p>
       <div class="row"><a class="btn small" href="${esc(g.file)}" data-play>${ICON_PLAY} Play</a><span class="date">Updated<br>${fmtDate(g.updated)}</span></div>

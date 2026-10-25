@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How to Play · Vrinda &amp; Virat's Arcade</title>
+<meta name="description" content="How to play every game in Vrinda and Virat's Arcade on a laptop or a phone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+/* Layout: title → device switch → 3 quick steps → controls cheat sheet → every game's controls → fixes. Same candy-sky look as the arcade. */
+:root{
+  --ink:#2b1e4f; --muted:#5f5485; --paper:#fff; --line:#ddd6f3;
+  --pink:#ff6fae; --sun:#ffc83d; --mint:#3fd9ae; --sky:#5fb0ff; --grape:#a57bff; --orange:#ff9156;
+  --display:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;
+  --body:'Nunito','Avenir Next','Segoe UI',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:#cfe7ff;scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.55;min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(circle at 1px 1px,rgba(255,255,255,.55) 1.5px,transparent 2px) 0 0/26px 26px,
+    linear-gradient(180deg,#bfe2ff 0%,#dcd6ff 42%,#ffe3f0 100%) fixed}
+a{color:inherit}
+:focus-visible{outline:4px solid var(--ink);outline-offset:3px;border-radius:14px}
+[hidden]{display:none !important}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:20px 56px}
+
+/* top bar + title */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-size:19px;text-decoration:none;background:#fff;border:3px solid var(--ink);border-radius:999px;padding:8px 18px 8px 12px;box-shadow:0 4px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+.back:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--ink)}
+.back:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.back svg{width:20px;height:20px}
+.hero{text-align:center;padding:26px 0 8px}
+.ribbon{display:inline-block;font-family:var(--display);font-size:clamp(18px,3vw,24px);color:#fff;background:var(--ink);padding:5px 18px 7px;border-radius:12px;transform:rotate(-3deg);box-shadow:0 4px 0 var(--pink)}
+h1{margin:12px 0 0;font-family:var(--display);font-weight:400;font-size:clamp(46px,10vw,88px);line-height:1;color:var(--sun);-webkit-text-stroke:clamp(2px,.4vw,3px) var(--ink);text-shadow:0 clamp(4px,.8vw,8px) 0 var(--ink)}
+.lead{margin:16px auto 0;max-width:36ch;font-size:clamp(17px,2.2vw,20px);font-weight:800;color:var(--muted)}
+
+/* device switch */
+.switch{display:flex;justify-content:center;margin:26px 0 10px}
+.seg{display:inline-flex;background:#fff;border:3px solid var(--ink);border-radius:999px;padding:5px;box-shadow:0 5px 0 var(--ink);gap:4px}
+.seg button{font:inherit;font-family:var(--display);font-size:clamp(17px,2.6vw,21px);color:var(--ink);background:none;border:0;border-radius:999px;padding:9px 20px;display:inline-flex;align-items:center;gap:9px;cursor:pointer}
+.seg button svg{width:24px;height:24px;flex:none}
+.seg button[aria-pressed="true"]{background:var(--pink)}
+.seg button:not([aria-pressed="true"]):hover{background:#f3efff}
+.auto{text-align:center;font-size:14px;color:var(--muted);margin:10px 0 0}
+
+/* sections */
+section{margin-top:44px}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,4vw,38px);line-height:1.05;margin:0 0 18px;display:flex;align-items:center;gap:12px}
+h2 .num{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:14px;border:3px solid var(--ink);background:var(--c,var(--sun));font-size:22px;box-shadow:0 4px 0 var(--ink)}
+.panel{background:#fff;border:3px solid var(--ink);border-radius:26px;box-shadow:7px 8px 0 var(--a,var(--grape));padding:22px}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.step{background:#fff;border:3px solid var(--ink);border-radius:24px;padding:18px 18px 20px;box-shadow:6px 7px 0 var(--a)}
+.step .n{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--a);border:3px solid var(--ink);font-family:var(--display);font-size:20px}
+.step h3{font-family:var(--display);font-weight:400;font-size:23px;line-height:1.1;margin:12px 0 6px}
+.step p{margin:0;color:var(--muted);font-size:15.5px}
+
+/* cheat sheet */
+.sheet{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px 26px}
+.row{display:flex;align-items:center;gap:14px;min-width:0}
+.keys{flex:none;display:flex;gap:5px;align-items:center;min-width:112px}
+kbd,.gest{display:inline-grid;place-items:center;min-width:38px;height:38px;padding:0 9px;font-family:var(--display);font-size:16px;color:var(--ink);background:#fff;border:3px solid var(--ink);border-bottom-width:6px;border-radius:10px}
+kbd.wide{min-width:96px}
+.gest{border-radius:999px;border-bottom-width:3px;background:#fff3c7;gap:6px;display:inline-flex;font-size:15px;padding:0 13px}
+.gest svg{width:20px;height:20px}
+.row b{font-weight:900}
+.row span.what{color:var(--muted);font-size:15px}
+.tip{margin-top:18px;padding:14px 16px;border-radius:16px;background:#f3efff;border:2px dashed #c9bdf2;font-size:15px}
+.tip b{color:var(--ink)}
+
+/* game list */
+.tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.search{position:relative;flex:1 1 240px;max-width:360px}
+.search input{width:100%;font:inherit;font-weight:800;font-size:16px;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:999px;padding:10px 18px 10px 46px;box-shadow:0 4px 0 var(--ink)}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{outline:none;box-shadow:0 4px 0 var(--ink),0 0 0 5px rgba(255,111,174,.45)}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:13px}
+.games{display:grid;gap:14px}
+.game{display:grid;grid-template-columns:132px minmax(0,1fr);gap:16px;align-items:start;background:#fff;border:3px solid var(--ink);border-radius:22px;padding:12px;box-shadow:5px 6px 0 var(--a)}
+.game img{width:132px;aspect-ratio:16/10;object-fit:cover;border-radius:12px;border:3px solid var(--ink);display:block;background:#e9e4ff}
+.game h3{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.1;margin:2px 0 6px}
+.game h3 a{text-decoration:none}
+.game h3 a:hover{text-decoration:underline;text-decoration-thickness:3px;text-decoration-color:var(--pink)}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.badge{font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:2px 10px;border-radius:999px;background:var(--bb);color:var(--bf)}
+.ok{--bb:#d4f6ea;--bf:#0f7055}
+.no{--bb:var(--ink);--bf:#fff}
+.net{--bb:#dff2ff;--bf:#0d6491}
+.ctl{margin:0;font-size:15.5px}
+.ctl .lbl{font-weight:900;color:var(--ink);margin-right:4px}
+.ctl.warn{color:#a8281e;font-weight:800}
+.other{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
+.empty{text-align:center;padding:30px 0;font-size:18px;font-weight:800;color:var(--muted)}
+@media (max-width:560px){.game{grid-template-columns:92px minmax(0,1fr);gap:12px}.game img{width:92px}.game h3{font-size:20px}}
+
+/* faq */
+details.q{background:#fff;border:3px solid var(--ink);border-radius:20px;margin-bottom:12px;box-shadow:0 4px 0 var(--ink)}
+details.q summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;padding:14px 18px;font-family:var(--display);font-size:20px;line-height:1.15}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::after{content:"+";margin-left:auto;flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--sun);border:3px solid var(--ink);font-size:20px;line-height:1;transition:transform .2s}
+details.q[open] summary::after{transform:rotate(45deg)}
+details.q .a{padding:0 18px 16px;color:var(--muted);font-size:15.5px}
+details.q .a ul{margin:0;padding-left:20px}
+details.q .a li{margin:4px 0}
+details.q .a b{color:var(--ink)}
+
+footer{margin-top:56px;text-align:center}
+footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;scroll-behavior:auto !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back to the Arcade</a>
+  </div>
+
+  <header class="hero">
+    <span class="ribbon">Vrinda &amp; Virat's Arcade</span>
+    <h1>How to Play</h1>
+    <p class="lead">Every game works on a laptop, and almost all of them work on a phone or tablet too.</p>
+  </header>
+
+  <div class="switch">
+    <div class="seg" role="group" aria-label="I'm playing on">
+      <button type="button" data-dev="laptop" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4.5" width="16" height="11" rx="2"/><path d="M2 19h20" stroke-linecap="round"/></svg>Laptop</button>
+      <button type="button" data-dev="phone" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2" stroke-linecap="round"/></svg>Phone &amp; tablet</button>
+    </div>
+  </div>
+  <p class="auto" id="auto"></p>
+
+  <!-- 1. quick start -->
+  <section aria-labelledby="h-start">
+    <h2 id="h-start"><span class="num" style="--c:var(--pink)">1</span>Getting started</h2>
+    <div class="steps" data-for="laptop">
+      <div class="step" style="--a:var(--pink)"><span class="n">1</span><h3>Pick a game</h3><p>Open the Arcade and press <b>Play</b> on any game, or try <b>Surprise me!</b></p></div>
+      <div class="step" style="--a:var(--sun)"><span class="n">2</span><h3>Click the game once</h3><p>Click anywhere inside the game so it can hear your keyboard. Then use the keys below.</p></div>
+      <div class="step" style="--a:var(--mint)"><span class="n">3</span><h3>Come back</h3><p>Press the browser's <b>Back</b> button (or <kbd style="height:28px;min-width:0;font-size:13px">⌘</kbd> + <kbd style="height:28px;min-width:0;font-size:13px">[</kbd> on a Mac, <kbd style="height:28px;min-width:0;font-size:13px">Alt</kbd> + <kbd style="height:28px;min-width:0;font-size:13px">←</kbd> on Windows).</p></div>
+    </div>
+    <div class="steps" data-for="phone" hidden>
+      <div class="step" style="--a:var(--pink)"><span class="n">1</span><h3>Pick a game</h3><p>Tap <b>Play</b> on any game. Games marked <b>Laptop only</b> need a keyboard, so skip those on a phone.</p></div>
+      <div class="step" style="--a:var(--sun)"><span class="n">2</span><h3>Turn it sideways</h3><p>Action games are easier with the phone held sideways. The on-screen buttons show up by themselves.</p></div>
+      <div class="step" style="--a:var(--mint)"><span class="n">3</span><h3>Come back</h3><p>Tap your browser's <b>Back</b> arrow, or swipe in from the left edge of the screen.</p></div>
+    </div>
+  </section>
+
+  <!-- 2. cheat sheet -->
+  <section aria-labelledby="h-sheet">
+    <h2 id="h-sheet"><span class="num" style="--c:var(--sky)">2</span><span data-for="laptop">Keys most games use</span><span data-for="phone" hidden>Moves most games use</span></h2>
+    <div class="panel" style="--a:var(--sky)">
+      <div class="sheet" data-for="laptop">
+        <div class="row"><span class="keys"><kbd>←</kbd><kbd>→</kbd></span><span><b>Move</b> <span class="what">· or A and D</span></span></div>
+        <div class="row"><span class="keys"><kbd>↑</kbd><kbd>↓</kbd></span><span><b>Up, down, forward</b> <span class="what">· or W and S</span></span></div>
+        <div class="row"><span class="keys"><kbd class="wide">Space</kbd></span><span><b>Jump, shoot or go</b> <span class="what">· also skips talking</span></span></div>
+        <div class="row"><span class="keys"><kbd class="wide">Enter</kbd></span><span><b>Talk or pick</b> <span class="what">· continue a story</span></span></div>
+        <div class="row"><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span><b>Pause or menu</b></span></div>
+        <div class="row"><span class="keys"><kbd class="wide">Shift</kbd></span><span><b>Sneak or power-up</b> <span class="what">· in some games</span></span></div>
+      </div>
+      <div class="sheet" data-for="phone" hidden>
+        <div class="row"><span class="keys"><span class="gest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5" fill="currentColor"/><circle cx="12" cy="12" r="8"/></svg>Tap</span></span><span><b>Press buttons</b> <span class="what">· jump, shoot, pick answers</span></span></div>
+        <div class="row"><span class="keys"><span class="gest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h14M14 7l5 5-5 5"/></svg>Drag</span></span><span><b>Move or look</b> <span class="what">· keep your finger down</span></span></div>
+        <div class="row"><span class="keys"><span class="gest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M9 8l-4 4 4 4M15 8l4 4-4 4"/></svg>Swipe</span></span><span><b>Switch lanes</b> <span class="what">· in runner games</span></span></div>
+        <div class="row"><span class="keys"><span class="gest"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>Stick</span></span><span><b>Joystick</b> <span class="what">· slide the circle to walk</span></span></div>
+        <div class="row"><span class="keys"><span class="gest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 4h5v5.5H20v5h-5.5V20h-5v-5.5H4v-5h5.5z"/></svg>Pad</span></span><span><b>Arrow pad</b> <span class="what">· under or beside the game</span></span></div>
+        <div class="row"><span class="keys"><span class="gest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg>Hold</span></span><span><b>Keep pressing</b> <span class="what">· to keep moving</span></span></div>
+      </div>
+      <p class="tip" data-for="laptop"><b>Bigger screen:</b> press <b>Ctrl + ⌘ + F</b> on a Mac or <b>F11</b> on Windows for full screen. Press it again to go back.</p>
+      <p class="tip" data-for="phone" hidden><b>Make it an app:</b> on iPhone or iPad, tap <b>Share</b> then <b>Add to Home Screen</b>. On Android, tap <b>⋮</b> then <b>Add to Home screen</b>. The Arcade then opens like an app.</p>
+    </div>
+  </section>
+
+  <!-- 3. every game -->
+  <section aria-labelledby="h-games">
+    <h2 id="h-games"><span class="num" style="--c:var(--mint)">3</span>Controls for every game</h2>
+    <div class="tools">
+      <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Find a game…" aria-label="Find a game"></label>
+      <div class="legend"><span class="badge ok">Phone OK</span><span class="badge no">Laptop only</span><span class="badge net">Needs internet</span></div>
+    </div>
+    <div class="games" id="games"></div>
+  </section>
+
+  <!-- 4. laptop only -->
+  <section aria-labelledby="h-laptop" id="laptop-only">
+    <h2 id="h-laptop"><span class="num" style="--c:var(--grape)">4</span>Laptop-only games</h2>
+    <div class="panel" style="--a:var(--grape)">
+      <p style="margin:0 0 10px">These games need a real keyboard, so they won't work on a phone or tablet:</p>
+      <p style="margin:0;font-family:var(--display);font-size:20px" id="laptopList"></p>
+      <p class="tip">Stickfight Arena and Stickmen Fist Fight are <b>2-player games on one keyboard</b>: one player uses the letter keys on the left, the other uses the arrow keys on the right.</p>
+    </div>
+  </section>
+
+  <!-- 5. fixes -->
+  <section aria-labelledby="h-fix">
+    <h2 id="h-fix"><span class="num" style="--c:var(--orange)">5</span>Something not working?</h2>
+    <details class="q"><summary>There's no sound</summary><div class="a"><ul>
+      <li>Click or tap the game once. Browsers keep games quiet until you touch them.</li>
+      <li>Look for a 🔊 or <b>Sounds</b> button in the corner of the game and make sure it's on.</li>
+      <li>On an iPhone, flip the <b>silent switch</b> on the side (or the Action button) so it's not on silent.</li>
+      <li>Turn up the volume on your laptop or phone.</li></ul></div></details>
+    <details class="q"><summary>The keys don't do anything</summary><div class="a"><ul>
+      <li>Click inside the game first. If you clicked the address bar or a text box, the game can't hear the keys.</li>
+      <li>Some games only start moving after you press their <b>Start</b> or <b>Play</b> button.</li>
+      <li>Check the controls for that game in the list above. Some use WASD, some use the arrows.</li></ul></div></details>
+    <details class="q"><summary>The game is stuck on "loading"</summary><div class="a"><ul>
+      <li>Games marked <b>Needs internet</b> (the 3D ones) download their 3D engine when they start, so check your Wi-Fi.</li>
+      <li>Refresh the page: <b>⌘ + R</b> on a Mac, <b>Ctrl + R</b> on Windows, or pull down on a phone.</li>
+      <li>3D games are the hardest work for a phone. If one is very slow, try it on a laptop.</li></ul></div></details>
+    <details class="q"><summary>I can't see the buttons on my phone</summary><div class="a"><ul>
+      <li>Turn your phone sideways, or scroll down a little. Some games put the pad under the game.</li>
+      <li>In a few games the buttons only appear once the level starts, or after you touch the screen.</li>
+      <li>If the game says <b>Laptop only</b>, it doesn't have phone buttons.</li></ul></div></details>
+    <details class="q"><summary>The game is too big or too small</summary><div class="a"><ul>
+      <li>On a laptop, zoom with <b>⌘ +</b> / <b>⌘ −</b> (Mac) or <b>Ctrl +</b> / <b>Ctrl −</b> (Windows). <b>⌘ 0</b> or <b>Ctrl 0</b> resets it.</li>
+      <li>On a phone, turn it sideways and try again.</li></ul></div></details>
+    <details class="q"><summary>I can't see a new game</summary><div class="a"><ul>
+      <li>Your browser may be showing an old copy. Do a hard refresh: <b>⌘ + Shift + R</b> on a Mac or <b>Ctrl + Shift + R</b> on Windows.</li></ul></div></details>
+  </section>
+
+  <footer>
+    <a class="back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back to the Arcade</a>
+    <p>Made with lots of ideas by Vrinda and Virat</p>
+  </footer>
+</div>
+
+<script src="games.js"></script>
+<script>
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ACCENTS=['var(--pink)','var(--sky)','var(--mint)','var(--sun)','var(--grape)','var(--orange)'];
+const sorted=[...GAMES].sort((a,b)=>b.updated.localeCompare(a.updated));
+let dev='laptop',q='';
+
+/* pick the device: saved choice, else guess from the screen */
+let guessed=false;
+try{const s=localStorage.getItem('arcade-device');if(s==='laptop'||s==='phone')dev=s;else guessed=true;}catch(e){guessed=true;}
+if(guessed&&matchMedia('(pointer: coarse)').matches)dev='phone';
+if(guessed)document.getElementById('auto').textContent=dev==='phone'?'Looks like you’re on a phone or tablet. Tap Laptop to see keyboard controls.':'Looks like you’re on a laptop. Tap Phone & tablet to see touch controls.';
+
+function setDev(d){
+  dev=d;
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.dev===d));
+  document.querySelectorAll('[data-for]').forEach(el=>el.hidden=el.dataset.for!==d);
+  drawGames();
+}
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+  try{localStorage.setItem('arcade-device',b.dataset.dev);}catch(e){}
+  document.getElementById('auto').textContent='';
+  setDev(b.dataset.dev);
+}));
+
+function gameRow(g){
+  const k=GAMES.indexOf(g);
+  const badges=(g.phone===false?'<span class="badge no">Laptop only</span>':'<span class="badge ok">Phone OK</span>')+(g.needsInternet?'<span class="badge net">Needs internet</span>':'');
+  let main,other='';
+  if(dev==='laptop'){
+    main=`<p class="ctl"><span class="lbl">Laptop:</span>${esc(g.laptopControls)}</p>`;
+    if(g.phone!==false)other=`<p class="other"><b>Phone:</b> ${esc(g.phoneControls)}</p>`;
+  }else if(g.phone===false){
+    main=`<p class="ctl warn">Needs a keyboard. Play this one on a laptop.</p>`;
+  }else{
+    main=`<p class="ctl"><span class="lbl">Phone:</span>${esc(g.phoneControls)}</p>`;
+    other=`<p class="other"><b>Laptop:</b> ${esc(g.laptopControls)}</p>`;
+  }
+  return `<article class="game" style="--a:${ACCENTS[k%ACCENTS.length]}">
+    <a href="${esc(g.file)}" tabindex="-1" aria-hidden="true"><img src="${esc(g.thumb)}" alt="" loading="lazy"></a>
+    <div><h3><a href="${esc(g.file)}">${esc(g.title)}</a></h3><div class="badges">${badges}</div>${main}${other}</div></article>`;
+}
+function drawGames(){
+  const list=sorted.filter(g=>!q||(g.title+' '+g.tags.join(' ')).toLowerCase().includes(q));
+  document.getElementById('games').innerHTML=list.length?list.map(gameRow).join(''):'<p class="empty">No game with that name. Try another word!</p>';
+}
+document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();drawGames();});
+document.getElementById('laptopList').innerHTML=GAMES.filter(g=>g.phone===false).map(g=>`<a href="${esc(g.file)}">${esc(g.title)}</a>`).join(' · ');
+setDev(dev);
+</script>
+</body>
+</html>
