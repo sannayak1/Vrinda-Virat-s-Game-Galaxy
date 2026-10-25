@@ -22,6 +22,15 @@
     --gold:#e8b84b;
     --danger-glow: 0 0 24px rgba(255,51,102,.45);
     --safe-glow: 0 0 24px rgba(31,224,196,.35);
+    --guard-pink:#ff5f96;
+    --guard-pink-dark:#c23d70;
+    --pastel-pink:#ffc2d6;
+    --pastel-pink-2:#ff9fc0;
+    --pastel-mint:#b9ecd9;
+    --pastel-mint-2:#8fdcbf;
+    --pastel-yellow:#ffe9a8;
+    --pastel-wall:#e7d9c2;
+    --pastel-wall-2:#d8c6a3;
     --font-display:'Big Shoulders Display', 'Arial Narrow', sans-serif;
     --font-body:'Archivo', -apple-system, 'Segoe UI', sans-serif;
     --font-mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
@@ -201,6 +210,105 @@
   /* ---------- narrative cards ---------- */
   .card-fade{ animation:fadeUp .5s ease both; }
   @keyframes fadeUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .cutscene-eyebrow-sub{ font-family:var(--font-mono); font-size:10px; color:var(--text-faint); letter-spacing:.1em; margin-top:2px; }
+
+  /* ---------- scene art (original stylized set pieces) ---------- */
+  .scene{
+    position:relative; height:190px; border-radius:8px; overflow:hidden;
+    margin-bottom:18px; border:1px solid var(--line); background:var(--ground-2);
+    box-shadow:inset 0 0 50px rgba(0,0,0,.4);
+  }
+  .scene[hidden]{ display:none; }
+  .scene::after{ content:""; position:absolute; inset:0; box-shadow:inset 0 0 46px rgba(0,0,0,.45); pointer-events:none; }
+  .scene-cap{
+    position:absolute; left:10px; bottom:8px; z-index:5;
+    font-family:var(--font-mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,.65); background:rgba(0,0,0,.35); padding:3px 8px; border-radius:3px;
+  }
+
+  /* guard figure — original stylized silhouette: pink coverall, blank oval mask, geometric rank badge */
+  .guard-figure{ position:absolute; width:20px; height:44px; z-index:3; }
+  .guard-figure .g-body{ position:absolute; bottom:0; left:1px; width:18px; height:28px; background:linear-gradient(180deg, var(--guard-pink), var(--guard-pink-dark)); border-radius:5px 5px 2px 2px; }
+  .guard-figure .g-head{ position:absolute; top:0; left:3px; width:14px; height:15px; border-radius:50%; background:#26262e; box-shadow:0 0 0 2px rgba(255,95,150,.5); }
+  .guard-figure .g-badge{ position:absolute; top:5px; left:5.5px; width:5px; height:5px; }
+  .guard-figure .g-badge.b-circle{ border-radius:50%; border:1.3px solid #f4f0e8; }
+  .guard-figure .g-badge.b-square{ border:1.3px solid #f4f0e8; }
+  .guard-figure .g-badge.b-triangle{ width:0; height:0; border-left:2.6px solid transparent; border-right:2.6px solid transparent; border-bottom:5px solid #f4f0e8; }
+  .guard-figure.flip{ transform:scaleX(-1); }
+
+  /* staircase */
+  .scene-staircase{ background:linear-gradient(180deg,#f3e4cf,#e3cdae); }
+  .stair-flight{ position:absolute; width:52px; height:150px; border-radius:5px; box-shadow:3px 6px 14px rgba(0,0,0,.3); background:repeating-linear-gradient(180deg, var(--pastel-pink) 0 15px, var(--pastel-pink-2) 15px 30px); }
+  .stair-flight.mint{ background:repeating-linear-gradient(180deg, var(--pastel-mint) 0 15px, var(--pastel-mint-2) 15px 30px); }
+  .stair-flight.f1{ left:2%; top:6%; transform:rotate(21deg) skewX(-9deg); }
+  .stair-flight.f2{ left:24%; top:-14%; transform:rotate(-16deg) skewX(7deg); }
+  .stair-flight.f3{ left:48%; top:10%; transform:rotate(13deg) skewX(-5deg); }
+  .stair-flight.f4{ left:70%; top:-16%; transform:rotate(-22deg) skewX(9deg); }
+  .stair-flight.f5{ left:86%; top:14%; transform:rotate(17deg) skewX(-6deg); }
+
+  /* dormitory */
+  .scene-dorm{ background:linear-gradient(180deg,#1c1b26,#151420); }
+  .dorm-glow{ position:absolute; top:-30px; left:50%; transform:translateX(-50%); width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(255,233,168,.18), transparent 70%); }
+  .bunk-row{ position:absolute; left:6%; right:6%; height:26px; border-radius:3px; background:linear-gradient(180deg, rgba(184,196,214,.22), rgba(184,196,214,.08)); border-top:2px solid rgba(255,233,168,.35); }
+  .bunk-row.r1{ top:18%; } .bunk-row.r2{ top:44%; } .bunk-row.r3{ top:70%; }
+  .bunk-post{ position:absolute; width:6px; top:14%; bottom:6%; background:rgba(184,196,214,.25); border-radius:2px; }
+  .bunk-post.p1{ left:6%; } .bunk-post.p2{ right:6%; }
+
+  /* corridor */
+  .scene-corridor{ background:var(--pastel-wall); }
+  .corridor-wall{ position:absolute; top:0; height:100%; width:56%; background:var(--pastel-wall-2); }
+  .corridor-wall.left{ left:0; clip-path:polygon(0 0, 100% 42%, 100% 58%, 0 100%); }
+  .corridor-wall.right{ right:0; clip-path:polygon(100% 0, 0 42%, 0 58%, 100% 100%); }
+  .corridor-floor{ position:absolute; left:22%; right:22%; bottom:0; height:30%; background:linear-gradient(180deg,#cbb896,#a6926f); clip-path:polygon(37% 0, 63% 0, 100% 100%, 0 100%); }
+  .corridor-glow{ position:absolute; left:50%; top:36%; width:70px; height:70px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.5), transparent 70%); }
+  .scene-corridor-exit .corridor-wall{ background:#e8dcc4; }
+  .scene-corridor-exit .corridor-glow{ background:radial-gradient(circle, rgba(255,244,214,.85), transparent 70%); width:110px; height:110px; }
+
+  /* blackout / van */
+  .scene-blackout{ background:#0a0a0e; }
+  .blackout-streak{ position:absolute; left:-20%; width:140%; height:3px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); animation:streak 2.6s linear infinite; }
+  .blackout-streak.s1{ top:30%; animation-delay:0s; }
+  .blackout-streak.s2{ top:55%; animation-delay:.9s; }
+  .blackout-streak.s3{ top:75%; animation-delay:1.6s; }
+  @keyframes streak{ from{ transform:translateX(-10%);} to{ transform:translateX(10%);} }
+  @media (prefers-reduced-motion: reduce){ .blackout-streak{ animation:none; } }
+
+  /* red light green light field */
+  .scene-field{ background:linear-gradient(180deg,#e3f6ec 0%,#bfe8d2 55%,#93cdae 100%); }
+  .field-lines{ position:absolute; inset:0; background:repeating-linear-gradient(90deg, transparent 0 38px, rgba(255,255,255,.55) 38px 40px); opacity:.6; }
+  .field-doll{ position:absolute; top:14px; left:50%; transform:translateX(-50%); }
+  .field-doll .fd-head{ width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #f7ecd6, #d8c49a); border:2px solid #a5905f; margin:0 auto; }
+  .field-doll .fd-body{ width:46px; height:34px; margin:2px auto 0; background:var(--pastel-yellow); border-radius:6px 6px 2px 2px; }
+  .field-tower{ position:absolute; top:6px; width:16px; height:44px; background:rgba(20,20,26,.28); border-radius:2px 2px 0 0; }
+  .field-tower.left{ left:6%; } .field-tower.right{ right:6%; }
+
+  /* tug of war pit */
+  .scene-pit{ background:linear-gradient(180deg,#241a2c,#100b14); }
+  .pit-glow{ position:absolute; left:50%; top:55%; width:220px; height:60px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(ellipse, rgba(255,51,102,.28), transparent 72%); }
+  .pit-platform{ position:absolute; bottom:20%; width:34%; height:14px; border-radius:3px; }
+  .pit-platform.left{ left:4%; background:linear-gradient(90deg,var(--teal-dim),var(--teal)); }
+  .pit-platform.right{ right:4%; background:linear-gradient(90deg,var(--crimson),var(--crimson-dim)); }
+
+  /* glass bridge void */
+  .scene-bridgevoid{ background:linear-gradient(180deg,#0d1b22,#081014); }
+  .void-panel{ position:absolute; bottom:18%; width:26px; height:52px; border-radius:3px; background:linear-gradient(180deg, rgba(31,224,196,.4), rgba(31,224,196,.08)); border:1px solid rgba(31,224,196,.5); box-shadow:0 0 14px rgba(31,224,196,.25); }
+  .void-mist{ position:absolute; left:0; right:0; bottom:0; height:40%; background:linear-gradient(180deg, transparent, rgba(180,220,255,.12)); }
+
+  /* dalgona playroom */
+  .scene-candy{ background:linear-gradient(180deg,#f7e2c4,#e9c98e); }
+  .candy-disc{ position:absolute; left:50%; top:52%; width:100px; height:100px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle at 40% 35%, #dcae5f, #c99a52); box-shadow:0 8px 18px rgba(0,0,0,.25); }
+  .candy-shape{ position:absolute; left:50%; top:52%; width:44px; height:44px; transform:translate(-50%,-50%); border:2px dashed rgba(60,38,10,.5); border-radius:50%; }
+  .candy-steam{ position:absolute; width:6px; height:26px; border-radius:3px; background:rgba(255,255,255,.55); filter:blur(2px); animation:steam 3s ease-in-out infinite; }
+  .candy-steam.st1{ left:38%; top:10%; animation-delay:0s; }
+  .candy-steam.st2{ left:58%; top:6%; animation-delay:1s; }
+  @keyframes steam{ 0%,100%{ opacity:.2; transform:translateY(0);} 50%{ opacity:.7; transform:translateY(-10px);} }
+  @media (prefers-reduced-motion: reduce){ .candy-steam{ animation:none; } }
+
+  /* final arena */
+  .scene-arenafinal{ background:radial-gradient(circle at 50% 40%, #241826, var(--ground)); }
+  .arena-spot{ position:absolute; left:50%; top:44%; width:130px; height:130px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.18), transparent 70%); }
+  .balcony-row{ position:absolute; top:6px; left:0; right:0; display:flex; justify-content:space-evenly; }
+  .balcony-figure{ width:10px; height:16px; border-radius:5px 5px 2px 2px; background:rgba(10,10,14,.7); }
 
   /* ---------- lobby ---------- */
   .round-badge{ font-family:var(--font-mono); font-size:12px; color:var(--gold); letter-spacing:.1em; margin-bottom:6px; }
@@ -443,10 +551,11 @@
   <section class="screen" id="screen-cutscene">
     <div class="stage">
       <div class="stage-head">
-        <div class="eyebrow"><span class="dot"></span>Somewhere Underground</div>
+        <div class="eyebrow"><span class="dot"></span><span id="cutsceneEyebrow">Somewhere Underground</span></div>
         <h1 class="stage-title" id="cutsceneTitle">You Wake Up</h1>
       </div>
       <div class="stage-body">
+        <div class="scene" id="cutsceneScene" hidden></div>
         <p class="card-fade" id="cutsceneText"></p>
       </div>
       <div class="stage-foot">
@@ -463,6 +572,7 @@
         <h1 class="stage-title" id="lobbyTitle">Red Light, Green Light</h1>
       </div>
       <div class="stage-body">
+        <div class="scene" id="lobbyScene"></div>
         <p id="lobbyDesc"></p>
         <div class="stat-strip">
           <div class="stat-block">
@@ -721,7 +831,11 @@
         $("tileMsg").textContent = "The tile flips clean over. \"Not bad,\" he smiles.";
         setTimeout(function(){
           resolved = false;
-          startCutscene();
+          playCutscene(INTRO_CARDS, "Somewhere Underground", function(){
+            $("hud").classList.add("show");
+            updateHud();
+            startRound(0);
+          });
         }, 1300);
       } else {
         $("tileMsg").textContent = "The tile barely moves. \"Again,\" he says, resetting it.";
@@ -737,40 +851,103 @@
     });
   }
 
-  /* ================= CUTSCENE ================= */
-  var CUTSCENE_CARDS = [
-    {title:"You Wake Up", text:"Your head is pounding. The room is dim, lined with bunks stacked three high, dozens of strangers stirring awake around you — all wearing the same track suit you now find yourself in."},
-    {title:"A Number, Not A Name", text:"Stitched over your heart is a number: {NUMBER}. Down here, that's what you answer to. Nobody explains why. Nobody asks your name again."},
-    {title:"The Rules Are Read", text:"A calm voice explains it plainly: there are six games left to play. Win them all, and the prize pool — swelling with every player who doesn't make it — is yours alone."},
-    {title:"They Come For You", text:"A door hisses open. Guards in rose-red uniforms and blank geometric masks file in without a word and gesture for everyone to move. The first game is about to begin."}
-  ];
-  var cutsceneIdx = 0;
-  function startCutscene(){
-    cutsceneIdx = 0;
+  /* ================= SCENE ART (original stylized set pieces) ================= */
+  function guardHTML(leftPct, badge, flip){
+    return '<div class="guard-figure'+(flip?' flip':'')+'" style="left:'+leftPct+'%;">'+
+      '<div class="g-head"></div><div class="g-body"></div>'+
+      '<div class="g-badge b-'+badge+'"></div></div>';
+  }
+  function sceneHTML(kind){
+    switch(kind){
+      case "blackout":
+        return '<div class="blackout-streak s1"></div><div class="blackout-streak s2"></div><div class="blackout-streak s3"></div>';
+      case "dorm":
+        return '<div class="dorm-glow"></div><div class="bunk-post p1"></div><div class="bunk-post p2"></div><div class="bunk-row r1"></div><div class="bunk-row r2"></div><div class="bunk-row r3"></div>';
+      case "staircase":
+        return '<div class="stair-flight f1"></div><div class="stair-flight mint f2"></div><div class="stair-flight f3"></div><div class="stair-flight mint f4"></div><div class="stair-flight f5"></div>'+
+          guardHTML(12,"circle",false)+guardHTML(76,"triangle",true);
+      case "corridor":
+        return '<div class="corridor-wall left"></div><div class="corridor-wall right"></div><div class="corridor-floor"></div><div class="corridor-glow"></div>'+guardHTML(47,"square",false);
+      case "corridor-exit":
+        return '<div class="corridor-wall left"></div><div class="corridor-wall right"></div><div class="corridor-floor"></div><div class="corridor-glow"></div>';
+      case "field":
+        return '<div class="field-lines"></div><div class="field-tower left"></div><div class="field-tower right"></div><div class="field-doll"><div class="fd-head"></div><div class="fd-body"></div></div>';
+      case "pit":
+        return '<div class="pit-glow"></div><div class="pit-platform left"></div><div class="pit-platform right"></div>';
+      case "bridgevoid":
+        var panels = "";
+        for(var i=0;i<6;i++){ panels += '<div class="void-panel" style="left:'+(8+i*15)+'%;"></div>'; }
+        return '<div class="void-mist"></div>' + panels;
+      case "candy":
+        return '<div class="candy-steam st1"></div><div class="candy-steam st2"></div><div class="candy-disc"></div><div class="candy-shape"></div>';
+      case "arenafinal":
+        return '<div class="arena-spot"></div><div class="balcony-row"><div class="balcony-figure"></div><div class="balcony-figure"></div><div class="balcony-figure"></div><div class="balcony-figure"></div><div class="balcony-figure"></div></div>';
+      default:
+        return '';
+    }
+  }
+  function renderScene(el, kind){
+    if(!kind){ el.hidden = true; el.innerHTML = ""; return; }
+    el.hidden = false;
+    el.className = "scene scene-" + kind;
+    el.innerHTML = sceneHTML(kind);
+  }
+
+  /* ================= CUTSCENE PLAYER (reused between every story beat) ================= */
+  var cutQueue = [], cutIdx = 0, cutOnDone = null;
+  function playCutscene(cards, eyebrow, onDone){
+    cutQueue = cards; cutIdx = 0; cutOnDone = onDone;
+    $("cutsceneEyebrow").textContent = eyebrow || "Somewhere Underground";
     showScreen("screen-cutscene");
-    showCutsceneCard();
-    $("cutsceneNextBtn").onclick = function(){
-      cutsceneIdx++;
-      if(cutsceneIdx >= CUTSCENE_CARDS.length){
-        $("hud").classList.add("show");
-        updateHud();
-        startRound(0);
-      } else {
-        showCutsceneCard();
-      }
-    };
+    renderCutsceneCard();
+    $("cutsceneNextBtn").onclick = advanceCutscene;
     setCleanup(function(){ $("cutsceneNextBtn").onclick = null; });
   }
-  function showCutsceneCard(){
-    var c = CUTSCENE_CARDS[cutsceneIdx];
+  function advanceCutscene(){
+    cutIdx++;
+    if(cutIdx >= cutQueue.length){
+      var done = cutOnDone;
+      cutOnDone = null;
+      if(done) done();
+    } else {
+      renderCutsceneCard();
+    }
+  }
+  function renderCutsceneCard(){
+    var c = cutQueue[cutIdx];
     $("cutsceneTitle").textContent = c.title;
+    renderScene($("cutsceneScene"), c.scene);
     var txt = $("cutsceneText");
     txt.textContent = c.text.replace("{NUMBER}", S.number);
     txt.classList.remove("card-fade");
     void txt.offsetWidth;
     txt.classList.add("card-fade");
-    $("cutsceneNextBtn").textContent = (cutsceneIdx === CUTSCENE_CARDS.length-1) ? "Enter The Arena" : "Continue";
+    $("cutsceneNextBtn").textContent = c.btn || "Continue";
   }
+
+  /* ---- narrative content ---- */
+  var INTRO_CARDS = [
+    {title:"The Van", scene:"blackout", text:"A cloth bag drops over your head before you can react. When it's lifted again, you're wedged onto a bench in the back of an unmarked van with a dozen strangers just as confused as you."},
+    {title:"You Wake Up", scene:"dorm", text:"You come to in a dim room lined with bunks stacked three high. Dozens of strangers stir awake around you, every one of them dressed in the same track suit you now find yourself wearing."},
+    {title:"A Number, Not A Name", text:"Stitched over your heart is a number: {NUMBER}. Down here, that's what you answer to. Nobody explains why. Nobody asks your name again."},
+    {title:"The Stairs", scene:"staircase", text:"Guards herd everyone out and down a staircase that shouldn't be able to fold in on itself the way it does — flight after flight, painted in colors that belong in a nursery, not a place like this."},
+    {title:"The Guards", scene:"corridor", text:"They wear rose-pink coveralls and blank, featureless masks, each stamped with a small geometric badge. They don't speak. They don't have to."},
+    {title:"The Rules Are Read", text:"A calm, recorded voice explains it plainly: six games stand between you and the door. Win them all, and the prize pool — swelling with every player who doesn't make it — is yours alone.", btn:"Enter The Arena"}
+  ];
+  var TRANSITIONS = [
+    [{title:"Back Up The Stairs", scene:"staircase", text:"Guards march the survivors back through the pastel stairwell — fewer of you now than when you first came down it. Nobody talks about the ones who aren't here."}],
+    [{title:"A Quiet Corridor", scene:"corridor", text:"You're walked down a long corridor and paired off, one stranger to a partner, for something a guard calls a “friendship game.” It doesn't sound like a compliment."}],
+    [{title:"Across A Walkway", scene:"corridor", text:"The corridor opens onto a walkway suspended over open air. Through the mesh floor you can just make out a very long drop, and something waiting at the bottom of it."}],
+    [{title:"The Smell Of Sugar", scene:"candy", text:"The next room smells impossibly sweet — melted sugar and scorched caramel. Trays of pale honeycomb toffee sit on long tables, each disc stamped with a shape and a single needle beside it."}],
+    [
+      {title:"Night In The Dormitory", scene:"dorm", text:"Only a handful of bunks are filled tonight. Nobody sleeps much. Somewhere across the room, someone is crying quietly, trying hard not to be heard."},
+      {title:"One Game Left", text:"In the morning, a guard reads a single number off a clipboard — yours — paired with one other. Whatever's left to decide will be decided between the two of you."},
+      {title:"The Last Walk", scene:"corridor", text:"The stairs feel shorter this time. Or maybe you've just stopped counting them.", btn:"Face The Final Game"}
+    ]
+  ];
+  var EPILOGUE_CARDS = [
+    {title:"Out", scene:"corridor-exit", text:"A door opens onto a hallway you don't recognize, and at the end of it, daylight — the first you've seen since the van. Nobody applauds. Nobody has to."}
+  ];
 
   /* ================= HUD ================= */
   function updateHud(){
@@ -783,27 +960,27 @@
 
   /* ================= GAMES DEFINITIONS ================= */
   var GAMES = [
-    {key:"redlight", title:"Red Light, Green Light",
+    {key:"redlight", title:"Red Light, Green Light", scene:"field",
       desc:"A giant doll faces a wall at the far end of the field. While she sings, you may run. When she turns, everything must be still — a single twitch and you're out. Reach the finish line before time runs out.",
       resultWin:"You freeze a heartbeat before she turns. The doll's painted eyes sweep past you and find someone else instead.",
       init:initRedLight},
-    {key:"tugofwar", title:"Tug of War",
+    {key:"tugofwar", title:"Tug of War", scene:"pit",
       desc:"Teams are picked at random, and yours is smaller. On the far side of the rope is a drop into nothing. Pull harder than they do, or go over the edge with everyone counting on you.",
       resultWin:"Your team plants their heels and hauls the rope back inch by inch. The other side goes over together.",
       init:initTugOfWar},
-    {key:"marbles", title:"Marble Duel",
+    {key:"marbles", title:"Marble Duel", scene:"corridor",
       desc:"Paired off with a stranger for one last quiet game before the real ones resume. Ten marbles each. Guess how many your opponent is holding — win them all, or lose everything you came in with.",
       resultWin:"Your opponent's hand opens, empty. You scoop the last of their marbles into your pocket and don't look at their face.",
       init:initMarbles},
-    {key:"glassbridge", title:"Glass Stepping Bridge",
+    {key:"glassbridge", title:"Glass Stepping Bridge", scene:"bridgevoid",
       desc:"Sixteen steps of tempered glass stretch out over a long drop. Only one panel in each pair will hold your weight. Choose wrong, and there's no going back. Choose right, sixteen times.",
       resultWin:"You land on the far platform, glass dust on your shoes, and don't allow yourself to look back down the line of panels behind you.",
       init:initGlassBridge},
-    {key:"dalgona", title:"Dalgona Candy Carving",
+    {key:"dalgona", title:"Dalgona Candy Carving", scene:"candy",
       desc:"A honeycomb toffee disc, stamped with a shape, and a single needle. Carve the outline free without cracking it, before time — or your nerves — run out.",
       resultWin:"The shape lifts free of the toffee in one clean piece. Your hands are shaking, but it's whole.",
       init:initDalgona},
-    {key:"finalduel", title:"The Final Standoff",
+    {key:"finalduel", title:"The Final Standoff", scene:"arenafinal",
       desc:"It's down to two. One ring, no rules explained, and a single guard watching to see who's still standing when it's over. Push, and don't stop pushing.",
       resultWin:"The other player stumbles past the line first. For the first time since you arrived, the room goes completely silent.",
       init:initFinalDuel, isFinal:true}
@@ -820,6 +997,7 @@
     $("lobbyRemaining").textContent = S.remaining;
     $("lobbyPrize").textContent = fmtMoney(S.prize);
     $("lobbyBeginBtn").textContent = g.isFinal ? "Face Them" : "Begin";
+    renderScene($("lobbyScene"), g.scene);
     showScreen("screen-lobby");
     $("lobbyBeginBtn").onclick = function(){ launchGame(idx); };
     setCleanup(function(){ $("lobbyBeginBtn").onclick = null; });
@@ -849,7 +1027,7 @@
       updateHud();
 
       if(g.isFinal){
-        showVictory();
+        playCutscene(EPILOGUE_CARDS, "Somewhere Above Ground", showVictory);
         return;
       }
 
@@ -859,7 +1037,14 @@
       $("resultPrize").textContent = fmtMoney(S.prize);
       showScreen("screen-roundresult");
       $("resultNextBtn").textContent = "Continue";
-      $("resultNextBtn").onclick = function(){ startRound(idx+1); };
+      $("resultNextBtn").onclick = function(){
+        var trans = TRANSITIONS[idx];
+        if(trans && trans.length){
+          playCutscene(trans, "Between Games", function(){ startRound(idx+1); });
+        } else {
+          startRound(idx+1);
+        }
+      };
       setCleanup(function(){ $("resultNextBtn").onclick = null; });
     } else {
       $("elimSurvived").textContent = S.gamesSurvived;

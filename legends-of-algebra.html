@@ -1,0 +1,845 @@
+<title>The Legends of Algebra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Alegreya:ital,wght@0,500;1,500;1,700&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: a night-sea world map; parchment cards float over it, one screen at a time, HUD pinned on top. */
+:root{
+  --deep:#081722; --night:#0e2233; --sea:#164a64; --foam:#a9cdd8;
+  --parch:#f4e7c8; --parch2:#e6d2a3; --ink:#2a1f16; --ink2:#5b4a37;
+  --gold:#e9b949; --gold-d:#a8781a; --rose:#e06c84; --leaf:#5fb98a; --bad:#cf4b45;
+  --f-display:"Uncial Antiqua","Papyrus",Georgia,serif;
+  --f-body:"Alegreya Sans","Trebuchet MS",system-ui,sans-serif;
+  --f-math:"Alegreya",Georgia,"Times New Roman",serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;font-family:var(--f-body);font-size:16px;color:var(--parch);
+  background:radial-gradient(1200px 600px at 20% -10%,#1d5a74 0%,transparent 60%),radial-gradient(900px 600px at 110% 110%,#123a52 0%,transparent 55%),var(--deep);
+  background-attachment:fixed}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:12px 40px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--ink2)}
+
+/* HUD */
+.hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(8,23,34,.92);backdrop-filter:blur(6px);border-bottom:1px solid #24485c}
+.hud-in{max-width:980px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hud .mini{width:40px;height:52px;flex:none}
+.hud .who{min-width:0;flex:1 1 140px}
+.hud .who b{display:block;font-family:var(--f-display);font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud .who span{font-size:13px;color:var(--foam)}
+.stat{display:flex;align-items:center;gap:6px;font-weight:800;font-variant-numeric:tabular-nums}
+.bar{width:110px;height:12px;border-radius:6px;background:#2a3d49;overflow:hidden;border:1px solid #3b5666}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#d94f5c,#f07d6a)}
+.bar.xp i{background:linear-gradient(90deg,#4aa3c9,#8fd4e8)}
+.coin{width:18px;height:18px}
+
+/* Cards */
+.card{background:var(--parch);color:var(--ink);border-radius:14px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px #d8c08a}
+.card + .card{margin-top:16px}
+.title-art{text-align:center;padding-block:18px 8px}
+.title-art h1{font-size:clamp(34px,7vw,58px);color:var(--gold);line-height:1.05;text-shadow:0 3px 0 #5a3c0a}
+.title-art p{color:var(--foam);max-width:52ch;margin:10px auto 0;line-height:1.5}
+
+.btn{border:0;border-radius:10px;padding:11px 18px;font-weight:800;background:var(--gold);color:var(--ink);box-shadow:0 4px 0 var(--gold-d);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gold-d)}
+.btn.alt{background:#2b5d75;color:var(--parch);box-shadow:0 4px 0 #173a4c}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink2)}
+.btn.rose{background:var(--rose);color:#fff;box-shadow:0 4px 0 #9b3a50}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Creator */
+.creator{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:20px;align-items:start}
+.preview{background:radial-gradient(circle at 50% 40%,#fff6dc,#e9d3a0);border-radius:12px;padding:12px;display:flex;justify-content:center}
+.preview svg{width:100%;max-width:220px;height:auto}
+.opt{margin-bottom:14px}
+.opt h3{font-family:var(--f-body);font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--ink2);margin-bottom:6px}
+.sw{width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #b9a274}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.chip{border:2px solid #c9b07a;background:#fbf3df;color:var(--ink);border-radius:999px;padding:5px 12px;font-weight:700;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--parch);border-color:var(--ink)}
+.chip:disabled{opacity:.5}
+input[type=text]{font:inherit;font-size:18px;padding:10px 12px;border-radius:10px;border:2px solid #c9b07a;background:#fffaf0;color:var(--ink);width:100%}
+
+/* Village */
+.scene{width:100%;height:auto;border-radius:12px;display:block}
+.plot{cursor:pointer}
+.plot:hover .plotbox{stroke:var(--gold)}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:14px}
+.item{border:1px solid #d3bb85;border-radius:10px;padding:12px;background:#fbf2dc;display:flex;flex-direction:column;gap:6px}
+.item b{font-size:16px}
+.item small{color:var(--ink2);line-height:1.35}
+.item .row{margin-top:auto;justify-content:space-between}
+.built{color:#2f7d52;font-weight:800}
+.friends{display:flex;gap:10px;flex-wrap:wrap}
+.friend-tag{display:flex;align-items:center;gap:8px;background:#fbf2dc;border:1px solid #d3bb85;border-radius:999px;padding:4px 12px 4px 4px;font-weight:700}
+.friend-tag svg{width:40px;height:40px}
+
+/* Map */
+.map{width:100%;height:auto;display:block;border-radius:14px}
+.isle{cursor:pointer}
+.isle.locked{cursor:not-allowed}
+.isle:not(.locked):hover .isle-ring{stroke:var(--gold);stroke-width:4}
+.isle-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+
+/* Battle */
+.arena{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;background:linear-gradient(#1b4d63,#0f2c3c 70%,#3c5a37 70%,#2f4a2b);border-radius:14px;padding:16px 14px 10px;position:relative;overflow:hidden}
+.fighter{width:42%;max-width:220px;text-align:center;position:relative}
+.fighter svg{width:100%;height:auto;max-height:230px;overflow:visible}
+.fighter .nm{font-weight:800;font-size:14px;margin-bottom:4px}
+.fighter .bar{width:100%;margin-bottom:8px}
+.mon-bar i{background:linear-gradient(90deg,#7ad08f,#b8e986)}
+.vs{font-family:var(--f-display);color:var(--gold);font-size:22px;align-self:center}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-8px) rotate(-3deg)}40%{transform:translateX(8px) rotate(3deg)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+.float{position:absolute;left:50%;top:30%;transform:translateX(-50%);font-family:var(--f-display);font-size:28px;pointer-events:none;animation:rise 1s forwards;text-shadow:0 2px 0 #000}
+@keyframes rise{to{top:-5%;opacity:0}}
+
+/* creature animation */
+.cr .breathe{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 2.6s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.03,.975)}}
+.cr .bob{animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.cr .flapL{transform-box:fill-box;transform-origin:100% 75%;animation:flap .9s ease-in-out infinite}
+@keyframes flap{50%{transform:rotate(14deg) scaleX(.86)}}
+.cr .sway{transform-box:fill-box;transform-origin:50% 0;animation:sway 2.4s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(7deg)}}
+.cr .twinkle{transform-box:fill-box;transform-origin:center;animation:tw 1.8s ease-in-out infinite}
+@keyframes tw{50%{opacity:.15;transform:scale(.4)}}
+.cr .flick{transform-box:fill-box;transform-origin:50% 0;animation:flick .45s ease-in-out infinite alternate}
+@keyframes flick{to{transform:scaleY(1.1) skewX(5deg)}}
+.cr .pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.4}}
+.cr .rise{animation:drift 3s linear infinite}
+@keyframes drift{from{transform:translateY(0);opacity:0}20%{opacity:1}to{transform:translateY(-60px);opacity:0}}
+.cr .blink{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.hurt{animation:hurt .5s}
+@keyframes hurt{25%{filter:brightness(2.4) saturate(.3);transform:translateX(14px) rotate(4deg)}60%{transform:translateX(-4px)}}
+.lunge{animation:lunge .5s}
+@keyframes lunge{40%{transform:translateX(-36px) scale(1.08)}}
+.bubble{position:absolute;right:4%;top:8px;max-width:58%;background:#fffaf0;color:var(--ink);font-weight:800;font-size:13.5px;line-height:1.3;padding:7px 11px;border-radius:12px;box-shadow:0 3px 0 rgba(0,0,0,.25);z-index:2}
+.bubble::after{content:"";position:absolute;bottom:-8px;right:30%;border:8px solid transparent;border-top-color:#fffaf0;border-bottom:0}
+.arena{padding-top:56px}
+@media (prefers-reduced-motion:reduce){.cr *,.hurt,.lunge{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.shake,.float{animation:none}.float{display:none}}
+.qcard{text-align:center}
+.eq{font-family:var(--f-math);font-size:clamp(26px,6vw,40px);line-height:1.35;margin:8px 0 14px;font-variant-numeric:lining-nums}
+.eq i{font-style:italic;font-weight:700;color:#7a2f9e}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.8em;line-height:1.1}
+.frac>span:first-child{border-bottom:2px solid currentColor;padding:0 4px}
+.answer{display:flex;gap:10px;max-width:420px;margin:0 auto}
+.answer label{position:absolute;left:-9999px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:460px;margin:0 auto}
+.choices .btn{font-family:var(--f-math);font-size:22px;background:#fbf2dc;box-shadow:0 4px 0 #c9b07a}
+.tools{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;font-size:14px}
+.hintbox{background:#e3f1e6;border-left:4px solid var(--leaf);padding:10px 12px;border-radius:6px;margin-top:12px;text-align:left}
+.explain{text-align:left}
+.explain .you{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 10px;font-weight:700}
+.explain .you span em{font-family:var(--f-math);font-style:normal;font-size:20px}
+.oops{background:#fbe3df;border-left:4px solid var(--bad);padding:10px 12px;border-radius:6px;line-height:1.45}
+.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+.steps li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:6px 10px;padding:8px 0;border-bottom:1px dashed #cdb787}
+.steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--parch);display:grid;place-items:center;font-weight:800;font-size:14px;grid-row:span 2}
+.steps .m{font-family:var(--f-math);font-size:22px}
+.steps .m i{font-style:italic;color:#7a2f9e;font-weight:700}
+.correct-ans{background:#e2f2e7;border:2px solid var(--leaf);border-radius:10px;padding:10px 14px;font-weight:800;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.correct-ans .m{font-family:var(--f-math);font-size:24px}
+.correct-ans .m i{font-style:italic;color:#7a2f9e}
+
+/* Friend */
+.friendview{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:20px;align-items:start}
+.friendview .art{background:radial-gradient(circle,#fff8e2,#ead6a6);border-radius:12px;padding:10px}
+.friendview .art svg{width:100%;height:auto}
+.lesson{background:#fbf2dc;border:1px solid #d3bb85;border-radius:10px;padding:14px;margin-top:12px}
+.lesson .m{font-family:var(--f-math);font-size:21px}
+.lesson .m i{font-style:italic;color:#7a2f9e;font-weight:700}
+.banner{background:var(--gold);color:var(--ink);font-weight:800;border-radius:10px;padding:10px 14px;margin-top:12px}
+p{line-height:1.5;max-width:65ch}
+.muted{color:var(--ink2)}
+@media (max-width:640px){
+  .creator,.friendview{grid-template-columns:minmax(0,1fr)}
+  .preview svg{max-width:170px}
+  .friendview .art{max-width:200px;margin:0 auto}
+  .isle-panel{grid-template-columns:minmax(0,1fr)}
+  .bar{width:80px}
+  .choices .btn{font-size:19px}
+}
+</style>
+
+<div id="hud"></div>
+<main class="wrap" id="app"></main>
+
+<script>
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[ri(0,a.length-1)];
+const nz=(lo,hi,min=1)=>{let v;do{v=ri(lo,hi)}while(Math.abs(v)<min);return v};
+const n=v=>v<0?'−'+(-v):''+v;
+const term=b=>b===0?'':b>0?` + ${b}`:` − ${-b}`;
+const xt=(a,v='x')=>a===1?v:a===-1?'−'+v:n(a)+v;
+const xterm=a=>a===0?'':a>0?` + ${a===1?'':a}x`:` − ${a===-1?'':-a}x`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const M=s=>s.replace(/([xy])/g,'<i>$1</i>').replace(/\{([^|}]+)\|([^}]+)\}/g,'<span class="frac"><span>$1</span><span>$2</span></span>');
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+function shade(hex,p){const h=hex.replace('#','');let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);const f=v=>Math.max(0,Math.min(255,Math.round(v+(p<0?v:255-v)*p/100)));return '#'+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,'0')).join('')}
+function mk(pairs,correct){const m={};for(const [v,msg] of pairs){if(Number.isFinite(v)&&Number.isInteger(v)&&v!==correct&&!(v in m))m[v]=msg}return m}
+
+/* ---------- algebra generators ---------- */
+const GEN={
+ one(){const t=ri(0,3),x=ri(-9,15);
+  if(t===0){const a=ri(2,20),b=x+a;return{eq:`x${term(a)} = ${n(b)}`,ans:x,hint:`Undo the + ${a}: subtract ${a} from both sides.`,
+   steps:[[`Subtract ${a} from both sides to undo the + ${a}`,`x = ${n(b)} − ${a}`],[`Simplify`,`x = ${n(x)}`]],
+   mistakes:mk([[b+a,`It looks like you added ${a}. The equation has + ${a}, so you undo it with the opposite operation: subtract ${a}.`]],x)}}
+  if(t===1){const a=ri(2,20),b=x-a;return{eq:`x − ${a} = ${n(b)}`,ans:x,hint:`Undo the − ${a}: add ${a} to both sides.`,
+   steps:[[`Add ${a} to both sides to undo the − ${a}`,`x = ${n(b)} + ${a}`],[`Simplify`,`x = ${n(x)}`]],
+   mistakes:mk([[b-a,`It looks like you subtracted ${a} again. To undo − ${a}, do the opposite: add ${a} to both sides.`]],x)}}
+  if(t===2){const a=nz(-9,9,2),b=a*x;return{eq:`${xt(a)} = ${n(b)}`,ans:x,hint:`${xt(a)} means ${n(a)} times x. Undo it by dividing by ${n(a)}.`,
+   steps:[[`${xt(a)} means ${n(a)} × x, so divide both sides by ${n(a)}`,`x = ${n(b)} ÷ ${n(a)}`],[`Simplify (watch the signs)`,`x = ${n(x)}`]],
+   mistakes:mk([[b*a,`You multiplied by ${n(a)}. Since x is already being multiplied by ${n(a)}, you need to divide.`],[b-a,`You subtracted ${n(a)}. The ${n(a)} is multiplied by x, not added, so divide instead.`],[-x,`So close! Check the sign. A ${(b<0)===(a<0)?'negative divided by a negative is positive':'positive divided by a negative (or the other way) is negative'}.`]],x)}}
+  const a=ri(2,9),b=ri(-9,12),xx=a*b;return{eq:`{x|${a}} = ${n(b)}`,ans:xx,hint:`x is being divided by ${a}. Undo it by multiplying both sides by ${a}.`,
+   steps:[[`x is divided by ${a}, so multiply both sides by ${a}`,`x = ${n(b)} × ${a}`],[`Simplify`,`x = ${n(xx)}`]],
+   mistakes:mk([[b/a,`You divided again. To undo dividing by ${a}, do the opposite: multiply by ${a}.`],[b+a,`You added ${a}. The ${a} is dividing x, so multiply by ${a} instead.`]],xx)}},
+
+ two(){const x=ri(-9,12);
+  if(Math.random()<.7){const a=Math.random()<.25?-ri(2,9):ri(2,9),b=nz(-15,15),c=a*x+b;
+   return{eq:`${xt(a)}${term(b)} = ${n(c)}`,ans:x,hint:`Two steps: first ${b>0?'subtract '+b:'add '+(-b)} on both sides, then divide by ${n(a)}.`,
+    steps:[[b>0?`Subtract ${b} from both sides`:`Add ${-b} to both sides`,`${xt(a)} = ${n(c-b)}`],[`Divide both sides by ${n(a)}`,`x = ${n(c-b)} ÷ ${n(a)} = ${n(x)}`]],
+    mistakes:mk([[(c+b)/a,`Check the sign when you moved the ${n(b)}. To undo ${b>0?'+ '+b:'− '+(-b)}, you ${b>0?'subtract':'add'} ${Math.abs(b)}.`],[c-b,`You were one step away! After getting ${xt(a)} = ${n(c-b)}, divide both sides by ${n(a)}.`],[c/a-b,`You divided before moving the ${n(b)}. That only works if you divide every term. It's safer to undo the + or − first.`],[-x,`Close! Your sign is flipped. Recheck the division: ${n(c-b)} ÷ ${n(a)}.`]],x)}}
+  const a=ri(2,6),k=ri(-6,8),xx=a*k,b=nz(-10,10),c=k+b;
+  return{eq:`{x|${a}}${term(b)} = ${n(c)}`,ans:xx,hint:`First ${b>0?'subtract '+b:'add '+(-b)}, then multiply by ${a}.`,
+   steps:[[b>0?`Subtract ${b} from both sides`:`Add ${-b} to both sides`,`{x|${a}} = ${n(k)}`],[`Multiply both sides by ${a}`,`x = ${n(k)} × ${a} = ${n(xx)}`]],
+   mistakes:mk([[k,`You were one step away! x is still divided by ${a}, so multiply both sides by ${a}.`],[a*(c+b),`Check the sign when you moved the ${n(b)}. Use the opposite operation.`],[(c-b)/a,`x is divided by ${a}, so you multiply by ${a} to undo it, not divide.`]],xx)}},
+
+ peak(){const x=ri(-6,10);
+  if(Math.random()<.5){const a=ri(2,6),b=nz(-8,8),c=a*(x+b);
+   return{eq:`${a}(x${term(b)}) = ${n(c)}`,ans:x,hint:`Distribute: multiply ${a} by x AND by ${n(b)}. Or divide both sides by ${a} first.`,
+    steps:[[`Distribute the ${a} to both terms in the parentheses`,`${a}x${term(a*b)} = ${n(c)}`],[a*b>0?`Subtract ${a*b} from both sides`:`Add ${-a*b} to both sides`,`${a}x = ${n(c-a*b)}`],[`Divide both sides by ${a}`,`x = ${n(x)}`]],
+    mistakes:mk([[(c-b)/a,`You multiplied ${a} by x but not by ${n(b)}. The ${a} multiplies everything inside the parentheses: ${a}·x and ${a}·${n(b)} = ${n(a*b)}.`],[c/a+b,`Check the sign of the ${n(b)} when you moved it across.`],[(c+a*b)/a,`Check the sign when you moved the ${n(a*b)}. Use the opposite operation.`]],x)}}
+  let a=ri(2,9),c=ri(1,8);while(c===a)c=ri(1,8);const b=ri(-10,10),d=(a-c)*x+b,k=a-c;
+  return{eq:`${xt(a)}${term(b)} = ${xt(c)}${term(d)}`,ans:x,hint:`Gather the x terms on one side: subtract ${xt(c)} from both sides.`,
+   steps:[[`Subtract ${xt(c)} from both sides to gather the x terms`,`${xt(k)}${term(b)} = ${n(d)}`],...(b?[[b>0?`Subtract ${b} from both sides`:`Add ${-b} to both sides`,`${xt(k)} = ${n(d-b)}`]]:[]),[k===1?`x is already alone`:`Divide both sides by ${n(k)}`,`x = ${n(x)}`]],
+   mistakes:mk([[(d-b)/(a+c),`You added the x terms. To move ${xt(c)} to the other side you subtract it, which gives ${xt(k)}.`],[(d+b)/k,`Check the sign when you moved the ${n(b)}.`],[-x,`Close, but the sign is flipped. Recheck the last division.`]],x)}},
+
+ lagoon(){
+  if(Math.random()<.4){const a=ri(2,7),b=ri(1,6),x=ri(-5,10),c=nz(-12,12),d=(a+b)*x+c;
+   return{eq:`${a}x + ${b}x${term(c)} = ${n(d)}`,ans:x,hint:`Combine like terms first: ${a}x + ${b}x = ?`,
+    steps:[[`Combine like terms (${a}x + ${b}x = ${a+b}x)`,`${a+b}x${term(c)} = ${n(d)}`],[c>0?`Subtract ${c} from both sides`:`Add ${-c} to both sides`,`${a+b}x = ${n(d-c)}`],[`Divide both sides by ${a+b}`,`x = ${n(x)}`]],
+    mistakes:mk([[(d-c)/(a*b),`It looks like you multiplied ${a} and ${b}. Like terms add together: ${a}x + ${b}x = ${a+b}x.`],[(d+c)/(a+b),`Check the sign when you moved the ${n(c)}. Use the opposite operation on both sides.`],[d-c,`One step away! Divide both sides by ${a+b} to finish.`]],x)}}
+  const a=(Math.random()<.45?-1:1)*ri(2,6),b=ri(-10,10),k=ri(-6,8),c=a*k+b;
+  const fl={'<':'>','>':'<','≤':'≥','≥':'≤'},op=pick(['<','>','≤','≥']),res=a<0?fl[op]:op;
+  let wb=(c+b)/a;if(!Number.isInteger(wb)||wb===k)wb=-k;if(wb===k)wb=k+2;
+  const right=`x ${res} ${n(k)}`,flip=`x ${fl[res]} ${n(k)}`,w1=`x ${res} ${n(wb)}`,w2=`x ${fl[res]} ${n(wb)}`;
+  const mistakes={};
+  mistakes[flip]=a<0?`You divided by ${n(a)}, a negative number, so the inequality sign has to flip: ${op} becomes ${res}.`:`Only flip the sign when you multiply or divide by a negative number. ${a} is positive, so the sign stays ${op}.`;
+  mistakes[w1]=`The direction is right, but check the number. Move the ${n(b)} with the opposite operation first, then divide by ${n(a)}.`;
+  mistakes[w2]=`Two things slipped: the number and the direction of the sign. Walk through the steps below.`;
+  const steps=[];if(b)steps.push([b>0?`Subtract ${b} from both sides`:`Add ${-b} to both sides`,`${xt(a)} ${op} ${n(c-b)}`]);
+  steps.push([`Divide both sides by ${n(a)}`+(a<0?'. Dividing by a negative flips the sign!':''),`x ${res} ${n(k)}`]);
+  return{eq:`${xt(a)}${term(b)} ${op} ${n(c)}`,prompt:'Which answer solves the inequality?',choices:shuffle([right,flip,w1,w2]),ans:right,
+   hint:a<0?`Watch out: you'll divide by a negative number, so the sign flips.`:`Solve it like an equation. The sign stays the same here.`,steps,mistakes}},
+
+ dragon(){const t=ri(0,2);
+  if(t===0){const x=ri(-5,12),y=ri(-5,12),s=x+y,d=x-y;
+   return{eq:`x + y = ${n(s)}<br>x − y = ${n(d)}`,prompt:'Solve the system. What is x?',ans:x,hint:`Add the two equations together. The y terms cancel out.`,
+    steps:[[`Add the equations: the +y and −y cancel`,`2x = ${n(s)} + ${n(d)} = ${n(s+d)}`],[`Divide both sides by 2`,`x = ${n(x)}`],[`Check: y = ${n(s)} − ${n(x)}`,`y = ${n(y)}`]],
+    mistakes:mk([[y,`That's the value of y! Subtracting the equations eliminates x. The question asks for x, so add them instead.`],[s+d,`One step away. 2x = ${n(s+d)}, so divide by 2.`]],x)}}
+  if(t===1){let m=nz(-3,4),p=ri(1,5);while(p+m===0)p=ri(1,5);const b=ri(-6,6),x=ri(-5,8),y=m*x+b,q=p*x+y,k=p+m;
+   return{eq:`y = ${xt(m)}${term(b)}<br>${xt(p)} + y = ${n(q)}`,prompt:'Solve the system. What is x?',ans:x,hint:`Substitute: replace y in the second equation with ${xt(m)}${term(b)}.`,
+    steps:[[`Substitute the first equation into the second`,`${xt(p)} + (${xt(m)}${term(b)}) = ${n(q)}`],[`Combine like terms`,`${xt(k)}${term(b)} = ${n(q)}`],...(b?[[b>0?`Subtract ${b} from both sides`:`Add ${-b} to both sides`,`${xt(k)} = ${n(q-b)}`]]:[]),[k===1?`x is alone`:`Divide both sides by ${n(k)}`,`x = ${n(x)}`]],
+    mistakes:mk([[y,`That's the value of y. The question asks for x.`],[(q+b)/k,`Check the sign when you moved the ${n(b)}.`],[(q-b)/p,`Remember to combine ${xt(p)} and ${xt(m)} after substituting.`]],x)}}
+  let r1=nz(-8,8),r2=nz(-8,8);while(r2===r1||r2===-r1)r2=nz(-8,8);
+  const b=-(r1+r2),c=r1*r2,big=Math.max(r1,r2),small=Math.min(r1,r2);
+  return{eq:`x²${xterm(b)}${term(c)} = 0`,prompt:'Factor to solve. What is the larger solution?',ans:big,hint:`Find two numbers that multiply to ${n(c)} and add to ${n(b)}.`,
+   steps:[[`Find two numbers that multiply to ${n(c)} and add to ${n(b)}: ${n(-r1)} and ${n(-r2)}`,`(x${term(-r1)})(x${term(-r2)}) = 0`],[`Set each factor equal to zero`,`x = ${n(r1)}  or  x = ${n(r2)}`],[`Pick the larger solution`,`x = ${n(big)}`]],
+   mistakes:mk([[-big,`Sign check! If (x${term(-big)}) = 0, then x = ${n(big)}, the opposite of the number in the factor.`],[small,`That is a real solution, but it's the smaller one. The question asks for the larger.`],[-small,`Sign check! The solution is the opposite of the number in each factor.`]],big)}}
+};
+
+/* ---------- world data ---------- */
+const ISLANDS=[
+ {name:'Meadow of Beginnings',topic:'One-step equations',gen:'one',pos:[110,285],pool:[['imp','Mischief Imp','#8e5ad6'],['goblin','Meadow Goblin','#73b553'],['slime','Number Slime','#5fc7f0']],boss:['goblin','Goblin King','#4e8f38',{crown:1}],friend:'fairy'},
+ {name:'Goblin Marsh',topic:'Two-step equations',gen:'two',pos:[255,205],pool:[['goblin','Bog Goblin','#6f9a5a'],['troll','Swamp Troll','#6b8a6a'],['slime','Bog Slime','#8fb55a']],boss:['troll','Troll Chieftain','#557a4f',{crown:1}],friend:'unicorn'},
+ {name:"Giants' Peak",topic:'Distributing & x on both sides',gen:'peak',pos:[120,100],pool:[['golem','Rune Golem','#59d8e6'],['giant','Hill Giant','#d0a074'],['giant','Cyclops','#d79b74',{cyclops:1}]],boss:['giant','Frost Giant','#a9cbe8',{crown:1,frost:1}],friend:'fox'},
+ {name:'Siren Lagoon',topic:'Inequalities & like terms',gen:'lagoon',pos:[390,105],pool:[['serpent','Sea Serpent','#2f9e8f'],['kraken','Inkling Kraken','#9a5cc6'],['slime','Tide Slime','#4fb8d6']],boss:['kraken','Kraken Queen','#7a3fa8',{crown:1}],friend:'mermaid'},
+ {name:"Dragon's Crown",topic:'Systems & quadratics',gen:'dragon',pos:[505,250],pool:[['imp','Ember Imp','#e0663a'],['serpent','Lava Wyrm','#d2552f'],['dragon','Young Wyvern','#7a4fb8']],boss:['dragon','Elder Dragon','#c23b2e',{crown:1}],friend:'phoenix'}
+];
+const FRIENDS={
+ fairy:{name:'Pip the Fairy',kind:'Fairy',hello:"Hello, brave one! Equations are like balance scales. Whatever you do to one side, you must do to the other.",
+  lesson:'Inverse operations',rule:'To get x alone, undo what was done to it with the opposite operation. Addition undoes subtraction, and multiplication undoes division.',
+  ex:[['Start','x + 7 = 12'],['Subtract 7 from both sides','x = 12 − 7'],['Done','x = 5']],gift:'25 gold and a sparkle of courage'},
+ unicorn:{name:'Lumen the Unicorn',kind:'Unicorn',hello:"Two-step spells are easy if you undo them backwards, like taking off your shoes before your socks.",
+  lesson:'Reverse the order',rule:'Undo adding or subtracting first. Then undo multiplying or dividing.',
+  ex:[['Start','3x + 4 = 19'],['Subtract 4 from both sides','3x = 15'],['Divide both sides by 3','x = 5']],gift:'25 gold and a rainbow mane ribbon'},
+ fox:{name:'Kiri the Snow Fox',kind:'Spirit fox',hello:"The giants up here love parentheses. Never let a number outside the brackets skip anyone inside!",
+  lesson:'Distribute, then gather',rule:'Multiply the outside number by every term inside the parentheses. If x is on both sides, move all the x terms to one side first.',
+  ex:[['Start','2(x + 3) = 14'],['Distribute the 2','2x + 6 = 14'],['Subtract 6','2x = 8'],['Divide by 2','x = 4']],gift:'25 gold and a warm snow scarf'},
+ mermaid:{name:'Coralie the Mermaid',kind:'Mermaid',hello:"Inequalities flow like tides. Solve them like equations, but watch for the one rule that turns the tide!",
+  lesson:'Flip for negatives',rule:'When you multiply or divide both sides of an inequality by a negative number, flip the sign. Also: like terms combine, so 3x + 2x = 5x.',
+  ex:[['Start','−2x > 6'],['Divide by −2 and flip the sign','x < −3']],gift:'25 gold and a pearl from the deep'},
+ phoenix:{name:'Ember the Phoenix',kind:'Phoenix',hello:"Even dragons respect a hero who can juggle two equations at once. Let me show you two old fire-tricks.",
+  lesson:'Eliminate and factor',rule:'For a system, add or subtract the equations so one letter cancels. For x² equations, find two numbers that multiply to the last number and add to the middle number.',
+  ex:[['System','x + y = 10 and x − y = 4'],['Add them: y cancels','2x = 14, so x = 7'],['Quadratic','x² − 5x + 6 = 0'],['Factor','(x − 2)(x − 3) = 0, so x = 2 or 3']],gift:'25 gold and a phoenix feather'}
+};
+const BUILDINGS=[
+ {id:'cottage',name:'Cozy Cottage',cost:30,eff:'+20 max HP. Every hero needs a home.'},
+ {id:'bakery',name:'Honey Bakery',cost:45,eff:'Heal 15 HP after every win.'},
+ {id:'library',name:'Lantern Library',cost:60,eff:'+1 hint crystal in every battle.'},
+ {id:'forge',name:'Rune Forge',cost:80,eff:'3 right answers in a row deal double damage.'},
+ {id:'garden',name:'Fairy Garden',cost:90,eff:'Wrong answers hurt 5 less.',needs:'fairy'},
+ {id:'stable',name:'Unicorn Stable',cost:120,eff:'+25% gold from battles.',needs:'unicorn'},
+ {id:'fountain',name:'Mermaid Fountain',cost:150,eff:'+25% XP from battles.',needs:'mermaid'},
+ {id:'tower',name:'Wizard Tower',cost:250,eff:'+10 max HP and unlocks the Star Circlet.'}
+];
+const PLOTS=[[90,125],[240,125],[390,125],[545,125],[90,245],[240,245],[390,245],[545,245]];
+
+const LOOK={
+ skin:['#f6d5bd','#e7b58c','#c68b59','#8d5a3b','#5a3823','#a8d5a2','#b9c8f0'],
+ hairStyle:['short','long','spiky','bun','ponytail','curly','none'],
+ hair:['#1d1410','#5a3520','#e2bb5e','#b5452a','#ece6da','#ef7fb0','#3fb8a8','#7b5ad6'],
+ eyes:['#6b3f1f','#3d7bd6','#3c9a5a','#8a6a2b','#8e5ad6','#d9a21c'],
+ top:['tunic','robe','armor','hoodie','vest'],
+ topColor:['#3f7fbf','#b03a48','#3e8e5a','#7b4fb8','#e0a43a','#2f3b4f','#e98bb0'],
+ shoes:['boots','sneakers','sandals'],
+ shoeColor:['#6b4226','#2b2b33','#c23b3b','#3f7fbf','#ece6da'],
+ acc:['none','crown','wizardHat','glasses','flower','scarf','cape','wings','star']
+};
+const ACC_LOCK={wings:['fairy','Befriend Pip the Fairy'],star:['tower','Build the Wizard Tower']};
+const NAMES={short:'Short',long:'Long',spiky:'Spiky',bun:'Bun',ponytail:'Ponytail',curly:'Curly',none:'None',tunic:'Tunic',robe:'Mage robe',armor:'Armor',hoodie:'Hoodie',vest:'Vest',boots:'Boots',sneakers:'Sneakers',sandals:'Sandals',crown:'Crown',wizardHat:'Wizard hat',glasses:'Glasses',flower:'Flower',scarf:'Scarf',cape:'Cape',wings:'Fairy wings',star:'Star circlet'};
+
+/* ---------- state ---------- */
+const DEF={name:'',created:false,look:{skin:'#c68b59',hairStyle:'short',hair:'#5a3520',eyes:'#3d7bd6',top:'tunic',topColor:'#3f7fbf',shoes:'boots',shoeColor:'#6b4226',acc:'none'},gold:30,xp:0,hp:100,built:{},friends:{},wins:[0,0,0,0,0],correct:0,wrong:0};
+let S;try{S=Object.assign(structuredClone(DEF),JSON.parse(localStorage.getItem('loa-save')||'{}'))}catch(e){S=structuredClone(DEF)}
+const save=()=>{try{localStorage.setItem('loa-save',JSON.stringify(S))}catch(e){}};
+const maxHP=()=>100+(S.built.cottage?20:0)+(S.built.tower?10:0);
+const level=()=>1+Math.floor(S.xp/100);
+const titleFor=l=>l>=12?'Legend of Algebra':l>=8?'Archmage of Equations':l>=5?'Knight of Variables':l>=3?'Apprentice Solver':'Novice Adventurer';
+const unlocked=i=>i===0||S.wins[i-1]>=3;
+let screen=S.created?'village':'title', sel=0, B=null, draft=null, friendView=null;
+
+/* ---------- art: hero ---------- */
+function avatar(L){
+ const s=L.skin,h=L.hair,tc=L.topColor,sc=L.shoeColor;let o='';
+ if(L.acc==='wings')o+=`<g opacity=".85"><ellipse cx="32" cy="88" rx="22" ry="32" fill="#d6f2fb" stroke="#7fc6e0" stroke-width="1.5" transform="rotate(-22 32 88)"/><ellipse cx="88" cy="88" rx="22" ry="32" fill="#d6f2fb" stroke="#7fc6e0" stroke-width="1.5" transform="rotate(22 88 88)"/></g>`;
+ if(L.acc==='cape')o+=`<path d="M38 78 Q60 72 82 78 L98 152 Q60 160 22 152Z" fill="#8c2f45"/>`;
+ if(L.hairStyle==='long')o+=`<path d="M35 50 Q34 22 60 22 Q86 22 85 50 L90 98 Q60 106 30 98Z" fill="${h}"/>`;
+ if(L.hairStyle==='ponytail')o+=`<path d="M78 34 Q102 44 96 90 Q90 98 85 88 Q92 60 74 44Z" fill="${h}"/>`;
+ if(L.top==='hoodie')o+=`<path d="M33 62 Q30 22 60 20 Q90 22 87 62Z" fill="${shade(tc,-25)}"/>`;
+ if(L.top!=='robe')o+=`<rect x="46" y="122" width="12" height="32" rx="4" fill="#3a3346"/><rect x="62" y="122" width="12" height="32" rx="4" fill="#3a3346"/>`;
+ if(L.shoes==='boots')o+=`<path d="M43 140 h16 v18 h-20 q0-6 4-6z" fill="${sc}"/><path d="M61 140 h16 v12 q4 0 4 6 h-20z" fill="${sc}"/>`;
+ else if(L.shoes==='sneakers')o+=`<ellipse cx="50" cy="155" rx="11" ry="6" fill="${sc}"/><ellipse cx="70" cy="155" rx="11" ry="6" fill="${sc}"/><rect x="39" y="157" width="22" height="3" rx="1.5" fill="#fff"/><rect x="59" y="157" width="22" height="3" rx="1.5" fill="#fff"/>`;
+ else o+=`<ellipse cx="50" cy="156" rx="10" ry="5" fill="${s}"/><ellipse cx="70" cy="156" rx="10" ry="5" fill="${s}"/><rect x="40" y="157" width="20" height="3" fill="${sc}"/><rect x="60" y="157" width="20" height="3" fill="${sc}"/><path d="M44 154 l6 -4 l6 4 M64 154 l6 -4 l6 4" stroke="${sc}" stroke-width="2" fill="none"/>`;
+ const torso='M36 78 Q60 70 84 78 L90 128 Q60 134 30 128Z';
+ let sleeve=tc;
+ if(L.top==='robe')o+=`<path d="M36 78 Q60 70 84 78 L98 158 Q60 164 22 158Z" fill="${tc}"/><path d="M24 152 Q60 160 96 152" stroke="#e9b949" stroke-width="4" fill="none"/><path d="M60 76 V156" stroke="${shade(tc,-25)}" stroke-width="2"/>`;
+ else if(L.top==='armor'){o+=`<path d="${torso}" fill="#a3adba"/><path d="M40 92 H80 M38 106 H82" stroke="#6f7885" stroke-width="2"/><rect x="34" y="114" width="52" height="8" fill="${tc}"/><circle cx="60" cy="92" r="6" fill="${tc}"/>`;sleeve='#8c96a3'}
+ else if(L.top==='vest'){o+=`<path d="${torso}" fill="#f3ece0"/><path d="M36 78 Q46 74 54 76 L52 130 Q40 130 30 128Z M84 78 Q74 74 66 76 L68 130 Q80 130 90 128Z" fill="${tc}"/>`;sleeve='#f3ece0'}
+ else{o+=`<path d="${torso}" fill="${tc}"/>`;if(L.top==='hoodie')o+=`<rect x="46" y="104" width="28" height="14" rx="5" fill="${shade(tc,-18)}"/><path d="M55 78 v14 M65 78 v14" stroke="#fff" stroke-width="2"/>`;else o+=`<rect x="31" y="110" width="58" height="7" fill="#5b3a1e"/><rect x="56" y="109" width="8" height="9" fill="#e9b949"/>`}
+ o+=`<rect x="25" y="78" width="13" height="40" rx="6.5" fill="${sleeve}" transform="rotate(12 31 80)"/><rect x="82" y="78" width="13" height="40" rx="6.5" fill="${sleeve}" transform="rotate(-12 89 80)"/><circle cx="24" cy="119" r="6" fill="${s}"/><circle cx="96" cy="119" r="6" fill="${s}"/>`;
+ o+=`<rect x="54" y="64" width="12" height="14" fill="${shade(s,-12)}"/><circle cx="38" cy="52" r="5" fill="${s}"/><circle cx="82" cy="52" r="5" fill="${s}"/><circle cx="60" cy="50" r="23" fill="${s}"/>`;
+ o+=`<ellipse cx="52" cy="52" rx="4.3" ry="5" fill="#fff"/><ellipse cx="68" cy="52" rx="4.3" ry="5" fill="#fff"/><circle cx="52.5" cy="52.5" r="3" fill="${L.eyes}"/><circle cx="68.5" cy="52.5" r="3" fill="${L.eyes}"/><circle cx="52.5" cy="52.5" r="1.3" fill="#111"/><circle cx="68.5" cy="52.5" r="1.3" fill="#111"/><circle cx="53.6" cy="51.2" r=".9" fill="#fff"/><circle cx="69.6" cy="51.2" r=".9" fill="#fff"/>`;
+ o+=`<ellipse cx="46" cy="60" rx="4" ry="2.4" fill="#e06c84" opacity=".35"/><ellipse cx="74" cy="60" rx="4" ry="2.4" fill="#e06c84" opacity=".35"/><path d="M54 61 Q60 66.5 66 61" stroke="#5a2a1a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+ const cap=`M37 50 Q35 24 60 24 Q85 24 83 50 Q79 38 68 35 Q58 42 46 37 Q40 42 37 50Z`;
+ if(['short','long','ponytail','bun'].includes(L.hairStyle))o+=`<path d="${cap}" fill="${h}"/>`;
+ if(L.hairStyle==='bun')o+=`<circle cx="60" cy="20" r="10" fill="${h}"/>`;
+ if(L.hairStyle==='spiky')o+=`<polygon points="36,50 33,30 44,34 45,17 54,29 60,12 66,29 75,17 76,34 87,30 84,50 77,38 60,36 43,38" fill="${h}"/>`;
+ if(L.hairStyle==='curly')o+=[[40,40],[46,30],[56,26],[66,26],[75,31],[80,41],[50,36],[63,34],[72,38]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="8" fill="${h}"/>`).join('');
+ const A=L.acc;
+ if(A==='crown')o+=`<polygon points="45,31 45,17 52,25 60,13 68,25 75,17 75,31" fill="#f2c341" stroke="#a87b12" stroke-width="1.5"/><circle cx="60" cy="26" r="2.6" fill="#e0475b"/>`;
+ if(A==='wizardHat')o+=`<path d="M40 32 L63 -8 L80 32Z" fill="#5b3fa8"/><ellipse cx="60" cy="32" rx="30" ry="6" fill="#4a3290"/><path d="M58 12 l2 4 4 .5-3 3 1 4-4-2-4 2 1-4-3-3 4-.5z" fill="#f2c341"/>`;
+ if(A==='glasses')o+=`<circle cx="52" cy="52" r="6.5" fill="none" stroke="#2a1f16" stroke-width="2"/><circle cx="68" cy="52" r="6.5" fill="none" stroke="#2a1f16" stroke-width="2"/><path d="M58.5 52 h3 M45.5 51 l-7 -2 M74.5 51 l7 -2" stroke="#2a1f16" stroke-width="2"/>`;
+ if(A==='flower')o+=[[0,-5],[5,0],[0,5],[-5,0]].map(([dx,dy])=>`<circle cx="${78+dx}" cy="${32+dy}" r="4.5" fill="#f28db2"/>`).join('')+`<circle cx="78" cy="32" r="3" fill="#f2c341"/>`;
+ if(A==='scarf')o+=`<rect x="42" y="68" width="36" height="11" rx="5.5" fill="#d9534f"/><rect x="66" y="74" width="9" height="24" rx="3" fill="#c0403c"/><path d="M48 70 v8 M56 70 v8 M64 70 v8" stroke="#f3d0a0" stroke-width="2"/>`;
+ if(A==='star')o+=`<path d="M38 40 Q60 30 82 40" stroke="#f2c341" stroke-width="3" fill="none"/><path d="M60 26 l3 6 6.5 1-4.7 4.6 1.1 6.4-5.9-3.1-5.9 3.1 1.1-6.4-4.7-4.6 6.5-1z" fill="#ffe27a" stroke="#c99a1a"/>`;
+ return `<svg viewBox="0 -12 120 182" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Your hero">${o}</svg>`;
+}
+
+/* ---------- art: creatures ---------- */
+let UID=0;
+const OL='stroke="#24161f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const OL2='stroke="#24161f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"';
+function kit(){const d=[];return{
+ rg(c,l=40,dk=-40){const id='cg'+(++UID);d.push(`<radialGradient id="${id}" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="${shade(c,l)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c,dk)}"/></radialGradient>`);return `url(#${id})`},
+ lg(stops,x2=0,y2=1){const id='cg'+(++UID);d.push(`<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${stops.map((s,i)=>`<stop offset="${i/(stops.length-1)}" stop-color="${s}"/>`).join('')}</linearGradient>`);return `url(#${id})`},
+ glow(c,o=.6){const id='cg'+(++UID);d.push(`<radialGradient id="${id}"><stop offset="0" stop-color="${c}" stop-opacity="${o}"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient>`);return `url(#${id})`},
+ wrap(s,label){return `<svg class="cr" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label||''}"><defs>${d.join('')}</defs>${s}</svg>`}
+}}
+const shadow=(rx=56)=>`<ellipse cx="100" cy="188" rx="${rx}" ry="8" fill="#000" opacity=".28"/>`;
+const tube=(p,c,w)=>`<path d="${p}" stroke="#24161f" stroke-width="${w+5}" fill="none" stroke-linecap="round"/><path d="${p}" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`;
+const mirror=s=>`<g transform="translate(200 0) scale(-1 1)">${s}</g>`;
+const spark=(x,y,s,c='#fff',dl=0)=>`<path class="twinkle" style="animation-delay:${dl}s" d="M${x} ${y-s} Q${x} ${y} ${x+s} ${y} Q${x} ${y} ${x} ${y+s} Q${x} ${y} ${x-s} ${y} Q${x} ${y} ${x} ${y-s}Z" fill="${c}"/>`;
+function mEye(x,y,r,c,slit){return `<g class="blink"><circle cx="${x}" cy="${y}" r="${r}" fill="${c}" ${OL2}/>${slit?`<ellipse cx="${x}" cy="${y}" rx="${r*.26}" ry="${r*.78}" fill="#1a0f14"/>`:`<circle cx="${x+r*.12}" cy="${y+r*.12}" r="${r*.48}" fill="#1a0f14"/>`}<circle cx="${x-r*.32}" cy="${y-r*.34}" r="${r*.26}" fill="#fff"/></g>`}
+function cuteEye(x,y,r,iris){return `<g class="blink"><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r*1.15}" fill="#fff" ${OL2}/><ellipse cx="${x}" cy="${y+r*.15}" rx="${r*.75}" ry="${r*.85}" fill="${iris}"/><ellipse cx="${x}" cy="${y+r*.2}" rx="${r*.42}" ry="${r*.5}" fill="#1a0f14"/><circle cx="${x-r*.3}" cy="${y-r*.25}" r="${r*.32}" fill="#fff"/><circle cx="${x+r*.3}" cy="${y+r*.45}" r="${r*.15}" fill="#fff"/></g>`}
+function crown(x,y,w){const h=w*.5;return `<path d="M${x} ${y} L${x} ${y-h*.75} L${x+w*.25} ${y-h*.35} L${x+w*.5} ${y-h} L${x+w*.75} ${y-h*.35} L${x+w} ${y-h*.75} L${x+w} ${y}Z" fill="#f2c341" ${OL2}/><rect x="${x}" y="${y-5}" width="${w}" height="5" fill="#d9a21c" ${OL2}/><circle cx="${x+w*.5}" cy="${y-h*.45}" r="${w*.08}" fill="#e0475b" ${OL2}/><circle cx="${x+w*.2}" cy="${y-h*.25}" r="${w*.05}" fill="#4aa3c9"/><circle cx="${x+w*.8}" cy="${y-h*.25}" r="${w*.05}" fill="#4aa3c9"/>`}
+const brows=(x1,x2,y,tilt=6)=>`<path d="M${x1-11} ${y-tilt} L${x1+8} ${y} M${x2+11} ${y-tilt} L${x2-8} ${y}" stroke="#24161f" stroke-width="4.5" stroke-linecap="round"/>`;
+
+const ART={
+ imp(K,c,o){const d=shade(c,-30),l=shade(c,30);
+  const wing=`<g class="flapL"><path d="M80 100 Q52 52 18 58 Q30 68 26 80 Q10 84 8 98 Q26 96 34 108 Q26 116 30 128 Q50 112 82 118Z" fill="${K.rg(d,25,-30)}" ${OL}/><path d="M80 104 Q50 70 24 64 M80 110 Q44 96 14 98 M80 114 Q50 116 32 124" stroke="${shade(c,-55)}" stroke-width="2" fill="none"/></g>`;
+  return shadow(40)+`<g class="bob">${wing}${mirror(wing)}
+  ${tube('M118 152 Q156 162 160 134 Q162 118 152 110',c,6)}<path d="M152 96 L163 113 L152 110 L142 115Z" fill="${d}" ${OL2}/>
+  <ellipse cx="86" cy="170" rx="11" ry="7" fill="${d}" ${OL2}/><ellipse cx="114" cy="170" rx="11" ry="7" fill="${d}" ${OL2}/>
+  <g class="breathe"><ellipse cx="100" cy="138" rx="32" ry="32" fill="${K.rg(c)}" ${OL}/><ellipse cx="100" cy="146" rx="18" ry="19" fill="${l}" opacity=".6"/></g>
+  <ellipse cx="68" cy="140" rx="8" ry="14" fill="${c}" ${OL2} transform="rotate(25 68 140)"/><ellipse cx="132" cy="140" rx="8" ry="14" fill="${c}" ${OL2} transform="rotate(-25 132 140)"/>
+  <path d="M72 78 L46 62 L70 94Z" fill="${c}" ${OL2}/><path d="M128 78 L154 62 L130 94Z" fill="${c}" ${OL2}/>
+  <circle cx="100" cy="86" r="34" fill="${K.rg(c)}" ${OL}/>
+  <path d="M80 60 Q66 40 74 20 Q84 42 92 56Z" fill="${K.lg(['#fff4dc','#c9b07a'])}" ${OL2}/><path d="M120 60 Q134 40 126 20 Q116 42 108 56Z" fill="${K.lg(['#fff4dc','#c9b07a'])}" ${OL2}/>
+  ${mEye(86,84,10,'#ffd23f')}${mEye(114,84,10,'#ffd23f')}${brows(86,114,72,5)}
+  <ellipse cx="74" cy="98" rx="6" ry="3.5" fill="#ff6b8a" opacity=".45"/><ellipse cx="126" cy="98" rx="6" ry="3.5" fill="#ff6b8a" opacity=".45"/>
+  <path d="M82 100 Q100 118 118 100 Q100 108 82 100Z" fill="#3a0f18" ${OL2}/><path d="M89 102 L92 110 L96 104Z" fill="#fff"/><path d="M104 104 L108 110 L111 102Z" fill="#fff"/></g>`},
+
+ goblin(K,c,o){const d=shade(c,-30);
+  const ear=`<path d="M70 72 Q30 52 14 60 Q34 76 68 90Z" fill="${K.rg(c)}" ${OL}/><path d="M64 76 Q40 63 28 63 Q42 74 64 84Z" fill="${d}"/>`;
+  return shadow(58)+`<g class="breathe">
+  ${o.crown?`<path d="M62 102 Q100 92 138 102 L154 182 Q100 192 46 182Z" fill="${K.lg(['#c0404f','#6e1f2c'])}" ${OL}/>`:''}
+  <g transform="rotate(25 150 140)"><rect x="144" y="72" width="12" height="78" rx="5" fill="${K.lg(['#a8743f','#6b4226'],1,0)}" ${OL2}/><path d="M138 84 Q150 40 162 84 Q164 98 150 100 Q136 98 138 84Z" fill="${K.rg('#9b6a3b')}" ${OL2}/><path d="M140 70 l-8 -3 M160 68 l8 -4 M150 52 v-9 M144 86 l-8 2" stroke="#9aa3ad" stroke-width="3" stroke-linecap="round"/></g>
+  <rect x="80" y="150" width="14" height="28" rx="6" fill="${c}" ${OL2}/><rect x="106" y="150" width="14" height="28" rx="6" fill="${c}" ${OL2}/>
+  <ellipse cx="84" cy="180" rx="13" ry="6" fill="#5b3a1e" ${OL2}/><ellipse cx="116" cy="180" rx="13" ry="6" fill="#5b3a1e" ${OL2}/>
+  <path d="M66 110 Q100 96 134 110 L140 160 Q124 152 112 164 Q100 154 88 164 Q76 152 60 160Z" fill="${K.rg(o.crown?'#5a3e7a':'#8a6a3c')}" ${OL}/>
+  <rect x="64" y="134" width="72" height="9" fill="#4a3320" ${OL2}/><rect x="94" y="131" width="12" height="14" rx="2" fill="#e9b949" ${OL2}/>
+  ${tube('M68 116 Q50 130 54 150',c,12)}<circle cx="54" cy="154" r="8" fill="${c}" ${OL2}/>
+  ${tube('M132 116 Q150 122 152 136',c,12)}<circle cx="152" cy="138" r="8" fill="${c}" ${OL2}/>
+  ${ear}${mirror(ear)}
+  <path d="M68 76 Q66 44 100 42 Q134 44 132 76 Q134 104 100 108 Q66 104 68 76Z" fill="${K.rg(c)}" ${OL}/>
+  <circle cx="120" cy="58" r="2.6" fill="${d}"/><circle cx="78" cy="90" r="2.2" fill="${d}"/><circle cx="124" cy="92" r="1.8" fill="${d}"/>
+  ${mEye(86,70,8,'#ff8a3c',true)}${mEye(114,70,8,'#ff8a3c',true)}${brows(86,114,62,6)}
+  <path d="M100 72 Q94 88 84 98 Q98 100 106 90Z" fill="${shade(c,-12)}" ${OL2}/>
+  <path d="M78 96 Q100 104 124 94 Q104 118 78 96Z" fill="#3a0f18" ${OL2}/><path d="M86 99 L89 106 L92 100Z M108 100 L112 107 L115 98Z" fill="#fff4d0"/>
+  ${o.crown?crown(80,48,40):''}</g>`},
+
+ troll(K,c,o){const d=shade(c,-30),l=shade(c,22);
+  const tusk=`<path d="M84 90 Q78 74 85 68 Q90 80 91 90Z" fill="#fff5d8" ${OL2}/>`;
+  return shadow(70)+`<g class="breathe">
+  <g transform="rotate(-18 40 160)"><path d="M34 74 Q28 42 42 30 Q58 42 50 76 L48 162 L38 162Z" fill="${K.lg(['#8b5a2b','#5b3a1e'],1,0)}" ${OL}/><circle cx="42" cy="60" r="4" fill="#4a2d18"/><path d="M48 92 l8 -6" stroke="#24161f" stroke-width="2"/></g>
+  <path d="M70 148 L66 182 L94 182 L92 148Z" fill="${d}" ${OL}/><path d="M108 148 L106 182 L134 182 L130 148Z" fill="${d}" ${OL}/>
+  <path d="M40 122 Q40 70 100 66 Q160 70 160 122 Q162 162 100 164 Q38 162 40 122Z" fill="${K.rg(c)}" ${OL}/>
+  <ellipse cx="100" cy="128" rx="34" ry="28" fill="${l}" opacity=".55"/>
+  <circle cx="60" cy="110" r="6" fill="${l}" opacity=".7"/><circle cx="140" cy="132" r="7" fill="${l}" opacity=".7"/><circle cx="132" cy="98" r="4" fill="${l}" opacity=".7"/>
+  <path d="M44 98 Q54 76 76 74 Q64 86 68 96 Q56 90 44 98Z" fill="#4f7a3a" ${OL2}/><path d="M156 98 Q146 76 124 74 Q136 86 132 96 Q144 90 156 98Z" fill="#4f7a3a" ${OL2}/>
+  <path d="M62 146 L138 146 L130 172 L114 162 L100 176 L86 162 L70 172Z" fill="${K.rg('#7a5a34')}" ${OL2}/>
+  ${tube('M48 100 Q22 124 30 158',c,22)}<circle cx="30" cy="164" r="14" fill="${K.rg(c)}" ${OL}/>
+  ${tube('M152 100 Q178 124 170 158',c,22)}<circle cx="170" cy="164" r="14" fill="${K.rg(c)}" ${OL}/>
+  <circle cx="70" cy="66" r="9" fill="${c}" ${OL2}/><circle cx="130" cy="66" r="9" fill="${c}" ${OL2}/>
+  <ellipse cx="100" cy="70" rx="30" ry="26" fill="${K.rg(l)}" ${OL}/>
+  <path d="M72 62 Q100 48 128 62 Q100 58 72 62Z" fill="${d}" ${OL2}/>
+  ${mEye(88,67,5.5,'#ffe28a')}${mEye(112,67,5.5,'#ffe28a')}
+  <ellipse cx="100" cy="78" rx="10" ry="7" fill="${shade(c,-8)}" ${OL2}/><circle cx="96" cy="79" r="1.6" fill="#24161f"/><circle cx="104" cy="79" r="1.6" fill="#24161f"/>
+  <path d="M80 88 Q100 96 120 88" stroke="#24161f" stroke-width="3" fill="none" stroke-linecap="round"/>${tusk}${mirror(tusk)}
+  ${o.crown?crown(80,48,40):''}</g>`},
+
+ golem(K,c,o){const st='#9aa4b0';
+  const arm=`<g class="bob" style="animation-delay:-1s"><path d="M22 108 L54 106 L58 150 L20 152Z" fill="${K.rg('#8c96a3')}" ${OL}/><path d="M32 122 h16 M32 134 h10" stroke="${c}" stroke-width="3" class="pulse" stroke-linecap="round"/></g>`;
+  return shadow(60)+`<circle class="pulse" cx="100" cy="110" r="76" fill="${K.glow(c,.35)}"/>
+  <g class="bob" style="animation-delay:-.5s"><path d="M52 30 l9 -5 l7 7 l-6 7 l-9 -2Z" fill="#8c96a3" ${OL2}/></g><g class="bob" style="animation-delay:-1.6s"><path d="M140 22 l8 -3 l5 7 l-7 5 l-7 -3Z" fill="#8c96a3" ${OL2}/></g>
+  <g class="breathe">
+  <path d="M70 150 L64 182 L92 182 L90 150Z" fill="${K.rg('#7d8691')}" ${OL}/><path d="M110 150 L108 182 L136 182 L130 150Z" fill="${K.rg('#7d8691')}" ${OL}/>
+  <path d="M52 82 L148 82 L156 128 L140 156 L60 156 L44 128Z" fill="${K.rg(st)}" ${OL}/>
+  <path d="M64 94 L74 108 L68 120 M136 98 L126 112 L132 120 M88 148 L94 140" stroke="#5f6873" stroke-width="2" fill="none"/>
+  <circle class="pulse" cx="100" cy="118" r="20" fill="${K.glow(c,.95)}"/><path d="M100 102 L114 118 L100 134 L86 118Z M100 108 V128 M92 118 H108" stroke="${c}" stroke-width="3.5" fill="none" stroke-linejoin="round"/>
+  <circle cx="48" cy="88" r="20" fill="${K.rg('#8c96a3')}" ${OL}/><circle cx="152" cy="88" r="20" fill="${K.rg('#8c96a3')}" ${OL}/>
+  <path d="M74 40 L126 40 L132 74 L68 74Z" fill="${K.rg(st)}" ${OL}/>
+  <circle class="pulse" cx="87" cy="56" r="11" fill="${K.glow(c,.9)}"/><circle class="pulse" cx="113" cy="56" r="11" fill="${K.glow(c,.9)}"/>
+  <rect x="80" y="52" width="14" height="8" rx="2" fill="${c}"/><rect x="106" y="52" width="14" height="8" rx="2" fill="${c}"/>
+  <path d="M86 67 h28" stroke="#5f6873" stroke-width="3" stroke-linecap="round"/><path d="M80 44 l6 5 M122 44 l-4 6" stroke="#5f6873" stroke-width="2"/>
+  </g>${arm}${mirror(arm)}`},
+
+ giant(K,c,o){const fr=o.frost,beard=fr?'#eef6ff':'#7a5232',cloth=fr?'#3f6fa0':'#6b4a2e';
+  const ear=`<circle cx="66" cy="66" r="9" fill="${c}" ${OL2}/>`;
+  return shadow(64)+`${fr?spark(30,40,6,'#e8f6ff',0)+spark(170,60,5,'#e8f6ff',-.7)+spark(40,120,4,'#e8f6ff',-1.2):''}<g class="breathe">
+  <path d="M152 178 L148 72 Q146 48 162 46 Q178 50 172 74 L166 178Z" fill="${fr?K.lg(['#f2fbff','#8fc3e6'],1,0):K.lg(['#9b6a3b','#5b3a1e'],1,0)}" ${OL}/>${fr?'':'<circle cx="160" cy="70" r="4" fill="#4a2d18"/>'}
+  <rect x="70" y="148" width="22" height="30" rx="6" fill="${shade(cloth,-30)}" ${OL2}/><rect x="108" y="148" width="22" height="30" rx="6" fill="${shade(cloth,-30)}" ${OL2}/>
+  <path d="M62 176 h32 v8 h-36Z" fill="#4a3320" ${OL2}/><path d="M106 176 h32 l4 8 h-36Z" fill="#4a3320" ${OL2}/>
+  <path d="M46 160 Q42 96 100 86 Q158 96 154 160Z" fill="${K.rg(cloth)}" ${OL}/>
+  ${fr?`<path d="M56 98 Q100 80 144 98 Q140 112 100 108 Q60 112 56 98Z" fill="#f4f8ff" ${OL2}/>`:`<path d="M72 92 L100 128 L128 92" stroke="${shade(cloth,-30)}" stroke-width="3" fill="none"/>`}
+  <rect x="46" y="134" width="108" height="10" fill="#3a2a1c" ${OL2}/><rect x="93" y="131" width="14" height="16" rx="2" fill="#e9b949" ${OL2}/>
+  ${tube('M58 102 Q32 122 38 150',c,18)}<circle cx="38" cy="156" r="12" fill="${K.rg(c)}" ${OL}/>
+  ${tube('M142 102 Q162 116 158 128',c,18)}<circle cx="158" cy="132" r="12" fill="${K.rg(c)}" ${OL}/>
+  ${ear}${mirror(ear)}<circle cx="100" cy="64" r="32" fill="${K.rg(c)}" ${OL}/>
+  <path d="M70 66 Q72 114 100 122 Q128 114 130 66 Q122 86 100 84 Q78 86 70 66Z" fill="${K.rg(beard,20,-25)}" ${OL2}/>
+  ${fr?'<path d="M84 116 l3 10 l3 -9 M100 121 l2 11 l3 -11 M110 117 l3 9 l3 -10" fill="#dff2ff" stroke="#7fb6dc" stroke-width="1.5"/>':''}
+  <path d="M82 80 Q100 70 118 80 Q100 86 82 80Z" fill="${shade(beard,-15)}" ${OL2}/>
+  ${o.cyclops?mEye(100,58,12,'#fff')+`<path d="M84 44 L116 44" stroke="#24161f" stroke-width="5" stroke-linecap="round"/>`:mEye(87,58,6.5,'#fff')+mEye(113,58,6.5,'#fff')+brows(87,113,50,4)}
+  <ellipse cx="100" cy="72" rx="7" ry="6" fill="${shade(c,-12)}" ${OL2}/>
+  ${o.crown?crown(80,38,40):`<path d="M70 54 Q72 30 100 30 Q128 30 130 54 Q116 42 100 44 Q84 42 70 54Z" fill="${beard}" ${OL2}/>`}</g>`},
+
+ kraken(K,c,o){const l=shade(c,35);let t='';
+  [[44,-18],[66,14],[88,-12],[112,12],[134,-14],[156,16]].forEach(([x,dx],i)=>{const p=`M${x} 118 Q${x+dx} 150 ${x+dx*.3} 172 Q${x-dx*.4} 186 ${x-dx*.8} 176`;
+   t+=`<g class="sway" style="animation-delay:${-i*.4}s">${tube(p,i%2?shade(c,-18):c,13)}<circle cx="${x+dx*.45}" cy="150" r="2.6" fill="${l}"/><circle cx="${x+dx*.3}" cy="164" r="2.3" fill="${l}"/></g>`});
+  return shadow(70)+`<g class="bob">${t}
+  <path d="M40 118 Q34 28 100 24 Q166 28 160 118 Q130 130 100 126 Q70 130 40 118Z" fill="${K.rg(c)}" ${OL}/>
+  <circle cx="70" cy="46" r="7" fill="${l}" opacity=".7"/><circle cx="128" cy="40" r="5" fill="${l}" opacity=".7"/><circle cx="140" cy="62" r="4" fill="${l}" opacity=".7"/><circle cx="96" cy="36" r="3.5" fill="${l}" opacity=".7"/>
+  ${mEye(76,90,14,'#ffe24a',true)}${mEye(124,90,14,'#ffe24a',true)}${brows(76,124,74,6)}
+  <path d="M92 110 L100 120 L108 110Z" fill="#3a0f18" ${OL2}/>
+  ${o.crown?crown(80,34,40):''}</g>`},
+
+ serpent(K,c,o){const d=shade(c,-28),l=shade(c,35);
+  return shadow(80)+`<g class="bob">
+  ${tube('M180 176 Q164 136 146 176',c,18)}${tube('M136 176 Q116 120 96 176',c,20)}
+  <path d="M176 168 Q164 142 152 168 M132 166 Q116 134 102 166" stroke="${l}" stroke-width="5" stroke-dasharray="3 7" fill="none" stroke-linecap="round"/>
+  <path d="M100 118 Q118 104 112 88 Q126 86 118 70 Q108 80 100 76Z" fill="${d}" ${OL2}/>
+  ${tube('M86 176 Q68 132 82 102 Q94 78 78 58',c,24)}
+  <path d="M84 168 Q70 132 84 104 Q92 88 84 70" stroke="${l}" stroke-width="7" stroke-dasharray="2 6" fill="none" stroke-linecap="round"/>
+  <path d="M90 42 L114 26 L104 46 L120 44 L98 58Z" fill="${d}" ${OL2}/>
+  <path d="M96 52 Q94 28 68 28 Q42 28 24 42 Q18 52 28 58 Q50 70 80 66 Q96 64 96 52Z" fill="${K.rg(c)}" ${OL}/>
+  <path d="M74 30 L68 14 L82 28 M58 31 L48 18 L64 30" fill="${l}" ${OL2}/>
+  ${mEye(64,44,8,'#ffe24a',true)}<path d="M52 34 L74 38" stroke="#24161f" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="46" r="1.8" fill="#24161f"/>
+  <path d="M28 57 Q50 64 78 60" stroke="#24161f" stroke-width="2.5" fill="none"/><path d="M44 60 L46 67 L49 61Z M60 61 L62 68 L65 61Z" fill="#fff"/>
+  <g class="flick"><path d="M26 56 L12 60 M12 60 l-6 -4 M12 60 l-6 5" stroke="#e0475b" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+  ${o.crown?crown(52,30,30):''}</g>
+  <path d="M0 176 Q25 166 50 176 T100 176 T150 176 T200 176 V200 H0Z" fill="${K.lg(['#3d8fb0','#1d5a74'])}"/>
+  <path d="M10 182 q10 -5 20 0 M70 186 q10 -5 20 0 M140 182 q10 -5 20 0" stroke="#bfe6f0" stroke-width="2" fill="none" stroke-linecap="round"/>`},
+
+ dragon(K,c,o){const d=shade(c,-30);
+  const wing=`<g class="flapL"><path d="M82 104 Q60 44 18 32 Q28 52 20 62 Q6 64 2 80 Q18 78 24 92 Q12 98 12 112 Q32 106 44 120 Q60 110 84 120Z" fill="${K.rg(d,22,-30)}" ${OL}/><path d="M82 108 Q50 56 22 38 M82 112 Q40 80 8 80 M82 116 Q44 104 16 110" stroke="${shade(c,-55)}" stroke-width="2" fill="none"/></g>`;
+  const horn=`<path d="M80 40 Q62 24 60 4 Q76 18 90 32Z" fill="${K.lg(['#fff4dc','#b9a274'])}" ${OL2}/>`;
+  return shadow(70)+`<g class="breathe">${wing}${mirror(wing)}
+  ${tube('M122 162 Q162 178 178 152 Q188 134 174 124',c,14)}<path d="M174 108 L186 126 L174 124 L164 130Z" fill="${d}" ${OL2}/>
+  <ellipse cx="74" cy="170" rx="17" ry="14" fill="${K.rg(c)}" ${OL}/><ellipse cx="126" cy="170" rx="17" ry="14" fill="${K.rg(c)}" ${OL}/>
+  <path d="M62 182 l3 -6 l3 6 M72 183 l3 -6 l3 6 M122 183 l3 -6 l3 6 M132 182 l3 -6 l3 6" fill="#fff4dc" stroke="#24161f" stroke-width="1.2"/>
+  <ellipse cx="100" cy="134" rx="40" ry="38" fill="${K.rg(c)}" ${OL}/>
+  <path d="M80 112 Q100 104 120 112 L116 166 Q100 172 84 166Z" fill="${K.lg(['#ffe2a0','#e9b26a'])}" ${OL2}/><path d="M82 124 H118 M83 137 H117 M84 150 H116" stroke="#c98d43" stroke-width="2"/>
+  ${tube('M68 124 Q56 138 68 148',c,9)}${tube('M132 124 Q144 138 132 148',c,9)}
+  <path d="M86 110 Q82 82 90 66 L110 66 Q118 82 114 110Z" fill="${K.rg(c)}" ${OL}/>
+  ${horn}${mirror(horn)}
+  <path d="M70 52 Q72 26 100 24 Q128 26 130 52 Q132 66 122 74 Q100 82 78 74 Q68 66 70 52Z" fill="${K.rg(c)}" ${OL}/>
+  <ellipse cx="100" cy="68" rx="20" ry="11" fill="${shade(c,22)}" ${OL2}/><ellipse cx="93" cy="66" rx="2.4" ry="1.6" fill="#24161f"/><ellipse cx="107" cy="66" rx="2.4" ry="1.6" fill="#24161f"/>
+  <g class="rise"><circle cx="90" cy="58" r="4" fill="#cfd6dc" opacity=".8"/></g><g class="rise" style="animation-delay:-1.5s"><circle cx="110" cy="58" r="3.5" fill="#cfd6dc" opacity=".8"/></g>
+  ${mEye(86,46,8,'#ffde3c',true)}${mEye(114,46,8,'#ffde3c',true)}${brows(86,114,36,4)}
+  <path d="M86 76 L89 82 L92 77 M108 77 L111 82 L114 76" fill="#fff" stroke="none"/>
+  ${o.crown?crown(82,30,36):''}</g>`},
+
+ slime(K,c,o){const d=shade(c,-45);
+  return shadow(54)+`<g class="breathe">
+  <path d="M38 180 Q28 122 66 94 Q84 62 100 56 Q112 72 128 86 Q172 112 162 180 Q146 186 132 180 Q126 190 112 182 Q100 188 84 182 Q64 188 38 180Z" fill="${K.rg(c,45,-28)}" ${OL} opacity=".96"/>
+  <ellipse cx="72" cy="112" rx="9" ry="17" fill="#fff" opacity=".5" transform="rotate(30 72 112)"/>
+  <text x="122" y="168" font-family="Georgia,serif" font-style="italic" font-size="26" fill="${d}" opacity=".45">x</text><text x="58" y="164" font-family="Georgia,serif" font-size="18" fill="${d}" opacity=".4">7</text><text x="140" y="132" font-family="Georgia,serif" font-size="14" fill="${d}" opacity=".4">+</text>
+  <circle cx="110" cy="96" r="4" fill="#fff" opacity=".4"/><circle cx="148" cy="150" r="3" fill="#fff" opacity=".4"/>
+  ${cuteEye(84,128,11,d)}${cuteEye(118,128,11,d)}
+  <path d="M90 150 Q101 160 112 150" stroke="#24161f" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M104 152 Q107 160 110 153" fill="#e0475b"/>
+  </g>`}
+};
+
+const FRIEND_ART={
+ fairy(K){const s='#f6d5bd';
+  const wing=`<g class="flapL"><path d="M96 94 Q50 26 22 52 Q12 82 62 100Z" fill="${K.lg(['#eafcff','#c7b6ff','#ffd1ec'],1,1)}" opacity=".88" ${OL2}/><path d="M96 104 Q44 110 38 138 Q56 154 94 112Z" fill="${K.lg(['#eafcff','#b9a7ff'],1,1)}" opacity=".88" ${OL2}/><path d="M90 92 Q60 64 34 58 M90 108 Q64 120 48 136" stroke="#8f7fd9" stroke-width="1.5" fill="none"/></g>`;
+  return `<circle class="pulse" cx="100" cy="96" r="92" fill="${K.glow('#fff3a8',.75)}"/>${spark(30,40,7,'#fff',0)}${spark(168,48,5,'#fff6b0',-.6)}${spark(40,150,5,'#fff',-1.1)}${spark(170,140,6,'#fff6b0',-.3)}
+  <g class="bob">${wing}${mirror(wing)}
+  ${tube('M93 152 V176',s,6)}${tube('M107 152 V176',s,6)}<ellipse cx="91" cy="179" rx="6" ry="4" fill="#f28db2" ${OL2}/><ellipse cx="109" cy="179" rx="6" ry="4" fill="#f28db2" ${OL2}/>
+  <path d="M100 106 Q70 130 62 158 Q76 150 84 162 Q92 150 100 164 Q108 150 116 162 Q124 150 138 158 Q130 130 100 106Z" fill="${K.lg(['#a8e8b0','#4fae6a'])}" ${OL}/>
+  <path d="M88 100 Q100 94 112 100 L110 120 Q100 124 90 120Z" fill="#4fae6a" ${OL2}/>
+  ${tube('M90 104 Q78 116 80 128',s,6)}
+  ${tube('M110 104 Q126 96 134 80',s,6)}<path d="M134 82 L150 56" stroke="#c99a1a" stroke-width="3.5" stroke-linecap="round"/><path class="pulse" d="M152 42 l4 8 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1z" fill="#ffe27a" ${OL2}/>
+  <circle cx="100" cy="74" r="24" fill="${K.rg(s,20,-20)}" ${OL}/>
+  <path d="M74 76 Q70 40 100 40 Q130 40 126 76 Q122 56 104 54 Q90 62 78 62Z" fill="${K.rg('#f2b84b')}" ${OL2}/>
+  <circle cx="82" cy="46" r="5" fill="#f28db2" ${OL2}/><circle cx="100" cy="40" r="5" fill="#b48ae6" ${OL2}/><circle cx="118" cy="46" r="5" fill="#f28db2" ${OL2}/>
+  ${cuteEye(91,76,6,'#3d7bd6')}${cuteEye(109,76,6,'#3d7bd6')}
+  <ellipse cx="84" cy="86" rx="5" ry="3" fill="#ff8aa8" opacity=".55"/><ellipse cx="116" cy="86" rx="5" ry="3" fill="#ff8aa8" opacity=".55"/>
+  <path d="M94 88 Q100 94 106 88" stroke="#a0442c" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`},
+
+ unicorn(K){const w=K.rg('#fbf8ff',10,-14),mane=[['#f28db2',0],['#b48ae6',5],['#7fd3e8',10]];
+  return shadow(64)+`${spark(30,30,6,'#fff6b0',0)}${spark(178,40,5,'#fff',-.8)}${spark(20,120,4,'#fff6b0',-1.3)}<g class="breathe">
+  <g class="sway" style="animation-delay:-.4s">${mane.map(([col,o])=>tube(`M150 ${110+o} Q184 ${114+o} 174 ${158+o}`,col,7)).join('')}</g>
+  ${[62,86,118,142].map(x=>`<rect x="${x-6}" y="128" width="13" height="46" rx="6" fill="${w}" ${OL2}/><rect x="${x-7}" y="170" width="15" height="9" rx="3" fill="#f2c341" ${OL2}/>`).join('')}
+  <ellipse cx="104" cy="122" rx="54" ry="30" fill="${w}" ${OL}/>
+  <path d="M58 120 Q44 86 52 60 L82 64 Q78 92 88 114Z" fill="${w}" ${OL}/>
+  <path d="M28 70 Q28 44 56 42 Q82 44 84 66 Q82 84 62 84 Q46 86 34 92 Q20 92 20 80 Q20 72 28 70Z" fill="${w}" ${OL}/>
+  <ellipse cx="28" cy="82" rx="7" ry="5" fill="#ffc7d6" opacity=".7"/><circle cx="24" cy="80" r="1.6" fill="#8a6a7a"/>
+  <path d="M64 46 L74 24 L78 50Z" fill="${w}" ${OL2}/><path d="M68 44 L74 30 L76 46Z" fill="#ffc7d6"/>
+  <circle class="pulse" cx="58" cy="22" r="18" fill="${K.glow('#fff3a8',.8)}"/>
+  <path d="M50 44 L58 4 L66 44Z" fill="${K.lg(['#fff6c2','#f2c341'],1,0)}" ${OL2}/><path d="M53 34 L63 31 M55 24 L62 21 M56 14 L60 12" stroke="#c99a1a" stroke-width="1.6"/>${spark(58,2,5,'#fff',-.2)}
+  ${mane.map(([col,o])=>tube(`M${68+o} ${44+o*.4} Q${92+o} 56 ${80+o} 78 Q${94+o} 90 ${86+o} 108`,col,8)).join('')}
+  ${cuteEye(50,62,8,'#8e5ad6')}<path d="M42 54 l-5 -4 M46 51 l-3 -5" stroke="#24161f" stroke-width="2" stroke-linecap="round"/>
+  <ellipse cx="62" cy="76" rx="6" ry="3.5" fill="#ff8aa8" opacity=".5"/><path d="M34 88 Q42 92 48 88" stroke="#8a6a7a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>`},
+
+ fox(K){const w=K.rg('#f7fbff',8,-16);
+  const tail=(rot,dl)=>`<g transform="rotate(${rot} 130 150)"><g class="sway" style="animation-delay:${dl}s;transform-origin:0% 100%"><path d="M126 150 Q168 132 176 90 Q178 70 166 62 Q158 98 124 128Z" fill="${K.lg(['#ffffff','#cfe6fb'])}" ${OL2}/><circle class="pulse" cx="168" cy="68" r="12" fill="${K.glow('#6fd0ff',.9)}"/><path d="M166 62 Q174 70 172 82 Q164 74 166 62Z" fill="#8fdcff"/></g></g>`;
+  const ear=`<path d="M68 56 L58 14 L92 42Z" fill="${w}" ${OL}/><path d="M70 50 L64 26 L84 44Z" fill="#9cc3e8"/>`;
+  return shadow(56)+`${spark(30,40,5,'#e8f6ff',0)}${spark(170,26,4,'#e8f6ff',-.9)}${spark(24,140,4,'#e8f6ff',-1.5)}<g class="breathe">
+  ${tail(-30,-.8)}${tail(0,0)}${tail(26,-1.6)}
+  <path d="M64 178 Q56 120 92 104 Q132 100 140 140 Q144 178 120 180Z" fill="${w}" ${OL}/>
+  <path d="M78 118 Q92 150 86 172 Q102 160 102 128Z" fill="#fff"/>
+  <rect x="80" y="150" width="14" height="30" rx="6" fill="${w}" ${OL2}/><rect x="104" y="150" width="14" height="30" rx="6" fill="${w}" ${OL2}/>
+  ${ear}${mirror(ear)}
+  <path d="M58 72 Q60 40 100 38 Q140 40 142 72 Q140 98 100 106 Q60 98 58 72Z" fill="${w}" ${OL}/>
+  <path d="M58 80 L48 88 L62 90 M142 80 L152 88 L138 90" fill="${w}" ${OL2}/>
+  <path class="pulse" d="M100 46 L105 54 L100 62 L95 54Z" fill="#6fd0ff"/>
+  ${cuteEye(84,72,8,'#4aa3c9')}${cuteEye(116,72,8,'#4aa3c9')}
+  <ellipse cx="74" cy="88" rx="6" ry="3.5" fill="#ffc7d6" opacity=".6"/><ellipse cx="126" cy="88" rx="6" ry="3.5" fill="#ffc7d6" opacity=".6"/>
+  <path d="M95 86 h10 l-5 5Z" fill="#2a1f16" ${OL2}/><path d="M100 91 Q96 97 92 95 M100 91 Q104 97 108 95" stroke="#2a1f16" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M70 108 Q100 120 130 108 L128 118 Q100 128 72 118Z" fill="#e0475b" ${OL2}/>
+  </g>`},
+
+ mermaid(K){const s='#f1c9a8',hair=K.rg('#d4492f',30,-30);
+  const shell=x=>`<path d="M${x-7} 98 Q${x} 86 ${x+7} 98 Q${x} 102 ${x-7} 98Z" fill="${K.lg(['#ffc7da','#e0667f'])}" ${OL2}/>`;
+  return `${[30,160,48].map((x,i)=>`<g class="rise" style="animation-delay:${-i*1.1}s"><circle cx="${x}" cy="${150-i*20}" r="${5-i}" fill="none" stroke="#bfe6f0" stroke-width="2"/></g>`).join('')}
+  <path d="M36 190 Q46 150 100 146 Q154 150 164 190Z" fill="${K.rg('#8a94a0',25,-30)}" ${OL}/><path d="M60 170 q8 -6 16 0 M120 176 q8 -6 16 0" stroke="#6f7885" stroke-width="2" fill="none"/>
+  <g class="bob">
+  <path d="M78 54 Q56 100 62 136 Q76 124 84 100Z" fill="${hair}" ${OL2}/><path d="M122 54 Q144 96 140 126 Q128 116 118 98Z" fill="${hair}" ${OL2}/>
+  <path d="M80 116 Q70 152 96 164 Q130 176 148 146 Q132 158 106 150 Q92 142 106 116Z" fill="${K.lg(['#5fe0cf','#2f8fa0'],1,1)}" ${OL}/>
+  <path d="M86 128 q5 4 10 0 M84 140 q5 4 10 0 M92 152 q5 4 10 0 M108 156 q5 4 10 0 M122 156 q5 4 10 0" stroke="#bff3ea" stroke-width="1.8" fill="none"/>
+  <g class="sway" style="transform-origin:0% 50%"><path d="M146 146 Q172 120 180 134 Q168 148 180 162 Q160 162 146 152Z" fill="${K.lg(['#a8f0e6','#4fd1c0'])}" ${OL2}/></g>
+  <path d="M84 84 Q100 78 116 84 L114 118 Q100 122 86 118Z" fill="${K.rg(s,20,-20)}" ${OL2}/>${shell(93)}${shell(107)}
+  ${tube('M88 90 Q78 108 90 124',s,7)}
+  <g class="sway" style="animation-delay:-.6s">${tube('M112 88 Q128 74 132 56',s,7)}<circle cx="133" cy="52" r="5" fill="${s}" ${OL2}/></g>
+  <circle cx="100" cy="64" r="22" fill="${K.rg(s,20,-20)}" ${OL}/>
+  <path d="M76 68 Q72 38 100 38 Q128 38 124 68 Q118 50 100 50 Q86 52 78 68Z" fill="${hair}" ${OL2}/>
+  <path d="M120 44 l3 6 6 -1 -4 5 3 5 -6 -1 -3 6 -2 -6 -6 -1 5 -4 -2 -6 5 3z" fill="#ffb347" ${OL2}/>
+  ${cuteEye(92,66,6,'#2f9e8f')}${cuteEye(108,66,6,'#2f9e8f')}
+  <ellipse cx="85" cy="76" rx="4.5" ry="2.8" fill="#ff8aa8" opacity=".55"/><ellipse cx="115" cy="76" rx="4.5" ry="2.8" fill="#ff8aa8" opacity=".55"/>
+  <path d="M95 78 Q100 83 105 78" stroke="#a0442c" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>`},
+
+ phoenix(K){const fl=K.lg(['#ffe27a','#ff8a3c','#e0475b']);
+  const wing=`<g class="flapL"><path d="M88 106 Q52 66 8 66 Q28 78 20 88 Q40 90 32 102 Q54 100 48 116 Q70 110 88 122Z" fill="${K.lg(['#ffe27a','#ff7a3c','#c2412e'],1,0)}" ${OL}/><path d="M86 112 Q56 86 24 80 M86 118 Q60 104 40 104" stroke="#c2412e" stroke-width="1.6" fill="none"/></g>`;
+  return `<circle class="pulse" cx="100" cy="100" r="92" fill="${K.glow('#ffb347',.7)}"/>
+  ${[60,100,140].map((x,i)=>`<g class="rise" style="animation-delay:${-i}s"><circle cx="${x}" cy="${120+i*10}" r="2.5" fill="#ffd36a"/></g>`).join('')}
+  <g class="bob">
+  ${[[-1,0],[0,-.2],[1,-.4]].map(([k,dl])=>`<g class="flick" style="animation-delay:${dl}s"><path d="M${96+k*4} 132 Q${80+k*28} 166 ${64+k*38} 190 Q${92+k*20} 178 ${102+k*4} 150Z" fill="${fl}" ${OL2}/></g>`).join('')}
+  ${wing}${mirror(wing)}
+  <ellipse cx="100" cy="112" rx="22" ry="28" fill="${K.rg('#e04a3a')}" ${OL}/><ellipse cx="100" cy="120" rx="12" ry="16" fill="#ffb347"/>
+  <g class="flick" style="animation-delay:-.3s"><path d="M94 58 Q82 30 94 16 Q96 36 102 40 Q104 24 114 20 Q110 44 106 58Z" fill="${fl}" ${OL2}/></g>
+  <circle cx="100" cy="74" r="19" fill="${K.rg('#e04a3a')}" ${OL}/>
+  ${cuteEye(92,70,5.5,'#7a1f14')}${cuteEye(108,70,5.5,'#7a1f14')}
+  <path d="M94 80 L100 92 L106 80Z" fill="#f2c341" ${OL2}/></g>`}
+};
+
+function creature(kind,c,o={}){const K=kit();return K.wrap(ART[kind](K,c,o||{}),kind)}
+function friendArt(k){const K=kit();return K.wrap(FRIEND_ART[k](K),FRIENDS[k]?FRIENDS[k].name:k)}
+const TAUNT={imp:["Hee hee! Bet you can't solve this one!","I hid your x. Find it!"],goblin:["Your x is MINE!","Goblins never show their work!"],troll:["Troll smash wrong answers.","Nobody crosses my bridge without solving for x."],golem:["RUNES. MUST. BALANCE.","EQUATION DETECTED. PREPARE."],giant:["Fee-fi-fo-fum, I smell a variable!","I'm big, but my equations are bigger."],kraken:["Eight arms, eight problems!","The deep sea is full of tricky signs."],serpent:["Ssssolve me if you can…","My coils twist like inequalities."],dragon:["Only legends may pass.","My fire burns hotter than a negative sign!"],slime:["Blorp! Wanna see my numbers?","Squish! I'm made of variables."]};
+const OUCH=["Ouch! How did you know that?","Grr… lucky guess!","Hey, that actually hurt!","Nooo, you solved it!","Wait, you're good at this!"];
+const GLOAT=["Ha! Check your steps!","Missed me! Read the explanation.","So close… try again!","Heh. Signs are tricky, huh?"];
+
+const coinSVG=`<svg class="coin" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#e9b949" stroke="#a8781a" stroke-width="2"/><text x="10" y="14" text-anchor="middle" font-size="10" font-weight="800" fill="#7a540d">x</text></svg>`;
+
+/* ---------- HUD ---------- */
+function hud(){
+ if(!S.created||screen==='title'||screen==='create'){$('#hud').innerHTML='';return}
+ const xpIn=S.xp%100;
+ $('#hud').innerHTML=`<div class="hud"><div class="hud-in">
+  <div class="mini">${avatar(S.look)}</div>
+  <div class="who"><b>${esc(S.name)}</b><span>Level ${level()} · ${titleFor(level())}</span></div>
+  <div class="stat" title="Health">HP <div class="bar" aria-hidden="true"><i style="width:${Math.max(0,S.hp/maxHP()*100)}%"></i></div><span>${S.hp}/${maxHP()}</span></div>
+  <div class="stat" title="Experience to next level">XP <div class="bar xp" aria-hidden="true"><i style="width:${xpIn}%"></i></div></div>
+  <div class="stat" title="Gold">${coinSVG}<span>${S.gold}</span></div>
+ </div></div>`;
+}
+
+/* ---------- screens ---------- */
+function go(s){screen=s;render();window.scrollTo({top:0})}
+function render(){hud();const f={title,create,village,map,battle,friend}[screen];$('#app').innerHTML=f();after()}
+function after(){const inp=$('#ans');if(inp)inp.focus({preventScroll:true})}
+
+function title(){
+ return `<div class="title-art"><h1>The Legends<br>of Algebra</h1>
+ <p>Islands full of goblins, giants and dragons are waiting. Only a hero who can solve for <i style="font-family:var(--f-math)">x</i> can defeat them. Make your hero, build your village, and make friends with fairies, unicorns and mermaids along the way.</p></div>
+ <div class="card" style="max-width:560px;margin:20px auto 0;display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;align-items:center">
+  ${creature('goblin','#73b553')}
+  <div><p style="margin:0 0 12px">Get one wrong? No problem. Every mistake comes with a step-by-step explanation and the right answer, so you learn as you battle.</p>
+  <button class="btn" onclick="startCreate()">Create your hero</button></div></div>`;
+}
+function startCreate(){draft={name:S.name,look:{...S.look}};go('create')}
+function create(){
+ const L=draft.look;
+ const sw=(k,arr)=>`<div class="opt"><h3>${{skin:'Skin',hair:'Hair color',eyes:'Eyes',topColor:'Clothes color',shoeColor:'Shoe color'}[k]}</h3><div class="row">${arr.map(c=>`<button class="sw" style="background:${c}" aria-label="${k} ${c}" aria-pressed="${L[k]===c}" onclick="setLook('${k}','${c}')"></button>`).join('')}</div></div>`;
+ const ch=(k,label,arr)=>`<div class="opt"><h3>${label}</h3><div class="row">${arr.map(v=>{const lock=ACC_LOCK[v]&&!(S.friends[ACC_LOCK[v][0]]||S.built[ACC_LOCK[v][0]]);return `<button class="chip" ${lock?`disabled title="${ACC_LOCK[v][1]} to unlock"`:''} aria-pressed="${L[k]===v}" onclick="setLook('${k}','${v}')">${NAMES[v]||v}${lock?' (locked)':''}</button>`}).join('')}</div></div>`;
+ return `<div class="card"><div class="eyebrow">${S.created?'Wardrobe':'Step 1 of 1'}</div><h2 style="margin:4px 0 16px;font-size:30px">${S.created?'Change your look':'Create your hero'}</h2>
+ <div class="creator"><div><div class="preview" id="pv">${avatar(L)}</div>
+  <div class="opt" style="margin-top:14px"><h3><label for="heroName">Hero name</label></h3><input type="text" id="heroName" maxlength="18" placeholder="e.g. Nova Starfield" value="${esc(draft.name)}" oninput="draft.name=this.value"></div>
+  <button class="btn" style="width:100%" onclick="finishCreate()">${S.created?'Save look':'Begin the adventure'}</button>
+  ${S.created?`<button class="btn ghost" style="width:100%;margin-top:10px" onclick="go('village')">Cancel</button>`:''}
+ </div><div>
+  ${sw('skin',LOOK.skin)}${ch('hairStyle','Hair style',LOOK.hairStyle)}${sw('hair',LOOK.hair)}${sw('eyes',LOOK.eyes)}
+  ${ch('top','Clothes',LOOK.top)}${sw('topColor',LOOK.topColor)}${ch('shoes','Shoes',LOOK.shoes)}${sw('shoeColor',LOOK.shoeColor)}${ch('acc','Accessory',LOOK.acc)}
+ </div></div></div>`;
+}
+function setLook(k,v){draft.look[k]=v;const y=scrollY;render();scrollTo(0,y)}
+function finishCreate(){
+ const nm=(draft.name||'').trim();if(!nm){const i=$('#heroName');i.focus();i.placeholder='Your hero needs a name!';i.style.borderColor='var(--bad)';return}
+ S.name=nm;S.look=draft.look;const first=!S.created;S.created=true;save();
+ if(first){toast=`Welcome, ${nm}! Your village is waiting. Earn gold on the islands to build it up.`}
+ go('village');
+}
+let toast='';
+
+function building(id,x,y){
+ const house=(w,r,extra='')=>`<rect x="${x-32}" y="${y-40}" width="64" height="40" fill="${w}"/><polygon points="${x-40},${y-40} ${x},${y-72} ${x+40},${y-40}" fill="${r}"/><rect x="${x-8}" y="${y-24}" width="16" height="24" rx="7" fill="#4a2d18"/><rect x="${x-26}" y="${y-32}" width="12" height="12" fill="#ffe7a0" stroke="#4a2d18" stroke-width="2"/><rect x="${x+14}" y="${y-32}" width="12" height="12" fill="#ffe7a0" stroke="#4a2d18" stroke-width="2"/>${extra}`;
+ switch(id){
+  case 'cottage':return house('#e7cfa1','#b5452a');
+  case 'bakery':return house('#f5d6dc','#d9667a',`<circle cx="${x}" cy="${y-50}" r="7" fill="#e9b949"/>`);
+  case 'library':return house('#c9d6e8','#3f5f9f',`<rect x="${x-20}" y="${y-62}" width="40" height="10" fill="#e9b949"/>`);
+  case 'forge':return house('#7d7a78','#3d3836',`<rect x="${x+16}" y="${y-80}" width="10" height="24" fill="#4a4442"/><circle cx="${x+22}" cy="${y-88}" r="6" fill="#bfc6cc" opacity=".7"/><circle cx="${x+28}" cy="${y-98}" r="5" fill="#bfc6cc" opacity=".5"/>`);
+  case 'garden':return `<path d="M${x-30} ${y} V${y-34} Q${x} ${y-66} ${x+30} ${y-34} V${y}" stroke="#7a5a34" stroke-width="5" fill="none"/>`+[[-30,-34],[-22,-50],[-8,-60],[8,-60],[22,-50],[30,-34]].map(([a,b])=>`<circle cx="${x+a}" cy="${y+b}" r="6" fill="${pick(['#f28db2','#f2c341','#b48ae6'])}"/>`).join('')+[-24,-10,8,22].map(a=>`<circle cx="${x+a}" cy="${y-6}" r="7" fill="#f28db2"/><circle cx="${x+a}" cy="${y-6}" r="3" fill="#ffe27a"/>`).join('');
+  case 'stable':return `<rect x="${x-36}" y="${y-38}" width="72" height="38" fill="#b5452a"/><polygon points="${x-42},${y-38} ${x-20},${y-62} ${x+20},${y-62} ${x+42},${y-38}" fill="#6e2a1c"/><path d="M${x-14} ${y} V${y-22} Q${x} ${y-34} ${x+14} ${y-22} V${y}" fill="#4a2d18"/><path d="M${x-14} ${y-22} L${x+14} ${y} M${x+14} ${y-22} L${x-14} ${y}" stroke="#e7cfa1" stroke-width="2"/><polygon points="${x-4},${y-62} ${x},${y-78} ${x+4},${y-62}" fill="#f2c341"/>`;
+  case 'fountain':return `<ellipse cx="${x}" cy="${y-6}" rx="40" ry="12" fill="#a6b0bb"/><ellipse cx="${x}" cy="${y-10}" rx="34" ry="8" fill="#4fb8d6"/><rect x="${x-5}" y="${y-48}" width="10" height="40" fill="#a6b0bb"/><path d="M${x} ${y-48} Q${x-24} ${y-62} ${x-28} ${y-14} M${x} ${y-48} Q${x+24} ${y-62} ${x+28} ${y-14}" stroke="#8fd4e8" stroke-width="3" fill="none"/><circle cx="${x}" cy="${y-52}" r="7" fill="#4fd1c0"/>`;
+  case 'tower':return `<rect x="${x-18}" y="${y-92}" width="36" height="92" fill="#8c7fb8"/><polygon points="${x-26},${y-92} ${x},${y-132} ${x+26},${y-92}" fill="#4a3290"/><rect x="${x-6}" y="${y-70}" width="12" height="14" rx="6" fill="#ffe7a0"/><rect x="${x-6}" y="${y-40}" width="12" height="14" rx="6" fill="#ffe7a0"/><path d="M${x} ${y-142} l2 4 4 .5-3 3 1 4-4-2-4 2 1-4-3-3 4-.5z" fill="#ffe27a"/>`;
+ }
+}
+function village(){
+ const friends=Object.keys(S.friends);
+ const scene=`<svg class="scene" viewBox="0 0 640 300" role="img" aria-label="Your village"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c5d7a"/><stop offset="1" stop-color="#7fb2c4"/></linearGradient></defs>
+  <rect width="640" height="300" fill="url(#sky)"/><circle cx="560" cy="40" r="18" fill="#fff4c8"/>
+  <path d="M0 80 Q120 50 240 70 Q380 40 520 66 Q600 56 640 70 V300 H0Z" fill="#5c9b5a"/><path d="M0 180 Q160 160 320 178 Q480 196 640 176 V300 H0Z" fill="#4f8a4f"/>
+  <path d="M-10 296 Q200 270 330 190 Q400 150 650 160" stroke="#d8c08a" stroke-width="16" fill="none" opacity=".75"/>
+  ${PLOTS.map(([x,y],i)=>{const b=BUILDINGS[i],has=S.built[b.id];return `<g class="plot" role="button" tabindex="0" aria-label="${b.name}" onclick="build('${b.id}')" onkeydown="if(event.key==='Enter')build('${b.id}')">${has?building(b.id,x,y):`<rect class="plotbox" x="${x-40}" y="${y-60}" width="80" height="60" rx="8" fill="rgba(0,0,0,.12)" stroke="#e6d2a3" stroke-width="2" stroke-dasharray="6 5"/><text x="${x}" y="${y-22}" text-anchor="middle" font-size="22" fill="#f4e7c8" font-weight="800">+</text>`}<text x="${x}" y="${y+17}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#f4e7c8" style="paint-order:stroke" stroke="#1f3a24" stroke-width="3">${has?b.name:b.cost+' gold'}</text></g>`}).join('')}
+  <g transform="translate(300 152) scale(.34)">${avatar(S.look).replace(/<\/?svg[^>]*>/g,'')}</g>
+ </svg>`;
+ return `${toast?`<div class="banner" style="margin:0 0 14px">${esc(toast)}</div>`:''}
+ <div class="card"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Home</div><h2 style="font-size:30px">${esc(S.name)}'s Village</h2></div>
+ <div class="row"><button class="btn" onclick="go('map')">Set sail to the islands</button><button class="btn alt" onclick="startCreate()">Wardrobe</button><button class="btn ghost" onclick="rest()" ${S.hp>=maxHP()?'disabled':''}>Rest (heal fully)</button></div></div>
+ <div style="margin-top:14px">${scene}</div>
+ <div class="shop">${BUILDINGS.map(b=>{const has=S.built[b.id],need=b.needs&&!S.friends[b.needs];return `<div class="item"><b>${b.name}</b><small>${b.eff}</small>${need?`<small><em>Befriend ${FRIENDS[b.needs].name} first.</em></small>`:''}<div class="row">${has?'<span class="built">Built ✓</span>':`<span class="stat">${coinSVG}${b.cost}</span><button class="btn" style="padding:7px 14px" onclick="build('${b.id}')" ${S.gold<b.cost||need?'disabled':''}>Build</button>`}</div></div>`}).join('')}</div></div>
+ <div class="card"><div class="eyebrow">Mythical friends</div><h3 style="font-size:22px;margin:4px 0 10px">${friends.length?'Friends who joined your village':'No friends yet'}</h3>
+ ${friends.length?`<div class="friends">${friends.map(k=>`<span class="friend-tag">${friendArt(k)}${FRIENDS[k].name}</span>`).join('')}</div>`:`<p class="muted" style="margin:0">Visit each island to meet a fairy, a unicorn, a snow fox, a mermaid and a phoenix. Each one teaches you a trick for that island's math.</p>`}
+ <p class="muted" style="margin:12px 0 0;font-size:14px">Record: ${S.correct} answered right · ${S.wrong} learned from · ${S.wins.reduce((a,b)=>a+b,0)} battles won</p></div>`;
+}
+function build(id){
+ const b=BUILDINGS.find(x=>x.id===id);toast='';
+ if(S.built[id]){toast=`${b.name}: ${b.eff}`}
+ else if(b.needs&&!S.friends[b.needs]){toast=`To build the ${b.name}, first befriend ${FRIENDS[b.needs].name}.`}
+ else if(S.gold<b.cost){toast=`The ${b.name} costs ${b.cost} gold. You have ${S.gold}. Win battles on the islands to earn more!`}
+ else{S.gold-=b.cost;S.built[id]=true;if(id==='cottage')S.hp+=20;if(id==='tower')S.hp+=10;toast=`You built the ${b.name}! ${b.eff}`;save()}
+ render();
+}
+function rest(){S.hp=maxHP();toast='You rested at home. Full health!';save();render()}
+
+function islandArt(i,[x,y],lock){
+ const f=[
+  ()=>[[-24,-8],[0,-16],[22,-6]].map(([a,b])=>`<rect x="${x+a-2}" y="${y+b}" width="4" height="12" fill="#6b4226"/><circle cx="${x+a}" cy="${y+b-4}" r="10" fill="#3e8e4a"/>`).join(''),
+  ()=>`<ellipse cx="${x}" cy="${y-2}" rx="28" ry="9" fill="#4d6b4a"/>`+[-20,-8,6,18].map(a=>`<path d="M${x+a} ${y} v-18" stroke="#3a5a2a" stroke-width="3"/><ellipse cx="${x+a}" cy="${y-20}" rx="3" ry="7" fill="#7a5a34"/>`).join(''),
+  ()=>`<polygon points="${x-36},${y+4} ${x-10},${y-40} ${x+16},${y+4}" fill="#8a94a0"/><polygon points="${x-18},${y-26} ${x-10},${y-40} ${x-2},${y-26}" fill="#fff"/><polygon points="${x},${y+4} ${x+18},${y-26} ${x+38},${y+4}" fill="#7d8691"/><polygon points="${x+12},${y-16} ${x+18},${y-26} ${x+24},${y-16}" fill="#fff"/>`,
+  ()=>`<ellipse cx="${x}" cy="${y-2}" rx="22" ry="10" fill="#4fb8d6"/><path d="M${x+26} ${y} v-26" stroke="#7a5a34" stroke-width="4"/><path d="M${x+26} ${y-26} q-14 -2 -20 6 M${x+26} ${y-26} q14 -2 18 8 M${x+26} ${y-26} q0 -12 -12 -14" stroke="#3e8e4a" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+  ()=>`<polygon points="${x-34},${y+4} ${x-10},${y-36} ${x+10},${y-36} ${x+34},${y+4}" fill="#5a4a46"/><ellipse cx="${x}" cy="${y-36}" rx="10" ry="4" fill="#ff7a3c"/><path d="M${x-4} ${y-40} q-6 -14 4 -22 q2 10 6 4 q2 10 -4 18" fill="#ffb347"/>`
+ ][i]();
+ const col=['#7cc47a','#7d9b6a','#c7d0d8','#e8d7a0','#9b7468'][i];
+ return `<g class="isle ${lock?'locked':''}" role="button" tabindex="0" aria-label="${ISLANDS[i].name}${lock?' (locked)':''}" onclick="pickIsle(${i})" onkeydown="if(event.key==='Enter')pickIsle(${i})" opacity="${lock?.45:1}">
+  <ellipse cx="${x}" cy="${y+10}" rx="66" ry="30" fill="#e6d2a3"/><ellipse class="isle-ring" cx="${x}" cy="${y+6}" rx="58" ry="25" fill="${col}" stroke="${sel===i?'#e9b949':'transparent'}" stroke-width="${sel===i?4:0}"/>${f}
+  <text x="${x}" y="${y+56}" text-anchor="middle" font-family="Uncial Antiqua, Georgia, serif" font-size="15" fill="#f4e7c8" style="paint-order:stroke" stroke="#081722" stroke-width="4">${ISLANDS[i].name}</text>
+  ${lock?`<g transform="translate(${x-9} ${y-20})"><rect y="8" width="18" height="14" rx="3" fill="#2a1f16"/><path d="M4 8 V4 a5 5 0 0 1 10 0 V8" stroke="#2a1f16" stroke-width="3" fill="none"/></g>`:''}
+  ${S.wins[i]?`<text x="${x+50}" y="${y-18}" text-anchor="middle" font-size="12" font-weight="800" fill="#081722"><tspan>★${S.wins[i]}</tspan></text>`:''}
+ </g>`;
+}
+function map(){
+ const I=ISLANDS[sel],lock=!unlocked(sel),boss=S.wins[sel]%4===3,fr=FRIENDS[I.friend];
+ return `<div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="font-size:28px;color:var(--gold)">The Algebra Isles</h2><button class="btn alt" onclick="toast='';go('village')">Back to village</button></div>
+ <svg class="map" viewBox="0 0 620 360" role="img" aria-label="Map of the islands"><rect width="620" height="360" fill="#164a64"/>
+  ${[...Array(18)].map((_,k)=>`<path d="M${(k*97)%600} ${(k*61)%340+10} q8 -6 16 0 q8 6 16 0" stroke="#3d7c98" stroke-width="2" fill="none"/>`).join('')}
+  <path d="M110 285 Q190 260 255 205 Q200 140 120 100 Q260 60 390 105 Q470 170 505 250" stroke="#e6d2a3" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" fill="none"/>
+  ${ISLANDS.map((x,i)=>islandArt(i,x.pos,!unlocked(i))).join('')}
+ </svg>
+ <div class="card" style="margin-top:14px"><div class="isle-panel"><div>
+  <div class="eyebrow">Island ${sel+1} · ${I.topic}</div><h2 style="font-size:26px;margin:4px 0 6px">${I.name}</h2>
+  ${lock?`<p style="margin:0">Win 3 battles on ${ISLANDS[sel-1].name} to unlock this island.</p>`:
+  `<p style="margin:0">Creatures here: ${I.pool.map(p=>p[1]).join(', ')}. ${boss?`<b>The ${I.boss[1]} awaits!</b>`:`Every 4th battle, the ${I.boss[1]} appears.`} Battles won: ${S.wins[sel]}.</p>`}
+  </div><div class="row">${lock?'':`<button class="btn" onclick="startBattle(${sel})">${boss?'Face the boss':'Battle!'}</button><button class="btn rose" onclick="visit('${I.friend}')">Meet ${fr.name.split(' ')[0]}${S.friends[I.friend]?'':' ✦'}</button>`}</div></div></div>`;
+}
+function pickIsle(i){sel=i;render()}
+
+/* ---------- friends ---------- */
+function visit(k){friendView=k;go('friend')}
+function friend(){
+ const F=FRIENDS[friendView],met=S.friends[friendView];
+ return `<div class="card"><div class="friendview"><div class="art">${friendArt(friendView)}</div><div>
+  <div class="eyebrow">${F.kind} of ${ISLANDS.find(i=>i.friend===friendView).name}</div><h2 style="font-size:30px;margin:4px 0 8px">${F.name}</h2>
+  <p style="font-size:18px;margin:0">“${F.hello}”</p>
+  <div class="lesson"><div class="eyebrow">Lesson: ${F.lesson}</div><p style="margin:6px 0 10px">${F.rule}</p>
+   <ol class="steps" style="margin:0">${F.ex.map(([t,e])=>`<li><span>${t}</span><span class="m">${M(e)}</span></li>`).join('')}</ol></div>
+  ${met?`<div class="banner">${F.name.split(' ')[0]} lives in your village now. Come back for the lesson any time!</div>`:''}
+  <div class="row" style="margin-top:14px">${met?'':`<button class="btn rose" onclick="befriend()">Become friends (receive ${F.gift})</button>`}
+   <button class="btn" onclick="healFriend()" ${S.hp>=maxHP()?'disabled':''}>Ask for healing</button><button class="btn ghost" onclick="go('map')">Back to map</button></div>
+ </div></div></div>`;
+}
+function befriend(){S.friends[friendView]=true;S.gold+=25;save();render()}
+function healFriend(){S.hp=maxHP();save();render()}
+
+/* ---------- battle ---------- */
+function newQ(i){const q=GEN[ISLANDS[i].gen]();q.prompt=q.prompt||'Solve for x';return q}
+function startBattle(i){
+ const boss=S.wins[i]%4===3,[kind,name,color,opt]=boss?ISLANDS[i].boss:pick(ISLANDS[i].pool);
+ const hp=boss?5+i:3+Math.floor(i/2);
+ if(S.hp<=0)S.hp=maxHP();
+ B={i,boss,m:{kind,name,color,opt:opt||{},hp,max:hp,say:pick(TAUNT[kind]),dmg:(boss?16:12)+i*2},hints:1+(S.built.library?1:0),streak:0,q:newQ(i),showHint:false,phase:'ask',last:null,fx:null};
+ go('battle');
+}
+function battle(){
+ const m=B.m,q=B.q;
+ const arena=`<div class="arena"><div class="bubble" aria-live="polite">${esc(m.say)}</div>
+  <div class="fighter" id="pf"><div class="nm">${esc(S.name)}</div><div class="bar"><i style="width:${S.hp/maxHP()*100}%"></i></div>${avatar(S.look)}</div>
+  <div class="vs">vs</div>
+  <div class="fighter" id="mf"><div class="nm">${m.name}${B.boss?' (Boss)':''}</div><div class="bar mon-bar"><i style="width:${m.hp/m.max*100}%"></i></div>${creature(m.kind,m.color,m.opt)}</div>
+ </div>`;
+ let body='';
+ if(B.phase==='ask'){
+  body=`<div class="card qcard" style="margin-top:14px"><div class="eyebrow">${q.prompt}${B.streak>=2?` · Streak ${B.streak}`:''}</div><div class="eq">${M(q.eq)}</div>
+  ${q.choices?`<div class="choices">${q.choices.map((c,k)=>`<button class="btn" onclick="answer(${k})">${M(c)}</button>`).join('')}</div>`:
+  `<form class="answer" onsubmit="event.preventDefault();answer()"><label for="ans">Your answer</label><input type="text" id="ans" inputmode="text" autocomplete="off" placeholder="x = ?"><button class="btn" type="submit">Attack</button></form>`}
+  ${B.showHint?`<div class="hintbox"><b>Hint:</b> ${q.hint}</div>`:''}
+  <div class="tools"><button class="btn ghost" onclick="useHint()" ${B.hints<1||B.showHint?'disabled':''}>Use a hint crystal (${B.hints} left)</button><button class="btn ghost" onclick="flee()">Flee to map</button></div>
+  <p class="muted" style="margin:10px auto 0;font-size:13px">Type whole numbers like −4 or 12. Fractions like 3/2 work too.</p></div>`;
+ } else if(B.phase==='explain'){
+  const L=B.last;
+  body=`<div class="card explain" style="margin-top:14px"><div class="eyebrow">The ${m.name} hit you for ${L.dmg} · Let's learn from it</div>
+  <div class="eq" style="text-align:center">${M(q.eq)}</div>
+  <div class="you"><span>Your answer: <em>${L.shown}</em></span></div>
+  <div class="oops">${L.why}</div>
+  <ol class="steps">${q.steps.map(([t,e])=>`<li><span>${t}</span><span class="m">${M(e)}</span></li>`).join('')}</ol>
+  <div class="correct-ans">Correct answer: <span class="m">${M(q.choices?q.ans:'x = '+n(q.ans))}</span></div>
+  <div class="row" style="margin-top:14px">${S.hp>0?`<button class="btn" id="nextBtn" onclick="nextQ()">Got it, next question</button>`:`<button class="btn rose" id="nextBtn" onclick="defeat()">You fainted… return to the village</button>`}</div></div>`;
+ } else if(B.phase==='won'){
+  const r=B.reward;
+  body=`<div class="card" style="margin-top:14px;text-align:center"><div class="eyebrow">Victory</div><h2 style="font-size:32px;margin:6px 0">You defeated the ${m.name}!</h2>
+  <p style="margin:0 auto 10px">+${r.gold} gold · +${r.xp} XP${r.heal?` · Honey Bakery healed ${r.heal} HP`:''}</p>
+  ${r.notes.map(t=>`<div class="banner">${t}</div>`).join('')}
+  <div class="row" style="justify-content:center;margin-top:14px"><button class="btn" onclick="startBattle(${B.i})">Battle again</button><button class="btn alt" onclick="go('map')">Back to map</button><button class="btn ghost" onclick="toast='';go('village')">Go home</button></div></div>`;
+ }
+ return arena+body;
+}
+function parseAns(s){
+ s=s.replace(/−|–/g,'-').replace(/\s/g,'').replace(/^[xy]=/i,'');
+ if(/^-?\d+(\.\d+)?$/.test(s))return parseFloat(s);
+ const f=s.match(/^(-?\d+)\/(-?\d+)$/);if(f&&+f[2]!==0)return f[1]/f[2];
+ return null;
+}
+function answer(k){
+ const q=B.q;let ok,val,shown;
+ if(q.choices){val=q.choices[k];shown=M(val);ok=val===q.ans}
+ else{const raw=$('#ans').value;val=parseAns(raw);if(raw.trim()===''){$('#ans').focus();return}
+  if(val===null){const i=$('#ans');i.value='';i.placeholder='Numbers only, e.g. −3';i.focus();return}
+  shown='x = '+esc(raw.replace(/^[xy]\s*=\s*/i,''));ok=Math.abs(val-q.ans)<1e-9}
+ if(ok){
+  S.correct++;B.streak++;const dbl=S.built.forge&&B.streak>=3&&B.streak%3===0,dmg=dbl?2:1;
+  B.m.hp=Math.max(0,B.m.hp-dmg);S.xp+=2;save();
+  if(B.m.hp<=0)return win();
+  B.m.say=pick(OUCH);B.q=newQ(B.i);B.showHint=false;render();fx('#mf',dbl?'Double hit!':'Hit!','#ffe27a','hurt');
+ } else {
+  S.wrong++;B.streak=0;const dmg=Math.max(4,B.m.dmg-(S.built.garden?5:0));S.hp=Math.max(0,S.hp-dmg);save();
+  const key=q.choices?val:Math.round(val*1e6)/1e6;
+  const why=q.mistakes[key]||(q.choices?'Not quite. Walk through the steps below.':`Not quite! Let's walk through it one step at a time and find where it went off track.`);
+  B.m.say=pick(GLOAT);B.last={shown,why,dmg};B.phase='explain';render();fx('#pf','−'+dmg,'#ff8a8a');const ms=$('#mf svg');if(ms)ms.classList.add('lunge');
+  const nb=$('#nextBtn');if(nb)nb.focus({preventScroll:true});
+ }
+}
+function fx(sel,text,color,cls='shake'){const el=$(sel);if(!el)return;const svg=el.querySelector('svg');svg.classList.add(cls);const f=document.createElement('div');f.className='float';f.textContent=text;f.style.color=color;el.appendChild(f);setTimeout(()=>f.remove(),1000)}
+function nextQ(){B.q=newQ(B.i);B.phase='ask';B.showHint=false;render()}
+function useHint(){if(B.hints>0){B.hints--;B.showHint=true;render()}}
+function flee(){B=null;go('map')}
+function defeat(){S.hp=maxHP();save();toast='You woke up safe at home, fully healed. Every mistake made you smarter. Try again!';B=null;go('village')}
+function win(){
+ const i=B.i,wasLocked=!unlocked(i+1)&&i<4,lvl=level();
+ let gold=B.boss?30+10*i:12+4*i,xp=B.boss?50+10*i:20+5*i;
+ if(S.built.stable)gold=Math.round(gold*1.25);if(S.built.fountain)xp=Math.round(xp*1.25);
+ S.gold+=gold;S.xp+=xp;S.wins[i]++;let heal=0;
+ if(S.built.bakery){heal=Math.min(15,maxHP()-S.hp);S.hp+=heal}
+ const notes=[];
+ if(level()>lvl)notes.push(`Level up! You are now level ${level()}: ${titleFor(level())}.`);
+ if(i<4&&wasLocked&&unlocked(i+1))notes.push(`New island unlocked: ${ISLANDS[i+1].name}!`);
+ if(S.wins[i]%4===3)notes.push(`The ${ISLANDS[i].boss[1]} has noticed you. Your next battle here is a boss fight!`);
+ if(B.boss&&i===4)notes.push(`You defeated the Elder Dragon. You are a true Legend of Algebra! The islands are endless, so keep battling to grow even stronger.`);
+ B.reward={gold,xp,heal,notes};B.phase='won';save();render();
+}
+
+render();
+</script>

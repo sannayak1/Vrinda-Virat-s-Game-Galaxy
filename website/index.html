@@ -210,6 +210,90 @@ footer .heart{display:inline-block;color:#e0457f;animation:beat 1.2s ease-in-out
    To add a game: put its .html in the games folder, a picture in thumbs, and copy one entry below. */
 const GAMES = [
  {
+  "title": "Galactic Run",
+  "file": "games/galactic-run.html",
+  "thumb": "thumbs/galactic-run.jpg",
+  "blurb": "Robo Chungus stole Queen Galactia! Race across 10 universes, make slime friends and beat the space bosses.",
+  "tags": [
+   "Adventure"
+  ],
+  "by": "",
+  "updated": "2026-10-25",
+  "older": []
+ },
+ {
+  "title": "Princess Celeste's Rescue",
+  "file": "games/princess-celeste-rescue.html",
+  "thumb": "thumbs/princess-celeste-rescue.jpg",
+  "blurb": "A kawaii running quest across ten universes. Jump, throw stars and rescue Princess Celeste.",
+  "tags": [
+   "Adventure"
+  ],
+  "by": "",
+  "updated": "2026-10-25",
+  "older": []
+ },
+ {
+  "title": "Candy Run Kingdom 2D",
+  "file": "games/candy-run-kingdom-2d.html",
+  "thumb": "thumbs/candy-run-kingdom-2d.jpg",
+  "blurb": "Hester set the Candy Festival on fire! Make your hero, cross five candy worlds and save Princess Peppermint.",
+  "tags": [
+   "Adventure"
+  ],
+  "by": "",
+  "updated": "2026-10-25",
+  "older": []
+ },
+ {
+  "title": "Akshar Quest 2D",
+  "file": "games/akshar-quest-2d.html",
+  "thumb": "thumbs/akshar-quest-2d.jpg",
+  "blurb": "Explore the Marketplace of Illusions, where letters whisper and a masked trickster named Bhram is up to mischief.",
+  "tags": [
+   "Learning"
+  ],
+  "by": "",
+  "updated": "2026-10-25",
+  "older": []
+ },
+ {
+  "title": "The Legends of Algebra",
+  "file": "games/legends-of-algebra.html",
+  "thumb": "thumbs/legends-of-algebra.jpg",
+  "blurb": "Solve for x to beat goblins, giants and dragons, build your village and make magical friends.",
+  "tags": [
+   "Learning"
+  ],
+  "by": "",
+  "updated": "2026-10-25",
+  "older": []
+ },
+ {
+  "title": "Stickman Ninja Katana Duel",
+  "file": "games/stickman-ninja-katana-duel.html",
+  "thumb": "thumbs/stickman-ninja-katana-duel.jpg",
+  "blurb": "Design your ninja, pick a secret technique and win a best-of-3 katana duel on a moonlit rooftop.",
+  "tags": [
+   "Fighting"
+  ],
+  "by": "",
+  "updated": "2026-10-25",
+  "older": []
+ },
+ {
+  "title": "Butterfly & Frost",
+  "file": "games/butterfly-and-frost.html",
+  "thumb": "thumbs/butterfly-and-frost.jpg",
+  "blurb": "Stand between the ice demon and the girl behind you. Deflect his frost, then sting!",
+  "tags": [
+   "Fighting"
+  ],
+  "by": "",
+  "updated": "2026-10-25",
+  "older": []
+ },
+ {
   "title": "Wooble Monster Run",
   "file": "games/wooble-monster-run.html",
   "thumb": "thumbs/wooble-monster-run.jpg",
@@ -458,8 +542,10 @@ const GAMES = [
    "Spooky"
   ],
   "by": "",
-  "updated": "2026-08-31",
-  "older": []
+  "updated": "2026-10-25",
+  "older": [
+   "games/the-last-player-v1.html"
+  ]
  },
  {
   "title": "Bux Squad",
@@ -484,7 +570,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sorted=[...GAMES].sort((a,b)=>b.updated.localeCompare(a.updated));
 const ACCENTS=['var(--pink)','var(--sky)','var(--mint)','var(--sun)','var(--grape)','var(--orange)'];
 const TAG_COLORS={Adventure:['#dcecff','#1d5aa8'],'3D':['#ece3ff','#5530bd'],Spooky:['#2b1e4f','#fff'],Fighting:['#ffe2d3','#a8410c'],
-  Sneaky:['#d4f6ea','#0f7055'],Maze:['#fff0c2','#7d5900'],Funny:['#ffe0ee','#a82866'],'2 players':['#dff2ff','#0d6491']};
+  Sneaky:['#d4f6ea','#0f7055'],Maze:['#fff0c2','#7d5900'],Funny:['#ffe0ee','#a82866'],'2 players':['#dff2ff','#0d6491'],Learning:['#e3f7d4','#3b6e12']};
 const tagColor=t=>TAG_COLORS[t]||['#efeaff','#4a3f73'];
 const tagHTML=t=>{const [b,f]=tagColor(t);return `<span class="tag" style="--tb:${b};--tf:${f}">${esc(t)}</span>`;};
 

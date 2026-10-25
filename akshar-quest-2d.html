@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Akshar Quest 2D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Mukta:wght@400;600;700&display=swap">
+<style>
+/* Layout: one night-bazaar screen at a time; lantern-lit cards over a living starfield */
+:root{
+  --night:#170d2e; --dusk:#26164a; --stall:#33205f; --stall-hi:#43297a;
+  --ink:#fff3fa; --muted:#c3b2e6; --lantern:#ffb84d; --flame:#ffe27a;
+  --rose:#ff8fc7; --mint:#7ef0d0; --sky:#8fc8ff; --plum:#2a1840;
+  --line:rgba(255,243,250,.14);
+  --f-display:"Baloo 2", "Mukta", system-ui, sans-serif;
+  --f-body:"Mukta", "Baloo 2", system-ui, sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;max-width:980px;margin:0 auto;padding-block:12px 40px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,.node:focus-visible{outline:3px solid var(--flame);outline-offset:3px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+.hi{font-family:var(--f-display)}
+.sec{font-size:1.45rem;margin:30px 0 12px}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--flame)}
+
+/* creature animation parts */
+.cr{overflow:visible}
+.cr .blink{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+@keyframes blink{0%,91%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+.cr .flap{animation:flap .45s ease-in-out infinite alternate}
+@keyframes flap{to{transform:scaleX(.8)}}
+.cr .flicker{animation:flicker .35s ease-in-out infinite alternate}
+@keyframes flicker{to{transform:scale(.82,1.12)}}
+.cr .sway{animation:sway 2.2s ease-in-out infinite alternate}
+@keyframes sway{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+.cr .wave{animation:wave .8s ease-in-out infinite alternate}
+@keyframes wave{to{transform:scaleX(.75) skewY(8deg)}}
+.cr .pulse{animation:pulse 1.5s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:.3}}
+.cr .spin{animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cr .fan{animation:fan 2.6s ease-in-out infinite alternate}
+@keyframes fan{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+.cr .steam{animation:steam 2.4s ease-in infinite}
+@keyframes steam{0%{opacity:0;transform:translateY(10px)}40%{opacity:.75}100%{opacity:0;transform:translateY(-12px)}}
+.cr .drip{animation:drip 2.2s ease-in infinite}
+@keyframes drip{0%,40%{opacity:0;transform:translateY(-6px)}55%{opacity:1}100%{opacity:0;transform:translateY(14px)}}
+.cr .dash{animation:dash 3s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-48}}
+.cr .twinkle{animation:pulse .9s ease-in-out infinite alternate}
+svg.cr.locked{filter:brightness(0) opacity(.4)}
+
+/* hud */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:4px 12px}
+.hud-hero{display:flex;align-items:center;gap:6px;min-width:0}
+.hud-hero .mini{width:44px;height:44px;display:block}
+.hud-hero .mini svg{width:100%;height:100%}
+.hud-hero b{font-family:var(--f-display);font-size:1.15rem;margin-left:4px}
+.hud-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--dusk);border:1px solid var(--line);font-weight:600;font-size:.95rem}
+.toggle[aria-pressed="false"]{opacity:.45}
+
+/* buttons */
+.btn{font-family:var(--f-display);font-weight:800;font-size:1.2rem;padding:12px 26px;border-radius:999px;
+  background:linear-gradient(180deg,var(--flame),var(--lantern));color:#3a1d05;box-shadow:0 6px 0 #c06f12,0 0 30px rgba(255,184,77,.35);transition:transform .12s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #c06f12}
+.btn.ghost{background:var(--dusk);color:var(--ink);box-shadow:0 4px 0 #0d0620;border:1px solid var(--line)}
+.btn.sm{font-size:1.05rem;padding:9px 20px}
+
+/* title */
+.title{text-align:center;display:grid;gap:16px;justify-items:center;padding-block:20px}
+.logo-hi{font-family:var(--f-display);font-weight:800;font-size:clamp(3.4rem,13vw,7rem);line-height:1;
+  background:linear-gradient(180deg,var(--flame),var(--lantern) 55%,var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 24px rgba(255,184,77,.45))}
+.logo-en{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,6vw,2.6rem);letter-spacing:.06em}
+.logo-en small{color:var(--mint);font-size:.6em;vertical-align:super;margin-left:4px}
+.tagline{color:var(--muted);max-width:36ch;font-size:1.1rem;margin:0}
+.parade{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;max-width:640px}
+.parade button{width:86px;height:86px}
+.parade svg{width:100%;height:100%}
+.bob{animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-9px) rotate(-3deg)}}
+.title .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* creator */
+.creator{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:24px;align-items:start}
+.preview{background:radial-gradient(circle at 50% 40%,var(--stall-hi),var(--dusk) 70%);border-radius:28px;border:1px solid var(--line);padding:20px;text-align:center;position:sticky;top:12px}
+.preview svg{width:100%;max-width:240px}
+.preview .nm{font-family:var(--f-display);font-size:1.6rem;font-weight:800}
+.panel{display:grid;gap:18px}
+.field{display:grid;gap:8px}
+.field>label,.field>.lbl{font-weight:700;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.field input{font:inherit;font-size:1.2rem;padding:10px 16px;border-radius:16px;border:2px solid var(--line);background:var(--dusk);color:var(--ink);max-width:320px;width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 14px;border-radius:14px;background:var(--dusk);border:2px solid var(--line);font-weight:600}
+.chip[aria-pressed="true"]{border-color:var(--flame);background:var(--stall-hi);box-shadow:0 0 14px rgba(255,226,122,.35)}
+.swatch{width:42px;height:42px;border-radius:50%;border:3px solid var(--line)}
+.swatch[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 3px var(--flame)}
+
+/* map */
+.map-head{text-align:center;display:grid;gap:4px;margin-block:4px 18px}
+.map-head h1{font-size:clamp(1.8rem,5.5vw,2.8rem)}
+.map-head p{color:var(--muted);margin:0}
+.advcard{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;align-items:center;padding:20px;border-radius:30px;
+  background:linear-gradient(135deg,#3b2380,#55287f 60%,#6e2c78);border:2px solid var(--flame);box-shadow:0 0 44px rgba(255,184,77,.18)}
+.advcard .art{position:relative;width:150px;height:150px}
+.advcard .art svg{position:absolute;width:110px;height:110px}
+.advcard .art svg:first-child{left:0;top:0}
+.advcard .art svg:last-child{right:0;bottom:0;width:90px;height:90px}
+.advcard h2{font-size:clamp(1.5rem,4.5vw,2.1rem)}
+.advcard .hn{font-family:var(--f-display);color:var(--rose);font-size:1.15rem}
+.advcard p{margin:6px 0 12px;color:var(--muted);max-width:52ch}
+.advcard .bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pips{display:flex;gap:5px}
+.pip{width:24px;height:8px;border-radius:4px;background:rgba(255,255,255,.18)}
+.pip.on{background:var(--flame);box-shadow:0 0 8px var(--lantern)}
+.advlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:10px;margin-top:12px}
+.advmini{text-align:left;padding:12px 14px;border-radius:20px;background:var(--dusk);border:1px solid var(--line);display:grid;gap:4px;align-content:start}
+.advmini:hover{border-color:var(--lantern)}
+.advmini.cur{border-color:var(--flame);background:var(--stall)}
+.advmini b{font-family:var(--f-display);font-size:1.05rem;line-height:1.2}
+.advmini .g{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mint)}
+.portals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.portal{text-align:left;display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:center;padding:14px;border-radius:24px;
+  background:linear-gradient(160deg,var(--stall-hi),var(--stall));border:2px solid var(--line);transition:transform .2s, border-color .2s}
+.portal:hover{transform:translateY(-4px) rotate(-.5deg);border-color:var(--c,var(--flame))}
+.portal svg{width:84px;height:84px}
+.portal h3{font-size:1.2rem}
+.portal .hn{color:var(--c);font-family:var(--f-display);font-weight:700}
+.portal .sk{color:var(--muted);font-size:.93rem;line-height:1.35}
+.stars{letter-spacing:2px;font-size:1.05rem;color:var(--flame)}
+.stars .off{color:rgba(255,243,250,.2)}
+.album-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+.slot{display:grid;justify-items:center;gap:0;padding:10px 4px;border-radius:20px;background:var(--dusk);border:1px solid var(--line);text-align:center;font-size:.82rem;color:var(--muted)}
+.slot svg{width:70px;height:70px}
+.slot b{font-family:var(--f-display);color:var(--ink);font-size:.98rem}
+.slot.buddy-on{border-color:var(--mint);box-shadow:0 0 14px rgba(126,240,208,.3)}
+.map-foot{display:flex;justify-content:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+
+/* adventure path */
+.adv-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.adv-head{display:grid;gap:4px;text-align:center;justify-items:center;margin-bottom:6px}
+.adv-head h1{font-size:clamp(1.7rem,5.5vw,2.6rem)}
+.adv-head .hn{font-family:var(--f-display);color:var(--rose);font-size:1.2rem}
+.adv-head p{color:var(--muted);max-width:46ch;margin:4px 0 0}
+.pathwrap{max-width:440px;margin:0 auto}
+.pathwrap svg{width:100%;height:auto;display:block}
+.node{cursor:pointer;outline:none}
+.node.locked{cursor:not-allowed}
+.node .halo{animation:halo 1.2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes halo{from{opacity:.3;transform:scale(.94)}to{opacity:1;transform:scale(1.06)}}
+.node:hover .ring{stroke-width:5}
+.node:focus-visible .ring{stroke:#ffe27a;stroke-width:6}
+.herohop{animation:bob 1.6s ease-in-out infinite}
+
+/* play */
+.playbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.playbar h2{font-size:1.25rem;flex:1;min-width:0}
+.buddy{width:58px;height:58px;flex:none;display:block}
+.buddy svg{width:100%;height:100%}
+.buddy.cheer{animation:cheer .7s}
+@keyframes cheer{30%{transform:translateY(-16px) scale(1.12) rotate(-6deg)}65%{transform:translateY(0) scale(.94)}}
+.buddy.oops{animation:shake .45s}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:14px;height:14px;border-radius:50%;background:rgba(255,243,250,.15)}
+.dot.now{background:var(--ink);box-shadow:0 0 10px var(--ink)}
+.dot.good{background:var(--flame)}.dot.meh{background:var(--rose)}
+.stage{position:relative;min-height:340px;border-radius:30px;padding:18px;background:radial-gradient(ellipse at 50% 0%,var(--stall-hi),var(--stall) 60%,var(--dusk));border:2px solid var(--line);overflow:hidden}
+.prompt{text-align:center;display:grid;gap:8px;justify-items:center;position:relative;z-index:2}
+.prompt .q{font-family:var(--f-display);font-weight:800;font-size:clamp(1.5rem,5.5vw,2.4rem);line-height:1.2}
+.prompt .sub{color:var(--muted)}
+.orb{width:150px;height:150px;border-radius:50%;display:grid;place-items:center;font-size:76px;line-height:1;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.35),rgba(180,140,255,.25) 40%,rgba(30,10,60,.6));
+  box-shadow:0 0 40px rgba(180,140,255,.55), inset 0 0 30px rgba(255,255,255,.15);animation:bob 3.4s ease-in-out infinite}
+.orb.letter{font-family:var(--f-display);font-weight:800;color:var(--flame);font-size:84px;text-shadow:0 0 24px var(--lantern)}
+.say{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;background:rgba(0,0,0,.25);border:1px solid var(--line);font-weight:600}
+.word{font-family:var(--f-display);font-size:2.4rem;font-weight:800;min-height:3.2rem;letter-spacing:.02em}
+.word .glow{color:var(--flame);text-shadow:0 0 18px var(--lantern)}
+.word.secret{color:var(--muted);letter-spacing:.4em;font-size:1.6rem}
+.qcard{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:24px;padding:16px 22px;max-width:540px}
+.countbox{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center;max-width:380px;font-size:46px;line-height:1.1;min-height:70px;padding:10px}
+.countbox span{animation:popin .45s cubic-bezier(.3,1.6,.6,1) backwards}
+@keyframes popin{from{transform:scale(0) rotate(-40deg)}}
+.opts{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:18px;position:relative;z-index:2}
+.opt{min-width:92px;min-height:92px;padding:10px 18px;border-radius:26px;font-family:var(--f-display);font-weight:800;font-size:2.6rem;line-height:1;
+  background:linear-gradient(180deg,#fff7fc,#f2dcff);color:#3b1d6e;box-shadow:0 6px 0 #9a74d6,0 0 20px rgba(180,140,255,.35);transition:transform .12s}
+.opt.txt{font-size:1.2rem;min-height:64px;font-family:var(--f-body);font-weight:700;line-height:1.25;max-width:100%}
+.opt.txt.hi{font-family:var(--f-display);font-size:1.35rem}
+.opt.num{display:grid;justify-items:center;align-content:center;gap:4px;font-size:2.5rem}
+.opt.num small{font-size:1rem;font-family:var(--f-display);font-weight:700}
+.opt:active{transform:translateY(4px);box-shadow:0 2px 0 #9a74d6}
+.opt.right{background:linear-gradient(180deg,var(--flame),var(--lantern));color:#3a1d05;box-shadow:0 6px 0 #c06f12,0 0 30px var(--lantern)}
+.opt.nope{animation:shake .4s;opacity:.35;pointer-events:none}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.sandbar{height:10px;border-radius:5px;background:rgba(0,0,0,.35);overflow:hidden;margin:0 auto 12px;max-width:380px}
+.sandbar i{display:block;height:100%;background:linear-gradient(90deg,var(--lantern),var(--flame));transition:width 1s linear}
+
+/* bazaar */
+.keeper{display:flex;align-items:flex-end;gap:10px;justify-content:center;position:relative;z-index:2}
+.keeper svg{width:92px;height:92px;flex:none}
+.bubble{background:var(--ink);color:var(--plum);border-radius:22px 22px 22px 4px;padding:10px 18px;max-width:300px;text-align:left}
+.bubble .q{font-family:var(--f-display);font-weight:800;font-size:1.55rem;line-height:1.15}
+.bubble .sub{font-size:.95rem;color:#6a5590;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bubble .say{background:#efe4ff;border-color:#d8c6ff;color:#3b1d6e}
+.field-area{position:relative;height:250px;margin-top:8px}
+.item{position:absolute;transform:translate(-50%,-50%);width:86px;height:86px;border-radius:50%;font-size:50px;display:grid;place-items:center;
+  background:radial-gradient(circle,rgba(255,226,122,.25),transparent 70%)}
+.item span{display:block;animation:float 3.2s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-14px) rotate(6deg)}}
+.item.poof{animation:poof .5s forwards;pointer-events:none}
+@keyframes poof{to{transform:translate(-50%,-50%) scale(1.8);opacity:0;filter:blur(6px)}}
+.item.got{transition:all .7s cubic-bezier(.5,-0.4,.6,1);left:8%!important;top:2%!important;transform:translate(-50%,-50%) scale(.3);opacity:0;pointer-events:none}
+
+/* fortress */
+.fort-wrap{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:14px;align-items:end}
+.slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.sl{min-width:70px;height:74px;border-radius:14px;border:3px dashed rgba(255,243,250,.3);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:2.2rem;padding:0 6px}
+.sl.on{border-style:solid;border-color:var(--lantern);background:linear-gradient(180deg,#f5c39a,#d9895a);color:#3a1405;box-shadow:inset 0 -6px 0 rgba(0,0,0,.18);animation:popin .3s}
+.guide{color:rgba(255,243,250,.3);font-family:var(--f-display);font-weight:800;font-size:1.8rem}
+.tile{min-width:76px;min-height:76px;padding:6px 10px;border-radius:14px;font-family:var(--f-display);font-weight:800;font-size:2.2rem;line-height:1;
+  background:linear-gradient(180deg,#f5c39a,#d9895a);color:#3a1405;box-shadow:0 6px 0 #8f4a22,inset 0 0 0 3px rgba(255,255,255,.25);transition:transform .12s}
+.tile:active{transform:translateY(4px)}
+.tile.used{visibility:hidden}
+.tile.nope{animation:shake .4s}
+.tower svg{width:110px;height:auto;display:block}
+
+/* boss */
+.bossbar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:8px;position:relative;z-index:2}
+.bimg{width:104px;height:104px;display:block}
+.bimg svg{width:100%;height:100%}
+.bimg.hit{animation:hit .55s}
+@keyframes hit{20%{transform:translateX(-12px) rotate(-10deg);filter:brightness(2.2)}60%{transform:translateX(9px) rotate(7deg)}}
+.bimg.laugh{animation:laugh .7s}
+@keyframes laugh{25%,75%{transform:translateY(-8px) scale(1.06)}50%{transform:translateY(0)}}
+.shieldbox{display:grid;gap:4px}
+.shieldbox .eyebrow{color:var(--rose)}
+.shields{display:flex;gap:5px;flex-wrap:wrap;max-width:260px}
+.shard{width:22px;height:28px;clip-path:polygon(50% 0,100% 30%,82% 100%,18% 100%,0 30%);background:linear-gradient(160deg,#eef8ff,#9fd4ff 50%,#c9a6ff);box-shadow:0 0 10px #9fd4ff}
+.shard.broken{animation:shatter .5s forwards}
+@keyframes shatter{to{transform:translateY(16px) rotate(50deg) scale(.4);opacity:.15}}
+.stage.boss{background:radial-gradient(ellipse at 50% 0%,#5a2a8a,#2e1458 60%,#1a0a36);border-color:rgba(255,143,199,.35)}
+
+/* jugnu */
+.jugnu{position:fixed;z-index:20;width:64px;height:64px;animation:fly 8s linear forwards;left:-70px}
+.jugnu svg{width:100%;height:100%}
+@keyframes fly{to{left:calc(100% + 70px)}}
+
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:30;background:rgba(10,4,24,.8);display:grid;place-items:center;padding:16px;backdrop-filter:blur(4px);overflow-y:auto}
+.modal{background:linear-gradient(170deg,var(--stall-hi),var(--dusk));border:2px solid var(--flame);border-radius:30px;padding:24px;max-width:440px;width:100%;text-align:center;display:grid;gap:12px;justify-items:center;
+  box-shadow:0 0 60px rgba(255,184,77,.35);animation:pop .45s cubic-bezier(.3,1.6,.6,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.modal h2{font-size:2rem}
+.modal .big-stars{font-size:3rem;letter-spacing:6px;color:var(--flame);line-height:1}
+.modal .big-stars .off{color:rgba(255,243,250,.18)}
+.modal .crbig{width:150px;height:150px;animation:bob 2.6s ease-in-out infinite}
+.modal .crbig svg{width:100%;height:100%}
+.modal .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.modal .quote{background:var(--ink);color:var(--plum);border-radius:18px;padding:10px 16px;text-align:left;width:100%}
+.modal .quote b{font-family:var(--f-display);font-size:1.2rem;display:block}
+.modal .newfr{color:var(--mint);font-weight:700}
+.modal .friends{display:flex;gap:6px;justify-content:center}
+.modal .friends svg{width:84px;height:84px}
+.badge{font-family:var(--f-display);font-weight:800;padding:6px 18px;border-radius:99px;background:var(--flame);color:#3a1d05}
+.scene{position:fixed;inset:0;z-index:35;display:grid;align-content:end;justify-items:center;gap:6px;cursor:pointer;
+  background:radial-gradient(ellipse at 50% 35%,color-mix(in srgb,var(--c) 30%,transparent),rgba(10,4,24,.9) 68%);
+  padding:16px;padding-bottom:max(24px, env(safe-area-inset-bottom, 0px));padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.scene-cr{width:min(210px,46vw);height:min(210px,46vw);animation:enter .5s cubic-bezier(.3,1.6,.6,1)}
+.scene-cr svg{width:100%;height:100%;animation:bob 2.6s ease-in-out infinite;filter:drop-shadow(0 0 28px var(--c))}
+@keyframes enter{from{transform:translateY(40px) scale(.6);opacity:0}}
+.dlg{position:relative;max-width:640px;width:100%;background:var(--ink);color:var(--plum);border-radius:28px;padding:26px 22px 16px;box-shadow:0 0 0 4px var(--c),0 20px 50px rgba(0,0,0,.5);cursor:default}
+.tag{position:absolute;top:-17px;left:22px;background:var(--c);color:var(--plum);font-family:var(--f-display);font-weight:800;padding:3px 16px;border-radius:99px;font-size:1.05rem}
+.dlg .hiline{font-family:var(--f-display);font-weight:800;font-size:clamp(1.4rem,5vw,1.8rem);line-height:1.2}
+.dlg .enline{font-size:1.1rem;color:#5a4680;min-height:3.2em;margin-top:4px}
+.dlg .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.dlg .say{background:#efe4ff;border-color:#d8c6ff;color:#3b1d6e}
+.skip{position:absolute;top:max(14px, env(safe-area-inset-top, 0px));right:max(16px, env(safe-area-inset-right, 0px))}
+.fx{position:fixed;pointer-events:none;z-index:40;font-size:22px;animation:rise 1s ease-out forwards}
+@keyframes rise{to{transform:translate(var(--dx),-90px) scale(.4) rotate(160deg);opacity:0}}
+
+@media (max-width:700px){
+  .creator{grid-template-columns:minmax(0,1fr)}
+  .preview{position:static}.preview svg{max-width:170px}
+  .portals{grid-template-columns:minmax(0,1fr)}
+  .advcard{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+  .advcard .bar{justify-content:center}
+  .fort-wrap{grid-template-columns:minmax(0,1fr)}
+  .tower{display:none}
+  .opt{min-width:76px;min-height:76px;font-size:2.2rem}
+  .orb{width:120px;height:120px;font-size:62px}
+  .countbox{font-size:38px}
+  .buddy{width:48px;height:48px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;animation-iteration-count:1!important}.jugnu{animation:none;left:calc(50% - 32px)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<radialGradient id="gMoth" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d4bcff"/></radialGradient>
+<linearGradient id="gWingA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3d0ff"/><stop offset="1" stop-color="#7b4dff"/></linearGradient>
+<linearGradient id="gWingB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd6ee"/><stop offset="1" stop-color="#ff6fb5"/></linearGradient>
+<radialGradient id="gLantern" cx=".45" cy=".4" r=".65"><stop offset="0" stop-color="#fff2b8"/><stop offset=".55" stop-color="#ffb84d"/><stop offset="1" stop-color="#ef7d1a"/></radialGradient>
+<radialGradient id="gGlow"><stop offset="0" stop-color="#fff3a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffd34d" stop-opacity="0"/></radialGradient>
+<linearGradient id="gShell" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a6f5d6"/><stop offset="1" stop-color="#2fa883"/></linearGradient>
+<linearGradient id="gStone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbd7b4"/><stop offset="1" stop-color="#d9895a"/></linearGradient>
+<linearGradient id="gSnake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8e7ff"/><stop offset="1" stop-color="#4f9cf0"/></linearGradient>
+<radialGradient id="gMoon" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#cdb8ff"/></radialGradient>
+<linearGradient id="gPea" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2a7bd8"/><stop offset="1" stop-color="#5ee0c4"/></linearGradient>
+<radialGradient id="gCloud" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9e2ff"/></radialGradient>
+<linearGradient id="gClay" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3b384"/><stop offset="1" stop-color="#b5582c"/></linearGradient>
+<radialGradient id="gLemon" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#fffcc8"/><stop offset="1" stop-color="#ffcb12"/></radialGradient>
+<linearGradient id="gBook" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e8d9ff"/></linearGradient>
+<radialGradient id="gShadow" cx=".5" cy=".15" r=".95"><stop offset="0" stop-color="#7f4fd8"/><stop offset="1" stop-color="#1f0b40"/></radialGradient>
+<radialGradient id="gAura"><stop offset="0" stop-color="#c58cff" stop-opacity=".6"/><stop offset="1" stop-color="#c58cff" stop-opacity="0"/></radialGradient>
+<radialGradient id="gFire" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff8a1f"/></radialGradient>
+</defs></svg>
+
+<canvas id="sky"></canvas>
+<div class="app">
+  <header class="hud" id="hud" hidden>
+    <div class="hud-hero"><span class="mini" id="hudAv"></span><span class="mini" id="hudBuddy"></span><b id="hudName"></b></div>
+    <div class="hud-tools">
+      <span class="pill" title="Jugnu fireflies caught">✨ <span id="jugCount">0</span></span>
+      <button class="pill toggle" id="sfxBtn" aria-pressed="true">🔔 Sounds</button>
+      <button class="pill toggle" id="musBtn" aria-pressed="true">🎵 Music</button>
+    </div>
+  </header>
+
+  <section id="s-title" class="title">
+    <div class="parade" id="parade"></div>
+    <div class="logo-hi">अक्षर</div>
+    <div class="logo-en">QUEST<small>2D</small></div>
+    <p class="tagline">Step into the Marketplace of Illusions, where letters whisper, stalls float, and a masked trickster named Bhram is up to mischief.</p>
+    <div class="row" id="titleBtns"></div>
+  </section>
+
+  <section id="s-create" hidden>
+    <div class="map-head"><h1>Design your hero</h1><p>Every quester in the bazaar looks a little magical.</p></div>
+    <div class="creator">
+      <div class="preview"><div id="bigAv"></div><div class="nm" id="pvName"></div></div>
+      <div class="panel">
+        <div class="field"><label for="nameIn">Your name</label><input id="nameIn" maxlength="14" autocomplete="off"></div>
+        <div class="field"><span class="lbl">Body glow</span><div class="chips" id="cBody"></div></div>
+        <div class="field"><span class="lbl">Eyes</span><div class="chips" id="cEyes"></div></div>
+        <div class="field"><span class="lbl">Magic hat</span><div class="chips" id="cAcc"></div></div>
+        <div class="field"><span class="lbl">Cape</span><div class="chips" id="cCape"></div></div>
+        <div class="field"><span class="lbl">Grade (picks your adventure)</span><div class="chips" id="cGrade"></div></div>
+        <div><button class="btn" id="enterBtn">Enter the Marketplace →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-map" hidden>
+    <div class="map-head"><h1>The Marketplace of Illusions</h1><p class="hi">माया का बाज़ार</p></div>
+    <div id="advCard"></div>
+    <h2 class="sec">Every grade’s adventure</h2>
+    <div class="advlist" id="advList"></div>
+    <h2 class="sec">Free play stalls</h2>
+    <div class="portals" id="portals"></div>
+    <h2 class="sec">Creature Album <span class="eyebrow" id="albumCount" style="margin-left:8px"></span></h2>
+    <div class="album-row" id="album"></div>
+    <div class="map-foot"><button class="btn ghost" id="editBtn">✎ Change my hero</button></div>
+  </section>
+
+  <section id="s-adv" hidden>
+    <div class="adv-top"><button class="pill" id="advBack">← Bazaar</button></div>
+    <div class="adv-head" id="advHead"></div>
+    <div class="pathwrap" id="pathwrap"></div>
+  </section>
+
+  <section id="s-play" hidden>
+    <div class="playbar">
+      <button class="pill" id="backBtn">← Back</button>
+      <h2 id="playTitle"></h2>
+      <span class="buddy" id="buddy"></span>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+  </section>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const LETTERS=[
+ ['अ','अनानास','🍍','pineapple'],['आ','आम','🥭','mango'],['इ','इंद्रधनुष','🌈','rainbow'],['ई','ईंट','🧱','brick'],
+ ['उ','उल्लू','🦉','owl'],['ऊ','ऊन','🧶','wool'],['ए','एक','1️⃣','one'],['ऐ','ऐनक','👓','glasses'],['ओ','ओस','💧','dew'],
+ ['औ','औरत','👩','woman'],['क','कबूतर','🕊️','pigeon'],['ख','खरगोश','🐇','rabbit'],['ग','गाय','🐄','cow'],
+ ['घ','घर','🏠','house'],['च','चम्मच','🥄','spoon'],['छ','छाता','☂️','umbrella'],['ज','जहाज़','🚢','ship'],['झ','झंडा','🚩','flag'],
+ ['ट','टमाटर','🍅','tomato'],['ढ','ढोल','🥁','drum'],['त','तितली','🦋','butterfly'],['द','दूध','🥛','milk'],['ध','धनुष','🏹','bow'],
+ ['न','नल','🚰','tap'],['प','पतंग','🪁','kite'],['फ','फूल','🌸','flower'],['ब','बत्तख','🦆','duck'],['भ','भालू','🐻','bear'],
+ ['म','मछली','🐟','fish'],['र','रोटी','🫓','roti'],['ल','लालटेन','🏮','lantern'],['व','वायुयान','✈️','aeroplane'],['श','शेर','🦁','lion'],
+ ['स','सेब','🍎','apple'],['ह','हाथी','🐘','elephant']];
+const SETS={vowels:'अ आ इ ई उ ऊ ए ऐ ओ औ'.split(' '),cons1:'क ख ग घ च छ ज झ ट ढ'.split(' '),cons2:'त द ध न प फ ब भ म र ल व श स ह'.split(' ')};
+SETS.all=LETTERS.map(l=>l[0]);
+const GOODS=[['सेब','🍎','apple'],['केला','🍌','banana'],['आम','🥭','mango'],['अंगूर','🍇','grapes'],['गाजर','🥕','carrot'],['दूध','🥛','milk'],
+ ['अंडा','🥚','egg'],['मछली','🐟','fish'],['फूल','🌸','flower'],['चाय','🍵','tea'],['टमाटर','🍅','tomato'],['तरबूज़','🍉','watermelon'],
+ ['आलू','🥔','potato'],['प्याज़','🧅','onion'],['नींबू','🍋','lemon'],['मकई','🌽','corn'],['चाबी','🔑','key'],['घड़ी','⌚','watch'],['गुब्बारा','🎈','balloon'],['किताब','📖','book']];
+const BRICKS=[[['बि','ल्ली'],'🐱','cat'],[['हा','थी'],'🐘','elephant'],[['ति','त','ली'],'🦋','butterfly'],[['क','बू','त','र'],'🕊️','pigeon'],
+ [['म','छ','ली'],'🐟','fish'],[['ख','र','गो','श'],'🐇','rabbit'],[['प','तं','ग'],'🪁','kite'],[['ट','मा','ट','र'],'🍅','tomato'],
+ [['कि','ता','ब'],'📖','book'],[['सू','र','ज'],'☀️','sun'],[['चाँ','द'],'🌙','moon'],[['बा','द','ल'],'☁️','cloud'],[['घ','ड़ी'],'⌚','watch'],
+ [['कु','र्सी'],'🪑','chair'],[['पे','ड़'],'🌳','tree'],[['गु','ब्बा','रा'],'🎈','balloon'],[['द','र','वा','ज़ा'],'🚪','door'],[['ता','रा'],'⭐','star'],
+ [['त','र','बू','ज़'],'🍉','watermelon'],[['इं','द्र','ध','नु','ष'],'🌈','rainbow']];
+const KAAL={
+ easy:[
+  {q:'सोमवार',sub:'Which day is this?',o:['Monday','Sunday','Friday']},{q:'रविवार',sub:'Which day is this?',o:['Sunday','Tuesday','Saturday']},
+  {q:'पाँच',sub:'Which number?',o:['5','3','8']},{q:'दस',sub:'Which number?',o:['10','2','7']},{q:'तीन',sub:'Which number?',o:['3','9','6']},
+  {q:'सूरज',sub:'What is it?',o:['☀️ Sun','🌙 Moon','⭐ Star']},{q:'चाँद',sub:'What is it?',o:['🌙 Moon','☁️ Cloud','☀️ Sun']},
+  {q:'सुबह',sub:'What time of day?',o:['🌅 Morning','🌃 Night','🌇 Evening']},{q:'रात',sub:'What time of day?',o:['🌃 Night','🌅 Morning','🕛 Noon']},
+  {q:'दिन',sub:'Find the opposite',o:['रात','सुबह','सूरज'],hi:1},{q:'शनिवार',sub:'Which day is this?',o:['Saturday','Monday','Thursday']}],
+ mid:[
+  {q:'मंगलवार',sub:'Which day is this?',o:['Tuesday','Thursday','Monday','Friday']},{q:'शुक्रवार',sub:'Which day is this?',o:['Friday','Wednesday','Sunday','Saturday']},
+  {q:'बुधवार',sub:'Which day is this?',o:['Wednesday','Tuesday','Thursday','Monday']},{q:'बीस',sub:'Which number?',o:['20','12','30','50']},
+  {q:'पचास',sub:'Which number?',o:['50','15','25','100']},{q:'गरम',sub:'Find the opposite',o:['ठंडा','बड़ा','मीठा','नया'],hi:1},
+  {q:'बड़ा',sub:'Find the opposite',o:['छोटा','लंबा','मोटा','ऊँचा'],hi:1},{q:'ऊपर',sub:'Find the opposite',o:['नीचे','आगे','अंदर','पास'],hi:1},
+  {q:'हफ़्ता',sub:'What does it mean?',o:['Week','Month','Year','Hour']},{q:'महीना',sub:'What does it mean?',o:['Month','Week','Day','Minute']},
+  {q:'साल',sub:'What does it mean?',o:['Year','Week','Second','Night']},{q:'कल',sub:'Time riddle: कल can mean…',o:['Yesterday and tomorrow','Only today','Only tonight','Next year']}],
+ vocab:[
+  {q:'पानी',o:['Water','Fire','Wind','Stone']},{q:'आग',o:['Fire','Water','Rain','Leaf']},{q:'हवा',o:['Wind / air','Earth','Sun','Snow']},
+  {q:'पेड़',o:['Tree','Road','Bird','Door']},{q:'नदी',o:['River','Mountain','Forest','Village']},{q:'पहाड़',o:['Mountain','River','Desert','Sea']},
+  {q:'आसमान',o:['Sky','Ground','House','Cloud']},{q:'दोस्त',o:['Friend','Teacher','Brother','Stranger']},{q:'खुश',o:['Happy','Sad','Angry','Sleepy']},
+  {q:'उदास',o:['Sad','Happy','Brave','Fast']},{q:'जल्दी',o:['Quickly','Slowly','Loudly','Later']},{q:'धीरे',o:['Slowly','Quickly','Quietly','Never']},
+  {q:'सुंदर',o:['Beautiful','Ugly','Tall','Heavy']},{q:'मीठा',o:['Sweet','Sour','Salty','Bitter']}],
+ hard:[
+  {q:'We drink water.',sub:'Choose the Hindi sentence',o:['हम पानी पीते हैं।','हम खाना खाते हैं।','वह पानी पीती है।','हम पानी पिएँगे।'],hi:1,en:1},
+  {q:'लड़की गाना ___ है।',sub:'Fill in the blank',o:['गाती','गाता','गाते','गाया'],hi:1},
+  {q:'Tomorrow we will go to school.',sub:'Choose the Hindi sentence',o:['कल हम स्कूल जाएँगे।','कल हम स्कूल गए थे।','हम स्कूल जाते हैं।','आज हम स्कूल हैं।'],hi:1,en:1},
+  {q:'Yesterday it rained.',sub:'Choose the Hindi sentence',o:['कल बारिश हुई।','कल बारिश होगी।','बारिश होती है।','आज धूप है।'],hi:1,en:1},
+  {q:'Which word is in the past?',sub:'Past tense',o:['खाया','खाता','खाएगा','खाओ'],hi:1,en:1},
+  {q:'परसों',sub:'Time riddle: परसों can mean…',o:['Day after tomorrow or day before yesterday','Only tomorrow','Next week','Last year']},
+  {q:'सौ',sub:'Which number?',o:['100','1000','10','50']},
+  {q:'लड़का → ?',sub:'Make it plural',o:['लड़के','लड़कों','लड़की','लड़कियाँ'],hi:1},
+  {q:'किताब → ?',sub:'Make it plural',o:['किताबें','किताबा','किताबो','किताबी'],hi:1},
+  {q:'We are friends.',sub:'Choose the Hindi sentence',o:['हम दोस्त हैं।','हम दोस्त था।','वे दोस्त हैं।','तुम दोस्त हो।'],hi:1,en:1},
+  {q:'गुरुवार',sub:'Which day is this?',o:['Thursday','Tuesday','Saturday','Wednesday']}],
+ muhavare:[
+  {q:'नौ दो ग्यारह होना',o:['To run away','To count to eleven','To do maths','To be late']},
+  {q:'आँखों का तारा',o:['Someone very dear','A star in the sky','Sore eyes','A bright lamp']},
+  {q:'ईद का चाँद होना',o:['To be seen very rarely','To see the moon','To shine brightly','To stay up late']},
+  {q:'दाल में कुछ काला',o:['Something is fishy','The dal is burnt','Black lentils','Dinner is ready']},
+  {q:'नाक में दम करना',o:['To trouble someone a lot','To catch a cold','To smell flowers','To breathe deeply']},
+  {q:'उल्टी गंगा बहाना',o:['To do things the opposite way','To swim in a river','To make it rain','To travel far']},
+  {q:'हाथ-पैर फूल जाना',o:['To panic','To get hurt','To grow tall','To exercise']},
+  {q:'आसमान सिर पर उठाना',o:['To make a huge fuss','To lift the sky','To watch the stars','To fly a kite']},
+  {q:'अपने मुँह मियाँ मिट्ठू',o:['To praise yourself','To eat sweets','To talk to a parrot','To sing loudly']},
+  {q:'घी के दीये जलाना',o:['To celebrate with joy','To cook with ghee','To light a fire','To save money']}]
+};
+const KSUB={vocab:'What does it mean?',muhavare:'What does this muhavara (idiom) mean?'};
+Object.entries(KSUB).forEach(([k,s])=>KAAL[k].forEach(q=>q.sub=s));
+const DEV=['०','१','२','३','४','५','६','७','८','९','१०'];
+const NUMW=['शून्य','एक','दो','तीन','चार','पाँच','छह','सात','आठ','नौ','दस'];
+const COUNTEM=['🍎','⭐','🐟','🌸','🎈','🦋','🍋','🪔','🧁','🐣'];
+
+const GRADES=[['prek','Pre-K'],['k','K'],['g12','Grades 1–2'],['g34','Grades 3–4'],['g5','Grade 5+']];
+const FREE={
+ prek:{varna:{n:6,opts:2,hint:1,set:'vowels'},bazaar:{n:6,goods:2,hint:1},fort:{n:5,short:1,decoy:0,guide:1},kaal:{n:6,pool:['easy'],opts:2}},
+ k:{varna:{n:7,opts:3,hint:1,set:'all'},bazaar:{n:7,goods:3,hint:1},fort:{n:6,short:1,decoy:0,guide:1},kaal:{n:7,pool:['easy'],opts:3}},
+ g12:{varna:{n:8,opts:3,hint:0,set:'all'},bazaar:{n:8,goods:4,hint:0},fort:{n:7,short:1,decoy:0,guide:1},kaal:{n:8,pool:['easy','mid'],opts:3}},
+ g34:{varna:{n:8,opts:4,hint:0,set:'all'},bazaar:{n:8,goods:5,hint:0},fort:{n:8,short:0,decoy:1,guide:0},kaal:{n:8,pool:['mid','vocab'],opts:4}},
+ g5:{varna:{n:8,opts:4,hint:0,set:'all'},bazaar:{n:8,goods:6,hint:0},fort:{n:8,short:0,decoy:2,guide:0},kaal:{n:8,pool:['hard','muhavare'],opts:4,timer:15}}};
+const REALMS=[
+ {id:'varna',type:'mcq',kind:'varna',name:'The Whispering Varnamala',hi:'फुसफुसाती वर्णमाला',cr:'phusphus',skill:'Hear a word, find the letter it begins with.'},
+ {id:'bazaar',type:'bazaar',name:'Floating Maya Bazaar',hi:'तैरता माया बाज़ार',cr:'deepu',skill:'Read the shopkeeper’s wish and grab the floating treasure.'},
+ {id:'fort',type:'fort',name:'The Fortress of Words',hi:'शब्दों का किला',cr:'burju',skill:'Stack akshar bricks to build whole words.'},
+ {id:'kaal',type:'mcq',kind:'kaal',name:'Kaal Mandir',hi:'काल मंदिर',cr:'tiknaag',skill:'Days, numbers, opposites, sentences and riddles.'}];
+
+/* ================= ADVENTURES ================= */
+const ADV={
+ prek:{title:'The Lost Moon-Egg',hi:'खोया चाँद-अंडा',hero:'chanda',
+  blurb:'Baby dragon Chanda’s moon-egg floated away into the bazaar. Follow the glowing clues and bring it home!',
+  ch:[
+   {title:'Letter Lantern Garden',hi:'अक्षर बाग़',guide:'phusphus',reward:'phusphus',type:'mcq',P:{kind:'match',n:5,opts:2,set:'vowels'},
+    intro:[['chanda','मेरा चाँद-अंडा खो गया!','My moon-egg floated away into the bazaar! Will you help me find it?'],['phusphus','शश्श… अक्षर रास्ता दिखाएँगे।','Shhh… the glowing letters know the way. Tap the letter that matches!']],
+    outro:['phusphus','शाबाश!','Well done! I heard the egg giggling near the fireflies.']},
+   {title:'Firefly Meadow',hi:'जुगनू का मैदान',guide:'jugnu',reward:'jugnu',type:'mcq',P:{kind:'count',n:5,max:4,opts:2},
+    intro:[['jugnu','गिनो और चमको!','Hello! Count us fireflies and we will light up the path.']],
+    outro:['jugnu','वाह!','Wow! Little egg-shaped footprints lead to the fruit stall!']},
+   {title:'Fruit Float',hi:'फलों की नाव',guide:'nimbu',reward:'nimbu',type:'bazaar',P:{n:5,goods:2,hint:1},
+    intro:[['nimbu','मैं नींबू हूँ!','I am Nimbu, the lucky lemon! The fruit stall is floating away. Grab what the shopkeeper asks for.']],
+    outro:['nimbu','बहुत अच्छे!','Very good! The egg rolled up the cloud steps!']},
+   {title:'Cloud Steps',hi:'बादल की सीढ़ी',guide:'gajju',reward:'gajju',type:'mcq',P:{kind:'varna',n:5,opts:2,hint:1,set:'vowels'},
+    intro:[['gajju','ऊपर चलो!','Climb onto my cloud! Listen to each word and find its first letter.']],
+    outro:['gajju','मैंने कुछ देखा…','Wait… I saw a masked shadow carrying something round and shiny!']},
+   {title:'Mirror Maze',hi:'भ्रम की भूलभुलैया',guide:'chanda',reward:'chanda',type:'boss',P:{n:6,mix:[['match',{opts:2,set:'vowels'}],['count',{max:4,opts:2}]]},
+    intro:[['bhram','हा हा! यह अंडा अब मेरा है!','Ha ha! The moon-egg is mine now! You will never get past my mirror shields!'],['chanda','डरो मत!','Don’t be scared, hero. Every right answer cracks one of his mirrors!']],
+    outro:['chanda','मेरा अंडा!','My egg! You got it back!']}],
+  ending:[['bhram','अरे! तुम बहुत होशियार हो।','Oh no, my mirrors! You are very clever.'],['bhram','मैं बस एक दोस्त चाहता था…','I only took the egg because… I wanted someone to play with.'],['chanda','हम दोस्त बन सकते हैं!','We can all be friends! Thank you, hero. My egg is safe at home!']]},
+ k:{title:'Deepu’s Missing Lanterns',hi:'दीपू की खोई लालटेनें',hero:'deepu',
+  blurb:'Someone stole the light from every lantern in the Maya Bazaar. Relight them one letter at a time.',
+  ch:[
+   {title:'Lantern Row',hi:'लालटेन गली',guide:'deepu',reward:'deepu',type:'mcq',P:{kind:'match',n:6,opts:3,set:'cons1'},
+    intro:[['deepu','मेरी लालटेनें बुझ गईं!','Oh no! Every lantern in my bazaar went dark. Match the letters to light them again!']],
+    outro:['deepu','रोशनी वापस आ गई!','The light is back! But the Whispering Gate is still silent…']},
+   {title:'Whispering Gate',hi:'फुसफुसाता दरवाज़ा',guide:'phusphus',reward:'phusphus',type:'mcq',P:{kind:'varna',n:6,opts:3,hint:1,set:'vowels'},
+    intro:[['phusphus','सुनो… ध्यान से सुनो।','Listen closely… every word starts with a hidden letter. Find it to open the gate.']],
+    outro:['phusphus','दरवाज़ा खुल गया!','The gate is open! I hear fireflies ahead.']},
+   {title:'Firefly Meadow',hi:'जुगनू का मैदान',guide:'jugnu',reward:'jugnu',type:'mcq',P:{kind:'count',n:6,max:7,opts:3},
+    intro:[['jugnu','हम कितने हैं?','Someone scared us fireflies away! Count us so we can glow together again.']],
+    outro:['jugnu','चमक गए!','We are glowing! The thief went toward the chai stall.']},
+   {title:'Chai Corner',hi:'चाय की दुकान',guide:'kulhad',reward:'kulhad',type:'bazaar',P:{n:6,goods:3,hint:1},
+    intro:[['kulhad','गरम गरम चाय!','Hot hot chai! Bubble bubble! My customers are confused. Help me find what they ask for.']],
+    outro:['kulhad','धन्यवाद!','Thank you! Psst… I saw a masked cat holding a jar full of light.']},
+   {title:'The Jar of Light',hi:'रोशनी का मर्तबान',guide:'deepu',reward:'bhram',type:'boss',P:{n:7,mix:[['match',{opts:3,set:'cons1'}],['count',{max:7,opts:3}],['varna',{opts:3,hint:1,set:'vowels'}]]},
+    intro:[['bhram','रोशनी मेरी है!','All the lantern light is mine! It makes my mirrors sparkle!'],['deepu','हम हार नहीं मानेंगे!','We won’t give up! Break his mirror shields, hero!']],
+    outro:['deepu','बाज़ार चमक उठा!','The whole bazaar is glowing again!']}],
+  ending:[['bhram','मेरे शीशे टूट गए!','My mirrors broke! The light is flying home…'],['bhram','अंधेरे में अकेले डर लगता था।','I took it because I was scared of the dark, all alone.'],['deepu','यह लो, तुम्हारी अपनी लालटेन!','Here, take your very own lantern. Friends share their light!']]},
+ g12:{title:'The Whispering Thief',hi:'फुसफुसाता चोर',hero:'phusphus',
+  blurb:'The letters have lost their voices! A thief in a starry cloak is catching them in a jar.',
+  ch:[
+   {title:'Silent Varnamala',hi:'चुप वर्णमाला',guide:'phusphus',reward:'phusphus',type:'mcq',P:{kind:'varna',n:7,opts:3,hint:0,set:'all'},
+    intro:[['phusphus','अक्षरों की आवाज़ चोरी हो गई!','The letters have lost their voices! Someone is catching them in a jar.'],['phusphus','शब्द सुनो, अक्षर पहचानो।','Hear each word and choose its first letter to set a voice free.']],
+    outro:['phusphus','आवाज़ें लौट रही हैं!','The voices are coming back! The thief ran toward the fortress.']},
+   {title:'Brick by Brick',hi:'ईंट से ईंट',guide:'burju',reward:'burju',type:'fort',P:{n:6,short:1,decoy:0,guide:1},
+    intro:[['burju','धीरे… पर पक्का।','Slow… but steady. The thief knocked down my walls! Stack the akshar bricks in order.']],
+    outro:['burju','दीवार मज़बूत है!','The wall is strong again! I spotted a peacock feather on the path.']},
+   {title:'Peacock Plaza',hi:'मोर चौक',guide:'moti',reward:'moti',type:'bazaar',P:{n:7,goods:4,hint:0},
+    intro:[['moti','मेरे पंख देखो!','Look at my feathers! The plaza shopkeepers lost their things. Read their wish and grab the right one.']],
+    outro:['moti','बढ़िया!','Excellent! The clock tower is chiming strangely…']},
+   {title:'Clock Tower',hi:'घंटाघर',guide:'tiknaag',reward:'tiknaag',type:'mcq',P:{kind:'kaal',n:7,pool:['easy'],opts:3},
+    intro:[['tiknaag','टिक… टिक…','Tick… tock… the thief mixed up my days and numbers! Put them right.']],
+    outro:['tiknaag','समय ठीक है।','Time is fixed. The thief is hiding in the Hall of Mirrors!']},
+   {title:'Hall of Mirrors',hi:'शीशमहल',guide:'phusphus',reward:'bhram',type:'boss',P:{n:8,mix:[['varna',{opts:3,set:'cons2'}],['pic',{opts:3}],['kaal',{pool:['easy'],opts:3}]]},
+    intro:[['bhram','आवाज़ें मेरी हैं!','Those voices are mine! I love hearing them whisper at night.'],['phusphus','उसे रोको!','Stop him, hero! Every right answer cracks a mirror!']],
+    outro:['phusphus','सब आज़ाद!','Every letter is free!']}],
+  ending:[['bhram','ठीक है, ठीक है…','Alright, alright… the voices are free.'],['bhram','मुझसे कोई बात नहीं करता था।','Nobody ever talks to me. I just wanted to hear someone.'],['phusphus','अब हम रोज़ बात करेंगे।','Then we will talk to you every day! Thank you, hero.']]},
+ g34:{title:'Siege of the Word Fortress',hi:'शब्दों के किले की घेराबंदी',hero:'burju',
+  blurb:'Bhram’s magic mist is cracking the Fortress of Words. Rebuild the walls before every word fades away.',
+  ch:[
+   {title:'Broken Walls',hi:'टूटी दीवारें',guide:'burju',reward:'burju',type:'fort',P:{n:7,short:0,decoy:1,guide:0},
+    intro:[['burju','किला खतरे में है!','The Fortress of Words is under siege! The mist cracked the walls. Build the words back, brick by brick.'],['burju','ध्यान से! नकली ईंटें भी हैं।','Careful! Some bricks are fakes. Use only the ones you need.']],
+    outro:['burju','दीवारें खड़ी हैं!','The walls stand! The library bats have news.']},
+   {title:'Library of Bats',hi:'चमगादड़ पुस्तकालय',guide:'pannu',reward:'pannu',type:'mcq',P:{kind:'kaal',n:8,pool:['vocab'],opts:4},
+    intro:[['pannu','शब्दों का मतलब बताओ!','I am Pannu! The mist erased the meanings from my books. Tell me what each word means.']],
+    outro:['pannu','किताबें भर गईं!','My books are full again! But the market below is in chaos.']},
+   {title:'Market Mayhem',hi:'बाज़ार में हंगामा',guide:'deepu',reward:'deepu',type:'bazaar',P:{n:7,goods:5,hint:0},
+    intro:[['deepu','सब उड़ रहा है!','Everything is floating away! Find what each shopkeeper needs before it drifts off.']],
+    outro:['deepu','सब ठीक!','Order is back! The Hall of Opposites is the last door.']},
+   {title:'Hall of Opposites',hi:'उलटों का महल',guide:'tiknaag',reward:'tiknaag',type:'mcq',P:{kind:'kaal',n:8,pool:['mid'],opts:4},
+    intro:[['tiknaag','उल्टा-पुल्टा!','In this hall everything is upside down. Find opposites, days and time words to walk through.']],
+    outro:['tiknaag','आगे भ्रम है।','Bhram waits beyond this door. Be brave.']},
+   {title:'The Mist Throne',hi:'धुंध का सिंहासन',guide:'burju',reward:'bhram',type:'boss',P:{n:9,mix:[['pic',{opts:4}],['kaal',{pool:['mid','vocab'],opts:4}],['varna',{opts:4,set:'all'}]]},
+    intro:[['bhram','यह किला अब मेरा महल है!','This fortress is my palace now! My mist will cover every word!'],['burju','हम मिलकर लड़ेंगे!','We stand together! Crack his shields with everything you know!']],
+    outro:['burju','किला बच गया!','The fortress is saved!']}],
+  ending:[['bhram','धुंध हट रही है…','The mist is fading… you really know your words.'],['bhram','मैं भी पढ़ना सीखना चाहता था।','I hid the words because… I never learned to read them.'],['pannu','हम तुम्हें सिखाएँगे!','Then we will teach you! The library is open to everyone.']]},
+ g5:{title:'Secrets of Kaal Mandir',hi:'काल मंदिर के रहस्य',hero:'tiknaag',
+  blurb:'Deep inside the temple, time is running backwards. Solve the riddles of Kaal Mandir before the last grain of sand falls.',
+  ch:[
+   {title:'The Sentence Scrolls',hi:'वाक्यों के पत्र',guide:'pannu',reward:'pannu',type:'mcq',P:{kind:'kaal',n:8,pool:['hard'],opts:4},
+    intro:[['pannu','समय उल्टा चल रहा है!','Time is running backwards inside Kaal Mandir! The sentence scrolls are scrambled.'],['pannu','सही वाक्य चुनो।','Choose the correct Hindi to unroll each scroll.']],
+    outro:['pannu','पहला रहस्य खुला!','The first secret is open! Climb the Tower of Long Words.']},
+   {title:'Tower of Long Words',hi:'लंबे शब्दों की मीनार',guide:'burju',reward:'burju',type:'fort',P:{n:7,short:0,decoy:2,guide:0},
+    intro:[['burju','लंबे शब्द, ऊँची मीनार!','Long words build a tall tower. Watch out for the fake bricks!']],
+    outro:['burju','मीनार तैयार!','The tower stands! From the top I can see the peacock’s riddle garden.']},
+   {title:'Peacock Riddles',hi:'मोर की पहेलियाँ',guide:'moti',reward:'moti',type:'mcq',P:{kind:'kaal',n:7,pool:['muhavare'],opts:4},
+    intro:[['moti','मुहावरे सुलझाओ!','My feathers hold old Hindi sayings called muhavare. Tell me what each one really means.']],
+    outro:['moti','बहुत समझदार!','So wise! Only the Sands of Time remain.']},
+   {title:'Sands of Time',hi:'समय की रेत',guide:'tiknaag',reward:'tiknaag',type:'mcq',P:{kind:'kaal',n:8,pool:['hard','mid'],opts:4,timer:15},
+    intro:[['tiknaag','रेत गिर रही है…','The sand is falling… answer before the hourglass empties!']],
+    outro:['tiknaag','समय रुक गया।','Time has stopped. Now… face the master of illusions.']},
+   {title:'Heart of the Temple',hi:'मंदिर का हृदय',guide:'tiknaag',reward:'bhram',type:'boss',P:{n:10,timer:18,mix:[['kaal',{pool:['hard'],opts:4}],['kaal',{pool:['muhavare'],opts:4}],['kaal',{pool:['vocab'],opts:4}]]},
+    intro:[['bhram','मैंने समय चुराया!','I stole time itself! If time runs backwards, today never ends and the fun never stops!'],['tiknaag','समय सबका है!','Time belongs to everyone! Break his shields, hero, before the sand runs out!']],
+    outro:['tiknaag','घड़ियाँ चल पड़ीं!','The clocks are ticking forward again!']}],
+  ending:[['bhram','घड़ी फिर से चल पड़ी…','The clocks are moving again…'],['bhram','मुझे कल से डर लगता था।','I was afraid of tomorrow. What if my friends forget me?'],['tiknaag','कल भी हम साथ रहेंगे।','Tomorrow we will still be together. That is the secret of Kaal Mandir.']]}
+};
+
+/* ================= STATE ================= */
+const BODY=['#ffc8e6','#c9b6ff','#a8f0dc','#ffe08a','#9fd4ff','#ffb59e'];
+const CAPE=['#7b4dff','#ff5fa8','#21b89a','#ff9e2c','#3a7bff'];
+const EYES=[['dot','Dots'],['sparkle','Sparkly'],['happy','Happy ^^'],['wink','Wink']];
+const ACC=[['witch','Star hat'],['cat','Cat ears'],['flower','Marigolds'],['crown','Crown'],['none','None']];
+let S={name:'Tara',body:0,eyes:'sparkle',acc:'witch',cape:0,grade:'k',stars:{},owned:[],jugnu:0,adv:{},buddy:null,started:false,done:[]};
+try{const s=JSON.parse(localStorage.getItem('akshar-quest')||'null');if(s)S=Object.assign(S,s)}catch(e){}
+const save=()=>{try{localStorage.setItem('akshar-quest',JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+const R_=()=>Math.random();
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=R_()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(a,n)=>shuffle(a).slice(0,n);
+const prog=k=>S.adv[k]||(S.adv[k]=[0,0,0,0,0]);
+function own(k){if(k&&!S.owned.includes(k)){S.owned.push(k);return true}return false}
+
+/* ================= SOUND ================= */
+const AC={ctx:null,master:null,music:null,sfx:true,mus:true,timer:null,drone:[]};
+function audio(){
+  if(!AC.ctx){try{
+    const c=new (window.AudioContext||window.webkitAudioContext)();AC.ctx=c;
+    AC.master=c.createGain();AC.master.gain.value=.7;AC.master.connect(c.destination);
+    const d=c.createDelay();d.delayTime.value=.23;const fb=c.createGain();fb.gain.value=.3;const wet=c.createGain();wet.gain.value=.28;
+    AC.master.connect(d);d.connect(fb);fb.connect(d);d.connect(wet);wet.connect(c.destination);
+    AC.music=c.createGain();AC.music.gain.value=.0001;AC.music.connect(AC.master);
+  }catch(e){}}
+  if(AC.ctx&&AC.ctx.state==='suspended')AC.ctx.resume();
+  return AC.ctx;
+}
+function tone(f,dur,o={}){const c=audio();if(!c)return;const{type='sine',vol=.2,when=0,glide=null,attack=.01,dest=AC.master}=o;
+  const t=c.currentTime+when,os=c.createOscillator(),g=c.createGain();os.type=type;os.frequency.setValueAtTime(f,t);
+  if(glide)os.frequency.exponentialRampToValueAtTime(glide,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+attack);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);os.connect(g);g.connect(dest);os.start(t);os.stop(t+dur+.05)}
+let NB=null;
+function noise(dur,o={}){const c=audio();if(!c)return;const{vol=.15,when=0,from=500,to=3000,type='bandpass',q=1.2}=o;
+  if(!NB){NB=c.createBuffer(1,c.sampleRate*2,c.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+  const t=c.currentTime+when,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=NB;f.type=type;f.Q.value=q;
+  f.frequency.setValueAtTime(from,t);f.frequency.exponentialRampToValueAtTime(to,t+dur);g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+dur*.3);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);g.connect(AC.master);s.start(t);s.stop(t+dur+.05)}
+const SND={
+  tap(){tone(660,.09,{type:'triangle',vol:.14,glide:990})},
+  pop(){tone(380,.08,{vol:.22,glide:950})},
+  correct(){[1046,1318,1568,2093].forEach((f,i)=>tone(f,.4,{type:'triangle',vol:.15,when:i*.07}));tone(523,.6,{vol:.08})},
+  wrong(){tone(320,.4,{vol:.2,glide:150});tone(330,.35,{type:'square',vol:.025,glide:160})},
+  whoosh(){noise(.55,{vol:.16,from:250,to:3500})},
+  sparkle(){for(let i=0;i<7;i++)tone(1800+R_()*2400,.18,{vol:.05,when:i*.045})},
+  thud(){tone(150,.3,{vol:.4,glide:55});noise(.18,{vol:.25,from:300,to:90,type:'lowpass'})},
+  coin(){tone(988,.08,{type:'square',vol:.06});tone(1319,.35,{type:'square',vol:.06,when:.08})},
+  tick(){tone(2600,.03,{type:'square',vol:.035})},
+  gong(){[110,221,333,447,612].forEach((f,i)=>tone(f,2.8,{vol:.2/(i+1),attack:.004}))},
+  whisper(){noise(.9,{vol:.07,from:2500,to:6500,type:'highpass'});noise(.7,{vol:.05,from:5000,to:2000,when:.35,type:'bandpass',q:3})},
+  magic(){[523,659,784,988,1175].forEach((f,i)=>tone(f,.9,{vol:.08,when:i*.06,glide:f*1.01}))},
+  bell(){tone(1568,1.2,{vol:.1});tone(2349,1,{vol:.05})},
+  fanfare(){[[523,0],[659,.12],[784,.24],[1046,.36],[784,.52],[1046,.64]].forEach(([f,w])=>{tone(f,.35,{type:'triangle',vol:.16,when:w});tone(f/2,.35,{type:'square',vol:.03,when:w})})},
+  creak(){tone(90,.6,{type:'sawtooth',vol:.04,glide:70});noise(.5,{vol:.08,from:400,to:200})},
+  shatter(){noise(.45,{vol:.22,from:6000,to:2500,type:'highpass'});for(let i=0;i<9;i++)tone(2500+R_()*3500,.12,{vol:.05,when:i*.03,type:'triangle'})},
+  step(){tone(520,.08,{type:'triangle',vol:.1});tone(780,.1,{type:'triangle',vol:.08,when:.08})},
+  locked(){tone(200,.12,{type:'square',vol:.05});tone(160,.15,{type:'square',vol:.05,when:.1})},
+  victory(){[523,659,784,1046,1318,1568].forEach((f,i)=>tone(f,.6,{type:'triangle',vol:.14,when:i*.1}));[262,330,392].forEach(f=>tone(f,1.6,{vol:.06,when:.6}))}
+};
+const sfx=n=>{if(AC.sfx&&SND[n])try{SND[n]()}catch(e){}};
+/* each creature's own voice & signature call */
+const VOICE={phusphus:[1100,'sine'],deepu:[760,'triangle'],burju:[240,'square'],tiknaag:[560,'triangle'],jugnu:[1700,'sine'],chanda:[1250,'sine'],
+ moti:[880,'square'],gajju:[300,'sawtooth'],kulhad:[640,'triangle'],nimbu:[1400,'triangle'],pannu:[820,'sine'],bhram:[190,'sawtooth']};
+function blip(k){if(!AC.sfx)return;const[b,t]=VOICE[k]||[700,'sine'];tone(b*(.85+R_()*.45),.07,{type:t,vol:t==='sine'?.09:t==='triangle'?.08:.035})}
+const CALL={
+ phusphus(){SND.whisper();tone(1500,.4,{vol:.06,when:.2,glide:2200});tone(1900,.4,{vol:.05,when:.45,glide:1300})},
+ deepu(){tone(620,.32,{type:'triangle',vol:.14,glide:1150});tone(1050,.35,{type:'triangle',vol:.12,when:.26,glide:560})},
+ burju(){SND.thud();tone(180,.5,{type:'triangle',vol:.12,when:.25,glide:220})},
+ tiknaag(){[0,.25,.5,.75].forEach((w,i)=>tone(i%2?1400:2100,.04,{type:'square',vol:.05,when:w}));noise(.4,{vol:.06,from:4000,to:7000,type:'highpass',when:.95})},
+ jugnu(){SND.sparkle();tone(1800,.2,{vol:.07,glide:2600,when:.2})},
+ chanda(){tone(1100,.14,{vol:.12,glide:1900});tone(1300,.16,{vol:.12,when:.16,glide:2200});noise(.3,{vol:.05,from:3000,to:6000,when:.35})},
+ moti(){tone(700,.5,{type:'triangle',vol:.14,glide:1650});tone(1600,.35,{type:'triangle',vol:.1,when:.45,glide:900})},
+ gajju(){tone(220,.7,{type:'sawtooth',vol:.07,glide:470});tone(440,.5,{type:'square',vol:.035,when:.08,glide:700})},
+ kulhad(){noise(.5,{vol:.08,from:600,to:1500});for(let i=0;i<5;i++)tone(400+R_()*500,.07,{vol:.12,when:.2+i*.08,glide:900+R_()*400})},
+ nimbu(){[2093,2489,2217,2637,2093].forEach((f,i)=>tone(f,.15,{type:'triangle',vol:.06,when:i*.07}))},
+ pannu(){[0,.1,.2].forEach(w=>noise(.08,{vol:.12,from:1500,to:5000,when:w}));tone(1200,.15,{type:'square',vol:.04,when:.3,glide:2000})},
+ bhram(){[440,415,392,349].forEach((f,i)=>{tone(f,.5,{type:'sine',vol:.08,when:i*.18});tone(f*1.01,.5,{type:'sawtooth',vol:.02,when:i*.18})});SND.whisper()}
+};
+const call=k=>{if(AC.sfx&&CALL[k])try{CALL[k]()}catch(e){}};
+function giggle(){if(!AC.sfx)return;[0,.09,.18,.27].forEach((w,i)=>tone(520-i*60,.08,{type:'sawtooth',vol:.04,when:w,glide:420-i*60}))}
+/* ambient raag Bhupali */
+const BHUP=[261.6,293.7,329.6,392,440,523.3,587.3,659.3];
+function musicStart(){const c=audio();if(!c||AC.timer)return;
+  AC.music.gain.cancelScheduledValues(c.currentTime);AC.music.gain.setTargetAtTime(.5,c.currentTime,.8);
+  [130.8,196].forEach(f=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(AC.music);o.start();AC.drone.push(o)});
+  const step=()=>{const f=BHUP[R_()*BHUP.length|0];tone(f,1.4,{type:'triangle',vol:.07,dest:AC.music,attack:.005});
+    if(R_()<.3)tone(f*2,1,{vol:.025,dest:AC.music,when:.2});AC.timer=setTimeout(step,500+R_()*900)};step()}
+function musicStop(){if(AC.timer){clearTimeout(AC.timer);AC.timer=null}AC.drone.forEach(o=>{try{o.stop()}catch(e){}});AC.drone=[];
+  if(AC.ctx)AC.music.gain.setTargetAtTime(.0001,AC.ctx.currentTime,.3)}
+let hiVoice=null;
+function loadVoices(){try{hiVoice=speechSynthesis.getVoices().find(v=>/^hi/i.test(v.lang))||null}catch(e){}}
+try{loadVoices();speechSynthesis.onvoiceschanged=loadVoices}catch(e){}
+function speak(t,rate=.8){try{if(!('speechSynthesis'in window)||!t)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);
+  u.lang='hi-IN';if(hiVoice)u.voice=hiVoice;u.rate=rate;u.pitch=1.25;speechSynthesis.speak(u)}catch(e){}}
+
+/* ================= ART ================= */
+const DK='#2a1840';
+const MOUTH={
+ w:`<path d="M-4.5 6q2.25 2.8 4.5 0q2.25 2.8 4.5 0" fill="none" stroke="${DK}" stroke-width="1.7" stroke-linecap="round"/>`,
+ smile:`<path d="M-4 5.5q4 4.8 8 0z" fill="#ff6f91" stroke="${DK}" stroke-width="1.5" stroke-linejoin="round"/>`,
+ o:`<ellipse cx="0" cy="7.5" rx="2.6" ry="3.2" fill="#ff6f91" stroke="${DK}" stroke-width="1.3"/>`,
+ beak:'<path d="M-3.8 4.5H3.8L0 10z" fill="#ff9e2c"/>',none:''};
+function face(x,y,s,m='w'){return `<g transform="translate(${x} ${y}) scale(${s})"><g class="blink"><ellipse cx="-11" cy="0" rx="5.2" ry="6.4" fill="${DK}"/><ellipse cx="11" cy="0" rx="5.2" ry="6.4" fill="${DK}"/><circle cx="-9" cy="-2.6" r="2.1" fill="#fff"/><circle cx="13" cy="-2.6" r="2.1" fill="#fff"/><circle cx="-12.6" cy="2.4" r="1" fill="#fff"/><circle cx="9.4" cy="2.4" r="1" fill="#fff"/></g><ellipse cx="-19" cy="7" rx="4.6" ry="2.7" fill="#ff8fc7" opacity=".75"/><ellipse cx="19" cy="7" rx="4.6" ry="2.7" fill="#ff8fc7" opacity=".75"/>${MOUTH[m]}</g>`}
+function star(cx,cy,r,fill='#ffe27a',cls=''){let p='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;p+=(i?'L':'M')+(cx+rr*Math.cos(a)).toFixed(1)+' '+(cy+rr*Math.sin(a)).toFixed(1)}return `<path class="${cls}" d="${p}Z" fill="${fill}"/>`}
+const wrap=(inner,attrs,cls,shadow=true)=>`<svg ${attrs||''} viewBox="0 0 120 120" class="cr ${cls||''}" aria-hidden="true">${shadow?'<ellipse cx="60" cy="113" rx="28" ry="4.5" fill="#000" opacity=".22"/>':''}${inner}</svg>`;
+const ART={
+ phusphus:()=>`<circle cx="60" cy="58" r="52" fill="url(#gAura)" class="pulse"/>
+  <g class="flap" style="transform-origin:60px 62px">
+   <path d="M57 58C36 16 4 24 9 54c3 19 26 18 48 10z" fill="url(#gWingA)"/><path d="M57 67C38 70 20 84 27 99c8 10 24-6 30-24z" fill="url(#gWingB)"/>
+   <path d="M63 58C84 16 116 24 111 54c-3 19-26 18-48 10z" fill="url(#gWingA)"/><path d="M63 67C82 70 100 84 93 99c-8 10-24-6-30-24z" fill="url(#gWingB)"/>
+   <circle cx="27" cy="47" r="10" fill="#fff" opacity=".22"/><circle cx="93" cy="47" r="10" fill="#fff" opacity=".22"/>
+   <text x="20" y="53" font-size="15" font-family="Baloo 2,sans-serif" font-weight="800" fill="#fff">अ</text><text x="85" y="53" font-size="15" font-family="Baloo 2,sans-serif" font-weight="800" fill="#fff">आ</text>
+   <circle cx="42" cy="32" r="3" fill="#ffe27a" class="twinkle"/><circle cx="78" cy="32" r="3" fill="#ffe27a" class="twinkle"/><circle cx="37" cy="88" r="2.5" fill="#fff"/><circle cx="83" cy="88" r="2.5" fill="#fff"/></g>
+  <path d="M53 38Q47 20 39 16M67 38Q73 20 81 16" stroke="#7b4dff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <circle cx="39" cy="16" r="4.5" fill="#ffe27a" class="pulse"/><circle cx="81" cy="16" r="4.5" fill="#ffe27a" class="pulse"/>
+  <ellipse cx="60" cy="84" rx="11" ry="17" fill="#b48cff"/><path d="M50 82h20M51 90h18" stroke="#8e5cff" stroke-width="2.5"/>
+  <circle cx="60" cy="50" r="19" fill="url(#gMoth)"/>${face(60,51,.72,'w')}
+  ${[[44,64],[51,68],[60,69.5],[69,68],[76,64]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="6.5" fill="#fff8ff"/>`).join('')}`,
+ deepu:()=>`<circle cx="60" cy="62" r="54" fill="url(#gGlow)" class="pulse"/>
+  <path class="flicker" style="transform-origin:60px 22px" d="M60 2C67 11 67 17 60 22C53 17 53 11 60 2Z" fill="url(#gFire)"/>
+  <rect x="51" y="19" width="18" height="7" rx="2" fill="#c0392b"/>
+  <path d="M29 42L33 13L51 30Z" fill="#ffb84d"/><path d="M91 42L87 13L69 30Z" fill="#ffb84d"/><path d="M35 33L37 21L45 29Z" fill="#ff8fc7"/><path d="M85 33L83 21L75 29Z" fill="#ff8fc7"/>
+  <path d="M60 24C88 24 98 44 98 62C98 82 86 96 60 96C34 96 22 82 22 62C22 44 32 24 60 24Z" fill="url(#gLantern)"/>
+  <path d="M60 24C46 40 46 82 60 96M60 24C74 40 74 82 60 96M60 24C36 36 32 86 60 96M60 24C84 36 88 86 60 96" stroke="#d9740f" stroke-width="1.4" fill="none" opacity=".4"/>
+  <ellipse cx="42" cy="42" rx="9" ry="5" fill="#fff" opacity=".5" transform="rotate(-32 42 42)"/>
+  <path d="M25 63h11M25 70l11-2M95 63H84M95 70l-11-2" stroke="#9b4d14" stroke-width="1.5" stroke-linecap="round"/>
+  ${face(60,62,.95,'w')}<rect x="37" y="92" width="46" height="8" rx="3" fill="#c0392b"/>
+  <ellipse cx="44" cy="99" rx="7" ry="5" fill="#ffd28a"/><ellipse cx="76" cy="99" rx="7" ry="5" fill="#ffd28a"/>
+  <g class="sway" style="transform-origin:60px 100px"><path d="M60 100v7" stroke="#ff5fa8" stroke-width="2.5"/><path d="M54 106h12l-2 10h-8z" fill="#ff5fa8"/></g>`,
+ burju:()=>`<ellipse cx="30" cy="102" rx="9" ry="6" fill="#8ff0c8"/><ellipse cx="74" cy="103" rx="9" ry="6" fill="#8ff0c8"/>
+  <path d="M10 92q-6 4-2 8" stroke="#8ff0c8" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M12 98C12 68 32 54 54 54C76 54 96 68 96 98Z" fill="url(#gShell)"/>
+  <path d="M18 88Q54 74 90 88" stroke="#239873" stroke-width="3" fill="none"/>
+  ${[[28,80],[46,70],[64,70],[82,80]].map(([x,y])=>`<path d="M${x-6} ${y}l6-5 6 5-6 5z" fill="#239873" opacity=".5"/>`).join('')}
+  <path d="M38 58V36h32v22z" fill="url(#gStone)"/>${[38,47,56,64].map(x=>`<rect x="${x}" y="29" width="6" height="8" fill="#f7cba4"/>`).join('')}
+  <path d="M38 44h32M38 51h32M48 36v8M60 44v7" stroke="#b5683c" stroke-width="1" opacity=".5"/>
+  <path d="M49 58v-8a5 5 0 0 1 10 0v8z" fill="#7a3d1a"/><circle cx="66" cy="42" r="2.5" fill="#ffe27a" class="pulse"/>
+  <path d="M54 29V8" stroke="#7a3d1a" stroke-width="2.2"/><path class="wave" style="transform-origin:54px 12px" d="M54 8L72 12L54 17Z" fill="#ff5fa8"/>
+  <circle cx="101" cy="78" r="17" fill="#9ff3d0"/><circle cx="96" cy="70" r="5" fill="#fff" opacity=".45"/>${face(101,79,.6,'smile')}`,
+ tiknaag:()=>`<path d="M98 96Q114 86 106 70" stroke="#4f9cf0" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <g class="sway" style="transform-origin:106px 70px"><path d="M106 70v14" stroke="#ffe27a" stroke-width="1.6"/><circle cx="106" cy="87" r="4.5" fill="#ffd34d"/></g>
+  <ellipse cx="60" cy="98" rx="40" ry="13" fill="#4f9cf0"/><ellipse cx="60" cy="94" rx="34" ry="10" fill="url(#gSnake)"/>
+  <path d="M41 94C37 72 44 56 60 56C76 56 83 72 79 94Z" fill="url(#gSnake)"/>
+  <path d="M46 70q14 6 28 0M45 82q15 6 30 0" stroke="#3f8ae0" stroke-width="1.5" fill="none" opacity=".5"/>
+  <circle cx="60" cy="77" r="13" fill="#eef7ff" stroke="#ffd34d" stroke-width="2.5"/>
+  <path d="M60 66v2.5M71 77h-2.5M60 88v-2.5M49 77h2.5" stroke="#2a1840" stroke-width="1.6"/>
+  <g class="spin" style="transform-origin:60px 77px"><path d="M60 77V68" stroke="#2a1840" stroke-width="2" stroke-linecap="round"/></g><path d="M60 77l5 3" stroke="#ff5fa8" stroke-width="2" stroke-linecap="round"/><circle cx="60" cy="77" r="1.6" fill="#2a1840"/>
+  <ellipse cx="60" cy="40" rx="25" ry="20" fill="url(#gSnake)"/><ellipse cx="50" cy="31" rx="7" ry="4" fill="#fff" opacity=".5"/>
+  <path d="M43 24l4-13 6 8 7-12 7 12 6-8 4 13z" fill="#ffd34d"/><circle cx="60" cy="19" r="2.8" fill="#ff5fa8"/>${face(60,42,.8,'smile')}`,
+ jugnu:()=>`<circle cx="60" cy="76" r="40" fill="url(#gGlow)" class="pulse"/>
+  <g class="flap" style="transform-origin:60px 54px"><ellipse cx="36" cy="40" rx="21" ry="11" fill="#fff" opacity=".8" transform="rotate(-30 36 40)"/><ellipse cx="84" cy="40" rx="21" ry="11" fill="#fff" opacity=".8" transform="rotate(30 84 40)"/><ellipse cx="38" cy="54" rx="13" ry="7" fill="#e6f1ff" opacity=".7" transform="rotate(-10 38 54)"/><ellipse cx="82" cy="54" rx="13" ry="7" fill="#e6f1ff" opacity=".7" transform="rotate(10 82 54)"/></g>
+  <ellipse cx="60" cy="80" rx="17" ry="19" fill="#ffe27a"/><path d="M45 74h30M44 84h32" stroke="#ffc928" stroke-width="3"/><ellipse cx="60" cy="90" rx="10" ry="7" fill="#fff9d6" class="pulse"/>
+  <path d="M53 34Q48 20 42 18M67 34Q72 20 78 18" stroke="#6d58a8" stroke-width="2.4" fill="none" stroke-linecap="round"/>${star(42,17,5,'#ffe27a','twinkle')}${star(78,17,5,'#ffe27a','twinkle')}
+  <circle cx="60" cy="52" r="19" fill="#b9a6f0"/><ellipse cx="52" cy="43" rx="6" ry="3.5" fill="#fff" opacity=".5"/>${face(60,54,.66,'smile')}`,
+ chanda:()=>`<path d="M84 96Q110 96 104 70" stroke="#c4adff" stroke-width="8" fill="none" stroke-linecap="round"/>${star(104,64,9,'#ffe27a','twinkle')}
+  <g class="flap" style="transform-origin:60px 70px"><path d="M44 66C28 44 10 50 13 63C22 60 24 71 33 70C35 76 41 76 46 72Z" fill="#a98cff"/><path d="M76 66C92 44 110 50 107 63C98 60 96 71 87 70C85 76 79 76 74 72Z" fill="#a98cff"/></g>
+  <ellipse cx="60" cy="84" rx="25" ry="22" fill="url(#gMoon)"/><ellipse cx="60" cy="90" rx="14" ry="13" fill="#fff6d8"/>
+  <path d="M53 84h14M52 91h16M54 98h12" stroke="#f0dca0" stroke-width="1.8"/>
+  <ellipse cx="45" cy="104" rx="8" ry="5" fill="#d9caff"/><ellipse cx="75" cy="104" rx="8" ry="5" fill="#d9caff"/>
+  <circle cx="60" cy="50" r="24" fill="url(#gMoon)"/>
+  <path d="M42 34l-5-12 10 7zM78 34l5-12-10 7z" fill="#ffe27a"/>
+  <path d="M60 18A10 10 0 1 0 70 30A7.5 7.5 0 1 1 60 18Z" fill="#ffd34d"/>
+  ${face(60,53,.85,'w')}${star(22,30,4,'#fff','twinkle')}${star(98,40,3.5,'#fff','twinkle')}`,
+ moti:()=>`<g class="fan" style="transform-origin:60px 92px">${[-64,-32,0,32,64].map((a,i)=>`<g transform="rotate(${a} 60 92)"><path d="M60 92Q50 52 60 20Q70 52 60 92Z" fill="url(#gPea)"/><circle cx="60" cy="29" r="9.5" fill="#1f5fb8"/><circle cx="60" cy="29" r="6.5" fill="#ffd34d"/><text x="60" y="33" text-anchor="middle" font-size="9" font-weight="800" font-family="Baloo 2,sans-serif" fill="#3b1d6e">${'कखगघच'[i]}</text></g>`).join('')}</g>
+  <ellipse cx="60" cy="90" rx="20" ry="18" fill="#3a7bff"/><ellipse cx="60" cy="94" rx="11" ry="10" fill="#7fb4ff"/>
+  <path d="M50 108v5M70 108v5" stroke="#ff9e2c" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="60" cy="64" r="17" fill="#4f9cf0"/><ellipse cx="53" cy="56" rx="6" ry="3.5" fill="#fff" opacity=".45"/>
+  <path d="M54 48l-4-10M60 47v-11M66 48l4-10" stroke="#2a7bd8" stroke-width="2" stroke-linecap="round"/><circle cx="50" cy="37" r="3" fill="#5ee0c4"/><circle cx="60" cy="35" r="3" fill="#ffd34d"/><circle cx="70" cy="37" r="3" fill="#5ee0c4"/>
+  ${face(60,64,.66,'beak')}`,
+ gajju:()=>`<g class="bob" style="transform-box:fill-box">
+  <ellipse cx="30" cy="62" rx="13" ry="17" fill="#ffd1ec"/><ellipse cx="90" cy="62" rx="13" ry="17" fill="#ffd1ec"/><ellipse cx="30" cy="62" rx="7" ry="10" fill="#ffb3dc"/><ellipse cx="90" cy="62" rx="7" ry="10" fill="#ffb3dc"/>
+  ${[[38,74,18],[60,64,24],[82,74,18],[48,88,16],[72,88,16],[60,82,18]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#gCloud)"/>`).join('')}
+  <path d="M60 80q0 16 12 16q7 0 5-7" stroke="#e7edff" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M42 46a20 20 0 0 1 36 0" stroke="#ff8fc7" stroke-width="3" fill="none"/><path d="M45 48a16 16 0 0 1 30 0" stroke="#ffe27a" stroke-width="3" fill="none"/><path d="M48 50a12 12 0 0 1 24 0" stroke="#7ef0d0" stroke-width="3" fill="none"/>
+  ${face(60,68,.85,'smile')}</g><path class="drip" d="M78 98q3.5 5 0 8q-3.5-3 0-8z" fill="#8fc8ff"/>`,
+ kulhad:()=>`${[46,60,74].map((x,i)=>`<path class="steam" style="animation-delay:${i*.7}s" d="M${x} 32q-6-8 0-15q6-7 0-14" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>`).join('')}
+  <path d="M27 42L93 42L84 102Q60 110 36 102Z" fill="url(#gClay)"/>
+  <path d="M30 58Q60 66 90 58" stroke="#fff3e0" stroke-width="2.2" fill="none" stroke-dasharray="3 4"/>
+  <ellipse cx="60" cy="42" rx="33" ry="8" fill="#c96b3b"/><ellipse cx="60" cy="43" rx="28" ry="5.5" fill="#d9a066"/><ellipse cx="52" cy="42" rx="8" ry="1.8" fill="#f0c896"/>
+  <ellipse cx="38" cy="58" rx="5" ry="10" fill="#fff" opacity=".2" transform="rotate(-10 38 58)"/>
+  <path d="M28 70q-10 2-8 10M92 70q10 2 8 10" stroke="#c46a3c" stroke-width="6" fill="none" stroke-linecap="round"/>
+  ${face(60,78,.9,'o')}`,
+ nimbu:()=>`<path d="M60 0V34" stroke="#fff3e0" stroke-width="1.6"/>
+  <g class="sway" style="transform-origin:60px 0px">
+  <path d="M60 32q10-10 20-4q-10 8-20 4z" fill="#5ccf6e"/>
+  <ellipse cx="33" cy="58" rx="5" ry="4" fill="#ffd21f"/><ellipse cx="87" cy="58" rx="5" ry="4" fill="#ffd21f"/>
+  <ellipse cx="60" cy="58" rx="27" ry="24" fill="url(#gLemon)"/><ellipse cx="49" cy="46" rx="8" ry="4.5" fill="#fff" opacity=".6"/>
+  ${face(60,60,.85,'w')}
+  <path d="M60 82V90" stroke="#fff3e0" stroke-width="1.6"/>
+  ${[-11,0,11].map((dx,i)=>`<g transform="rotate(${dx*1.4} 60 90)"><path d="M${58+dx} 92C${53+dx} 100 ${55+dx} 110 ${62+dx} 117C${61+dx} 108 ${62+dx} 100 ${63+dx} 92Z" fill="${i===1?'#2fb34a':'#e8322b'}"/><path d="M${57+dx} 92h7" stroke="#2f8a3a" stroke-width="3" stroke-linecap="round"/></g>`).join('')}
+  </g>`,
+ pannu:()=>`<g class="flap" style="transform-origin:60px 62px">
+   <path d="M60 46C46 38 26 38 10 46L14 86C28 79 46 79 60 86Z" fill="url(#gBook)" stroke="#a37dff" stroke-width="2"/>
+   <path d="M60 46C74 38 94 38 110 46L106 86C92 79 74 79 60 86Z" fill="url(#gBook)" stroke="#a37dff" stroke-width="2"/>
+   <path d="M19 54h32M20 62h30M21 70h28M69 54h32M70 62h30M71 70h28" stroke="#c9b0ff" stroke-width="2" stroke-linecap="round"/>
+   <path d="M14 86q5-5 10 0q5-5 10 0M86 86q5-5 10 0q5-5 10 0" stroke="#a37dff" stroke-width="2" fill="none"/></g>
+  <path d="M68 86v16l4-4 4 4V86" fill="#ff5fa8"/>
+  <path d="M46 44l-3-17 12 10zM74 44l3-17-12 10z" fill="#9f82ff"/>
+  <ellipse cx="60" cy="64" rx="15" ry="21" fill="#b79cff"/><ellipse cx="54" cy="52" rx="5" ry="3" fill="#fff" opacity=".45"/>
+  ${face(60,60,.62,'w')}<path d="M56.5 65.5l1.2 3 1.2-3zM61.1 65.5l1.2 3 1.2-3z" fill="#fff"/>`,
+ bhram:()=>`<circle cx="60" cy="62" r="56" fill="url(#gAura)" class="pulse"/>
+  <ellipse class="dash" cx="60" cy="96" rx="46" ry="11" fill="none" stroke="#ff8fc7" stroke-width="1.8" stroke-dasharray="4 8"/>
+  <path d="M60 42C90 42 102 82 96 110L24 110C18 82 30 42 60 42Z" fill="url(#gShadow)"/>
+  ${[[38,82],[78,74],[52,98],[84,96],[66,90]].map(([x,y])=>star(x,y,3.6,'#ffe27a','twinkle')).join('')}
+  <path d="M40 40L37 18L54 31ZM80 40L83 18L66 31Z" fill="#3a1e6e"/><path d="M42 34L41 24L49 31ZM78 34L79 24L71 31Z" fill="#ff8fc7"/>
+  <circle cx="60" cy="50" r="22" fill="#3d2075"/><ellipse cx="51" cy="40" rx="6" ry="3.5" fill="#fff" opacity=".18"/>
+  <path d="M37 48Q48 37 60 45Q72 37 83 48Q77 58 66 54Q60 50 54 54Q43 58 37 48Z" fill="#ff5fa8"/>
+  <g class="blink"><ellipse cx="49" cy="48" rx="4.4" ry="4.8" fill="#ffe27a"/><ellipse cx="71" cy="48" rx="4.4" ry="4.8" fill="#ffe27a"/><circle cx="50.5" cy="46.5" r="1.4" fill="#fff"/><circle cx="72.5" cy="46.5" r="1.4" fill="#fff"/></g>
+  <path d="M54 61q6 4.5 12 0" stroke="#ffe27a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="44" cy="60" rx="4" ry="2.4" fill="#ff8fc7" opacity=".6"/><ellipse cx="76" cy="60" rx="4" ry="2.4" fill="#ff8fc7" opacity=".6"/>
+  <g transform="rotate(-10 60 26)"><rect x="49" y="10" width="22" height="16" rx="2" fill="#1c0b3a"/><rect x="44" y="24" width="32" height="5" rx="2" fill="#1c0b3a"/><rect x="49" y="20" width="22" height="3" fill="#ff5fa8"/></g>`
+};
+const CR={
+ phusphus:{name:'Phusphus',hi:'फुसफुस',c:'#c9a6ff',line:'शश्श… अक्षर सुनो!',en:'Shhh… listen to the letters!',desc:'A shy moth who keeps every letter’s secret whisper folded in her wings.'},
+ deepu:{name:'Deepu',hi:'दीपू',c:'#ffb84d',line:'आओ, जादुई बाज़ार में!',en:'Come into the magic market!',desc:'A lantern cat who lights the bazaar every night. Loves shiny things and sweet chai.'},
+ burju:{name:'Burju',hi:'बुर्जू',c:'#7ef0d0',line:'एक ईंट, एक अक्षर!',en:'One brick, one letter!',desc:'A slow, brave turtle who carries a whole fortress on his back.'},
+ tiknaag:{name:'Tik-Naag',hi:'टिक-नाग',c:'#8fc8ff',line:'समय बहुत कीमती है!',en:'Time is very precious!',desc:'The crowned serpent who guards time. Never late, not even once.'},
+ jugnu:{name:'Jugnu',hi:'जुगनू',c:'#ffe27a',line:'चमको!',en:'Shine bright!',desc:'A firefly who glows brighter every time someone counts correctly.'},
+ chanda:{name:'Chanda',hi:'चंदा',c:'#d9caff',line:'मैं चाँद की बच्ची हूँ!',en:'I’m a little moon-dragon!',desc:'A baby moon-dragon who sneezes stardust when she giggles.'},
+ moti:{name:'Moti',hi:'मोती',c:'#5ee0c4',line:'हर पंख में एक अक्षर!',en:'A letter in every feather!',desc:'A peacock chick whose tail feathers each hold a letter of the varnamala.'},
+ gajju:{name:'Gajju',hi:'गज्जू',c:'#ffd1ec',line:'बारिश आई!',en:'Here comes the rain!',desc:'A cloud-elephant who sprinkles rain on hot days and hums ragas.'},
+ kulhad:{name:'Kulhad',hi:'कुल्हड़',c:'#f3b384',line:'एक कप चाय?',en:'A cup of chai?',desc:'A clay chai-cup spirit. Always warm, always bubbling with bazaar gossip.'},
+ nimbu:{name:'Nimbu',hi:'नींबू',c:'#ffe066',line:'मैं लकी हूँ!',en:'I’m lucky!',desc:'A lucky lemon charm who hangs over every shop door with her chilli friends.'},
+ pannu:{name:'Pannu',hi:'पन्नू',c:'#b79cff',line:'किताबें जादू हैं!',en:'Books are magic!',desc:'A book-bat who sleeps upside down in the temple library.'},
+ bhram:{name:'Bhram',hi:'भ्रम',c:'#ff8fc7',line:'हर चीज़ वैसी नहीं जैसी दिखती है…',en:'Nothing is quite what it seems…',desc:'The masked illusionist of the bazaar. Mischievous, mysterious, and secretly lonely.'}
+};
+const CR_ORDER=['phusphus','deepu','burju','tiknaag','jugnu','chanda','moti','gajju','kulhad','nimbu','pannu','bhram'];
+Object.keys(CR).forEach(k=>CR[k].svg=(attrs,cls)=>wrap(ART[k](),attrs,cls,!['jugnu','gajju','nimbu'].includes(k)));
+
+function avatar(a,attrs=''){
+  const b=BODY[a.body]||BODY[0],cp=CAPE[a.cape]||CAPE[0];let eyes='';
+  if(a.eyes==='dot')eyes=`<ellipse cx="48" cy="80" rx="4" ry="5" fill="${DK}"/><ellipse cx="72" cy="80" rx="4" ry="5" fill="${DK}"/><circle cx="49.5" cy="78" r="1.5" fill="#fff"/><circle cx="73.5" cy="78" r="1.5" fill="#fff"/>`;
+  else if(a.eyes==='sparkle')eyes=`<ellipse cx="47" cy="80" rx="6.5" ry="8" fill="${DK}"/><ellipse cx="73" cy="80" rx="6.5" ry="8" fill="${DK}"/><circle cx="49.5" cy="76.5" r="2.6" fill="#fff"/><circle cx="75.5" cy="76.5" r="2.6" fill="#fff"/><circle cx="45" cy="83.5" r="1.2" fill="#fff"/><circle cx="71" cy="83.5" r="1.2" fill="#fff"/>`;
+  else if(a.eyes==='happy')eyes=`<path d="M41 82q6-8 12 0M67 82q6-8 12 0" stroke="${DK}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+  else eyes=`<ellipse cx="47" cy="80" rx="5" ry="6.5" fill="${DK}"/><circle cx="49" cy="77.5" r="2" fill="#fff"/><path d="M67 81q6-7 12 0" stroke="${DK}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+  let acc='';
+  if(a.acc==='witch')acc=`<path d="M36 52 L66 4 L86 52Z" fill="#5a2fc2"/><path d="M40 46h44" stroke="#ffe27a" stroke-width="5"/><path d="M66 4q14 4 12 14" stroke="#5a2fc2" stroke-width="5" fill="none"/><ellipse cx="60" cy="52" rx="38" ry="7" fill="#4423a0"/>${star(60,28,6)}`;
+  else if(a.acc==='cat')acc=`<path d="M30 62 34 30 54 50Z" fill="${b}"/><path d="M90 62 86 30 66 50Z" fill="${b}"/><path d="M36 54 37 38 48 49ZM84 54 83 38 72 49Z" fill="#ff8fc7"/>`;
+  else if(a.acc==='flower')acc=[30,44,60,76,90].map((x,i)=>{const y=54-(i===2?6:i%2?3:0);return `<circle cx="${x}" cy="${y}" r="8" fill="${i%2?'#ffb000':'#ff7a00'}"/><circle cx="${x}" cy="${y}" r="3" fill="#ffe27a"/>`}).join('');
+  else if(a.acc==='crown')acc=`<path d="M40 54 L42 30 L52 42 L60 24 L68 42 L78 30 L80 54Z" fill="#ffd34d" stroke="#e0a400" stroke-width="2"/><circle cx="60" cy="44" r="4" fill="#ff5fa8"/><circle cx="47" cy="47" r="2.5" fill="#7ef0d0"/><circle cx="73" cy="47" r="2.5" fill="#7ef0d0"/>`;
+  return `<svg ${attrs} viewBox="0 0 120 130" class="cr" role="img" aria-label="Your hero"><ellipse cx="60" cy="124" rx="34" ry="5" fill="#000" opacity=".25"/><path d="M28 78Q60 62 92 78L104 120Q60 112 16 120Z" fill="${cp}"/><ellipse cx="44" cy="117" rx="10" ry="6" fill="${b}"/><ellipse cx="76" cy="117" rx="10" ry="6" fill="${b}"/><path d="M60 50c22 0 38 18 38 40 0 18-16 26-38 26S22 108 22 90c0-22 16-40 38-40z" fill="${b}"/><ellipse cx="46" cy="64" rx="10" ry="6" fill="#fff" opacity=".35"/><g class="blink">${eyes}</g><ellipse cx="38" cy="92" rx="6" ry="3.4" fill="#ff8fc7" opacity=".8"/><ellipse cx="82" cy="92" rx="6" ry="3.4" fill="#ff8fc7" opacity=".8"/><path d="M55 93q2.5 3.4 5 0q2.5 3.4 5 0" fill="none" stroke="${DK}" stroke-width="2" stroke-linecap="round"/>${acc}</svg>`;
+}
+
+/* ================= SCREENS ================= */
+const SECTIONS=['title','create','map','adv','play'];
+function show(id){SECTIONS.forEach(s=>$('s-'+s).hidden=s!==id);$('hud').hidden=id==='title';window.scrollTo(0,0);if(id!=='play'){stopJugnu();clearTimer()}refreshHud()}
+function refreshHud(){$('hudAv').innerHTML=avatar(S);$('hudBuddy').innerHTML=S.buddy?CR[S.buddy].svg():'';$('hudBuddy').hidden=!S.buddy;$('hudName').textContent=S.name;$('jugCount').textContent=S.jugnu}
+const starStr=n=>[1,2,3].map(i=>i<=n?'★':'<span class="off">★</span>').join('');
+function burst(el,ch,count=8){const r=el.getBoundingClientRect();for(let i=0;i<count;i++){const s=document.createElement('span');s.className='fx';
+  s.textContent=ch||['✨','⭐','💫','🌸'][i%4];s.style.left=(r.left+r.width/2+(R_()-.5)*60)+'px';s.style.top=(r.top+r.height/2+(R_()-.5)*30)+'px';
+  s.style.setProperty('--dx',((R_()-.5)*180)+'px');s.style.animationDelay=(i*.035)+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),1400)}}
+
+/* title */
+$('parade').innerHTML=['phusphus','deepu','chanda','burju','moti','tiknaag','bhram'].map((k,i)=>`<button class="bob" style="animation-delay:${-i*.5}s" data-k="${k}" aria-label="${CR[k].name}">${CR[k].svg()}</button>`).join('');
+$('parade').onclick=e=>{const b=e.target.closest('button');if(b){audio();call(b.dataset.k);burst(b)}};
+function titleButtons(){$('titleBtns').innerHTML=(S.started?`<button class="btn" id="contBtn">Continue as ${esc(S.name)} ✦</button><button class="btn ghost" id="beginBtn">New hero</button>`:`<button class="btn" id="beginBtn">Begin the Quest ✦</button>`);
+  $('beginBtn').onclick=()=>{audio();sfx('magic');if(AC.mus)musicStart();openCreator()};
+  if($('contBtn'))$('contBtn').onclick=()=>{audio();sfx('magic');if(AC.mus)musicStart();openMap()}}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+titleButtons();
+
+/* creator */
+function chipRow(el,items,key,render){el.innerHTML=items.map(([v,l])=>render(v,l)).join('');
+  el.onclick=e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.v;S[key]=(key==='body'||key==='cape')?+v:v;sfx('pop');save();drawCreator()}}
+function drawCreator(){
+  $('bigAv').innerHTML=avatar(S);$('pvName').textContent=S.name||'Hero';
+  chipRow($('cBody'),BODY.map((c,i)=>[i,c]),'body',(v,c)=>`<button class="swatch" style="background:${c}" data-v="${v}" aria-label="Body colour ${v+1}" aria-pressed="${S.body==v}"></button>`);
+  chipRow($('cCape'),CAPE.map((c,i)=>[i,c]),'cape',(v,c)=>`<button class="swatch" style="background:${c}" data-v="${v}" aria-label="Cape colour ${v+1}" aria-pressed="${S.cape==v}"></button>`);
+  chipRow($('cEyes'),EYES,'eyes',(v,l)=>`<button class="chip" data-v="${v}" aria-pressed="${S.eyes===v}">${l}</button>`);
+  chipRow($('cAcc'),ACC,'acc',(v,l)=>`<button class="chip" data-v="${v}" aria-pressed="${S.acc===v}">${l}</button>`);
+  chipRow($('cGrade'),GRADES,'grade',(v,l)=>`<button class="chip" data-v="${v}" aria-pressed="${S.grade===v}">${l}</button>`);
+}
+function openCreator(){$('nameIn').value=S.name;drawCreator();show('create');sfx('whoosh')}
+$('nameIn').oninput=e=>{S.name=e.target.value.trim().slice(0,14)||'Hero';$('pvName').textContent=S.name;save()};
+$('enterBtn').onclick=()=>{S.started=true;save();openMap()};
+$('editBtn').onclick=openCreator;
+
+/* map */
+const gradeLabel=k=>GRADES.find(g=>g[0]===k)[1];
+function pipsHtml(k){return `<span class="pips">${prog(k).map(v=>`<span class="pip ${v?'on':''}"></span>`).join('')}</span>`}
+function openMap(){
+  sfx('whoosh');setTimeout(()=>sfx('bell'),250);
+  const k=S.grade,A=ADV[k],p=prog(k),doneN=p.filter(Boolean).length;
+  $('advCard').innerHTML=`<div class="advcard"><div class="art">${CR[A.hero].svg()}${CR.bhram.svg()}</div><div>
+    <div class="eyebrow">Your adventure · ${gradeLabel(k)}</div><h2>${A.title}</h2><div class="hn">${A.hi}</div><p>${A.blurb}</p>
+    <div class="bar"><button class="btn" data-adv="${k}">${doneN===0?'Start the adventure ✦':doneN===5?'Replay the adventure':'Continue · chapter '+(doneN+1)}</button>${pipsHtml(k)}</div></div></div>`;
+  $('advList').innerHTML=GRADES.map(([g,l])=>`<button class="advmini ${g===k?'cur':''}" data-adv="${g}"><span class="g">${l}${S.done.includes(g)?' · ✓ complete':''}</span><b>${ADV[g].title}</b>${pipsHtml(g)}</button>`).join('');
+  $('portals').innerHTML=REALMS.map(r=>{const c=CR[r.cr].c;return `<button class="portal" data-r="${r.id}" style="--c:${c}">${CR[r.cr].svg()}<div><h3>${r.name}</h3><div class="hn">${r.hi}</div><div class="sk">${r.skill}</div><span class="stars">${starStr(S.stars[r.id]||0)}</span></div></button>`}).join('');
+  const n=CR_ORDER.filter(c=>c==='jugnu'?S.jugnu>0||S.owned.includes('jugnu'):S.owned.includes(c)).length;
+  $('albumCount').textContent=`${n} / ${CR_ORDER.length} found`;
+  $('album').innerHTML=CR_ORDER.map(c=>{const o=c==='jugnu'?(S.jugnu>0||S.owned.includes('jugnu')):S.owned.includes(c);
+    return `<button class="slot ${S.buddy===c?'buddy-on':''}" data-c="${c}">${CR[c].svg('',o?'':'locked')}<b>${o?CR[c].name:'???'}</b><span>${o?CR[c].hi:'Not found yet'}</span></button>`}).join('');
+  show('map');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-adv]');if(b){sfx('magic');openAdv(b.dataset.adv)}});
+$('portals').onclick=e=>{const b=e.target.closest('.portal');if(!b)return;const r=REALMS.find(x=>x.id===b.dataset.r);
+  const P=Object.assign({kind:r.kind},FREE[S.grade][r.id]);startRun({mode:'free',realm:r.id,type:r.type,P,guide:S.buddy||r.cr,title:r.name,hi:r.hi,reward:r.cr})};
+$('album').onclick=e=>{const b=e.target.closest('.slot');if(!b)return;openCreature(b.dataset.c)};
+function whereFound(k){for(const[g]of GRADES){const i=ADV[g].ch.findIndex(c=>c.reward===k);if(i>=0)return `${ADV[g].title}, chapter ${i+1}`}
+  if(k==='jugnu')return 'Tap a firefly flying past while you play';return 'Free play stalls'}
+function openCreature(k){const c=CR[k],o=k==='jugnu'?(S.jugnu>0||S.owned.includes('jugnu')):S.owned.includes(k);
+  if(!o){sfx('locked');modal(`<h2>???</h2><div class="crbig">${c.svg('','locked')}</div><p style="margin:0;color:var(--muted)">This creature is hiding.<br>Find it in: <b style="color:var(--ink)">${whereFound(k)}</b></p><div class="row"><button class="btn" data-a="x">OK</button></div>`,()=>{});return}
+  call(k);setTimeout(()=>speak(c.line),500);
+  modal(`<h2>${c.name} · <span class="hi">${c.hi}</span></h2><div class="crbig">${c.svg()}</div><p style="margin:0;color:var(--muted);max-width:32ch">${c.desc}</p>
+   <div class="quote"><b>“${c.line}”</b>${c.en}</div><div class="row"><button class="btn ghost" data-a="call">🔊 Say hi</button><button class="btn" data-a="buddy">${S.buddy===k?'★ Your buddy':'Make my buddy'}</button></div>`,
+   a=>{if(a==='call'){call(k);speak(c.line);return true}if(a==='buddy'){S.buddy=k;save();refreshHud();call(k);openMap()}});
+}
+function modal(html,onAction){const ov=document.createElement('div');ov.className='overlay';ov.innerHTML=`<div class="modal" role="dialog">${html}</div>`;document.body.appendChild(ov);
+  ov.onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a;if(!a){if(e.target===ov){ov.remove()}return}sfx('tap');const keep=onAction&&onAction(a);if(!keep)ov.remove()};return ov}
+$('sfxBtn').onclick=()=>{AC.sfx=!AC.sfx;$('sfxBtn').setAttribute('aria-pressed',AC.sfx);sfx('pop')};
+$('musBtn').onclick=()=>{AC.mus=!AC.mus;$('musBtn').setAttribute('aria-pressed',AC.mus);AC.mus?musicStart():musicStop()};
+
+/* adventure path */
+let curAdv=null;
+function openAdv(key){curAdv=key;const A=ADV[key],p=prog(key);
+  $('advHead').innerHTML=`<span class="eyebrow">${gradeLabel(key)} adventure</span><h1>${A.title}</h1><div class="hn">${A.hi}</div><p>${A.blurb}</p>`;
+  const xs=[100,240,100,240,100],ys=i=>72+i*128,H=ys(4)+90;
+  let d=`M${xs[0]} ${ys(0)}`,dd='';
+  for(let i=1;i<5;i++){const seg=` C${xs[i-1]} ${ys(i-1)+75}, ${xs[i]} ${ys(i)-75}, ${xs[i]} ${ys(i)}`;d+=seg;if(p[i-1])dd+=`M${xs[i-1]} ${ys(i-1)}`+seg}
+  const cur=p.findIndex(v=>!v);
+  const nodes=A.ch.map((c,i)=>{const x=xs[i],y=ys(i),locked=i>0&&!p[i-1],done=!!p[i],boss=c.type==='boss',gk=boss?'bhram':c.guide,col=CR[gk].c,right=x<170;
+    const lx=right?x+50:x-50,anc=right?'start':'end';
+    return `<g class="node ${locked?'locked':''}" data-ch="${i}" tabindex="0" role="button" aria-label="Chapter ${i+1}: ${c.title}${locked?' (locked)':''}">
+     ${i===cur?`<circle class="halo" cx="${x}" cy="${y}" r="47" fill="none" stroke="${col}" stroke-width="4"/>`:''}
+     <circle class="ring" cx="${x}" cy="${y}" r="39" fill="${boss?'#2e1458':'#26164a'}" stroke="${done?'#ffb84d':col}" stroke-width="3" ${locked?'opacity=".55"':''}/>
+     ${CR[gk].svg(`x="${x-33}" y="${y-36}" width="66" height="66"`,locked?'locked':'')}
+     ${locked?`<text x="${x}" y="${y+8}" text-anchor="middle" font-size="22">🔒</text>`:''}
+     <text x="${lx}" y="${y-14}" text-anchor="${anc}" font-family="Mukta,sans-serif" font-size="11" font-weight="700" letter-spacing="1.4" fill="${boss?'#ff8fc7':'#ffe27a'}">${boss?'BOSS':'CHAPTER '+(i+1)}</text>
+     <text x="${lx}" y="${y+4}" text-anchor="${anc}" font-family="Baloo 2,sans-serif" font-size="16" font-weight="800" fill="#fff3fa">${c.title}</text>
+     <text x="${lx}" y="${y+22}" text-anchor="${anc}" font-family="Baloo 2,sans-serif" font-size="13" fill="#c3b2e6">${c.hi}</text>
+     <text x="${lx}" y="${y+40}" text-anchor="${anc}" font-size="14" fill="#ffe27a">${done?'★'.repeat(p[i])+'☆'.repeat(3-p[i]):''}</text></g>`}).join('');
+  const hi=cur<0?4:cur,hx=xs[hi]<170?xs[hi]-82:xs[hi]+38;
+  $('pathwrap').innerHTML=`<svg viewBox="0 0 340 ${H}" role="group" aria-label="Adventure map">
+    <path d="${d}" fill="none" stroke="rgba(255,243,250,.18)" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 12"/>
+    ${dd?`<path d="${dd}" fill="none" stroke="#ffb84d" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 12"/>`:''}
+    ${nodes}<g class="herohop">${avatar(S,`x="${hx}" y="${ys(hi)-62}" width="44" height="48"`)}</g>
+    ${cur<0?`<text x="170" y="${H-14}" text-anchor="middle" font-family="Baloo 2,sans-serif" font-size="18" font-weight="800" fill="#ffe27a">✦ Adventure complete ✦</text>`:''}</svg>`;
+  show('adv');
+}
+$('advBack').onclick=()=>{sfx('tap');openMap()};
+function nodeGo(el){const i=+el.dataset.ch,A=ADV[curAdv],p=prog(curAdv);
+  if(i>0&&!p[i-1]){sfx('locked');el.querySelector('.ring').animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:300});return}
+  sfx('step');const c=A.ch[i];
+  cutscene(c.intro,()=>startRun({mode:'adv',adv:curAdv,ch:i,type:c.type,P:Object.assign({},c.P),guide:c.guide,title:c.title,hi:c.hi,reward:c.reward}),'Let’s go! ✦')}
+$('pathwrap').addEventListener('click',e=>{const n=e.target.closest('.node');if(n)nodeGo(n)});
+$('pathwrap').addEventListener('keydown',e=>{const n=e.target.closest('.node');if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();nodeGo(n)}});
+
+/* cutscene */
+function cutscene(lines,done,lastLabel='Continue ✦'){
+  let i=0,timer=null,full='',shown=0;const ov=document.createElement('div');ov.className='scene';document.body.appendChild(ov);
+  const finishType=()=>{if(timer){clearInterval(timer);timer=null}const el=ov.querySelector('.enline');if(el)el.textContent=full;speak(lines[i][1])};
+  const advance=()=>{if(timer){finishType();return}i++;if(i>=lines.length){ov.remove();try{speechSynthesis.cancel()}catch(e){}done&&done();return}render()};
+  function render(){const[k,hi,en]=lines[i],c=CR[k];ov.style.setProperty('--c',c.c);full=en;shown=0;
+    ov.innerHTML=`<button class="pill skip" data-skip="1">Skip ⏭</button><div class="scene-cr">${c.svg()}</div><div class="dlg"><span class="tag">${c.name} · ${c.hi}</span><div class="hiline">${hi}</div><div class="enline"></div>
+      <div class="row"><button class="say" data-say="${hi}">🔊 Hear it</button><button class="btn sm" data-next="1">${i<lines.length-1?'Next ▸':lastLabel}</button></div></div>`;
+    call(k);const el=ov.querySelector('.enline');
+    timer=setInterval(()=>{shown++;el.textContent=full.slice(0,shown);if(shown%2===0&&full[shown-1]!==' ')blip(k);if(shown>=full.length){clearInterval(timer);timer=null;setTimeout(()=>speak(hi),150)}},32)}
+  ov.addEventListener('click',e=>{if(e.target.closest('[data-say]'))return;if(e.target.closest('[data-skip]')){if(timer)clearInterval(timer);timer=null;i=lines.length-1;advance();return}sfx('tap');advance()});
+  render();
+}
+
+/* ================= QUESTION MAKERS ================= */
+const sayBtn=(t,label='Hear it')=>`<button class="say" data-say="${t}">🔊 ${label}</button>`;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-say]');if(b){sfx('tap');speak(b.dataset.say)}});
+const MK={
+ match(P){const pool=SETS[P.set||'vowels'];const L=pool[R_()*pool.length|0];
+  return {key:'m'+L,prompt:`<div class="orb letter">${L}</div><div class="sub">Find the same glowing letter!</div>${sayBtn(L)}`,say:L,
+   opts:shuffle([L,...pick(pool.filter(x=>x!==L),(P.opts||2)-1)]).map(v=>({v,label:v})),ans:L,sfx:'sparkle'}},
+ count(P){const max=P.max||5,N=1+(R_()*max|0),em=COUNTEM[R_()*COUNTEM.length|0];
+  const cand=[];for(let i=1;i<=Math.max(max,(P.opts||2)+1);i++)if(i!==N)cand.push(i);
+  return {key:'c'+N+em,prompt:`<div class="countbox">${Array.from({length:N},(_,i)=>`<span style="animation-delay:${i*.08}s">${em}</span>`).join('')}</div><div class="sub">How many? <span class="hi">कितने हैं?</span></div>`,
+   say:'कितने हैं?',optCls:'num',opts:shuffle([N,...pick(cand,(P.opts||2)-1)]).map(v=>({v,label:`${DEV[v]}<small>${NUMW[v]}</small>`})),ans:N,onRight(){speak(NUMW[N])}}},
+ varna(P){const set=SETS[P.set||'all'];const pool=LETTERS.filter(l=>set.includes(l[0]));const[L,w,em,en]=pool[R_()*pool.length|0];
+  const hint=!!P.hint;
+  return {key:'v'+L,prompt:`<div class="orb">${em}</div><div class="sub">${en} · which letter does it begin with?</div>
+   <div class="word ${hint?'':'secret'}" data-word>${hint?`<span class="glow">${L}</span>${w.slice(L.length)}`:'· · ·'}</div>${sayBtn(w)}`,
+   say:w,rate:.7,sfx:'whisper',opts:shuffle([L,...pick(set.filter(x=>x!==L),(P.opts||3)-1)]).map(v=>({v,label:v})),ans:L,
+   onRight(host){const wd=host.querySelector('[data-word]');if(wd){wd.className='word';wd.innerHTML=`<span class="glow">${L}</span>${w.slice(L.length)}`}setTimeout(()=>speak(w),600)}}},
+ kaal(P){const pool=(P.pool||['easy']).flatMap(p=>KAAL[p]);const q=pool[R_()*pool.length|0];const n=P.opts||3;
+  const o=n<q.o.length?[q.o[0],...pick(q.o.slice(1),n-1)]:q.o.slice();const clean=q.q.replace('___','…').replace('→ ?','');
+  return {key:'k'+q.q,prompt:`<div class="qcard"><div class="q ${q.en?'':'hi'}">${q.q}</div><div class="sub">${q.sub}</div></div>${q.en?'':sayBtn(clean)}`,
+   say:q.en?'':clean,sfx:'bell',optCls:'txt'+(q.hi?' hi':''),opts:shuffle(o).map(v=>({v,label:v})),ans:q.o[0],onRight(){if(q.hi)speak(q.o[0])}}},
+ pic(P){const g=GOODS[R_()*GOODS.length|0];
+  return {key:'p'+g[0],prompt:`<div class="orb">${g[1]}</div><div class="sub">Which Hindi word is this?</div>`,sfx:'sparkle',optCls:'txt hi',
+   opts:shuffle([g[0],...pick(GOODS.filter(x=>x[0]!==g[0]).map(x=>x[0]),(P.opts||3)-1)]).map(v=>({v,label:v})),ans:g[0],onRight(){speak(g[0])}}}
+};
+function gen(kind,P,used){let q;for(let t=0;t<25;t++){q=MK[kind](P);if(!used.has(q.key))break}used.add(q.key);return q}
+const GEN={
+ bazaar(P){return pick(GOODS,P.n).map(g=>({g,items:shuffle([g,...pick(GOODS.filter(x=>x[0]!==g[0]),P.goods-1)])}))},
+ fort(P){const pool=P.short?BRICKS.filter(b=>b[0].length<=3):BRICKS;return pick(pool,Math.min(P.n,pool.length)).map(b=>{
+   const all=[...new Set(BRICKS.flatMap(x=>x[0]))].filter(s=>!b[0].includes(s));
+   return {b,word:b[0].join(''),tiles:shuffle([...b[0],...pick(all,P.decoy||0)].map((t,i)=>({t,id:i})))}})}
+};
+
+/* ================= ENGINE ================= */
+let G=null,qTimer=null;
+const clearTimer=()=>{if(qTimer){clearInterval(qTimer);qTimer=null}};
+function startRun(run){
+  const used=new Set();let qs;
+  if(run.type==='bazaar'||run.type==='fort')qs=GEN[run.type](run.P);
+  else if(run.type==='boss')qs=Array.from({length:run.P.n},(_,i)=>{const[kind,p]=run.P.mix[i%run.P.mix.length];return gen(kind,p,used)});
+  else qs=Array.from({length:run.P.n},()=>gen(run.P.kind,run.P,used));
+  if(run.type==='boss')qs=shuffle(qs);
+  G={run,qs,i:0,miss:0,qmiss:0,res:[],locked:false,broken:0};
+  $('playTitle').innerHTML=`${run.title} <span class="hi" style="color:var(--rose);font-size:.82em">· ${run.hi}</span>`;
+  $('buddy').innerHTML=run.guide?CR[run.guide].svg():'';$('buddy').hidden=!run.guide;
+  $('backBtn').textContent=run.mode==='adv'?'← Map':'← Bazaar';
+  $('stage').classList.toggle('boss',run.type==='boss');
+  show('play');sfx('magic');if(run.type==='boss'){sfx('gong');setTimeout(giggle,500)}if(run.type==='fort')sfx('creak');
+  renderQ();startJugnu();
+}
+$('backBtn').onclick=()=>{clearTimer();sfx('tap');G&&G.run.mode==='adv'?openAdv(G.run.adv):openMap()};
+function dots(){$('dots').innerHTML=G.qs.map((_,i)=>`<span class="dot ${i===G.i?'now':G.res[i]===0?'good':G.res[i]>0?'meh':''}"></span>`).join('')}
+function react(kind){const b=$('buddy');if(!b||b.hidden)return;b.classList.remove('cheer','oops');void b.offsetWidth;b.classList.add(kind);
+  if(kind==='cheer'&&G.run.guide)setTimeout(()=>{blip(G.run.guide);setTimeout(()=>blip(G.run.guide),90)},250)}
+function renderQ(){G.qmiss=0;G.locked=false;clearTimer();dots();const q=G.qs[G.i],t=G.run.type;
+  if(t==='bazaar')renderBazaar(q,G.run.P);else if(t==='fort')renderFort(q,G.run.P);else if(t==='boss')renderBoss(q);else renderMCQ(q,$('stage'),G.run.P.timer)}
+function miss(el){G.miss++;G.qmiss++;sfx('wrong');react('oops');if(el){el.classList.remove('nope');void el.offsetWidth;el.classList.add('nope')}
+  if(G.run.type==='boss'){const b=$('bimg');if(b){b.classList.remove('laugh');void b.offsetWidth;b.classList.add('laugh')}giggle()}}
+function win(el,delay=1500){G.locked=true;clearTimer();sfx('correct');if(el)burst(el);G.res[G.i]=G.qmiss;dots();react('cheer');if(G.run.type==='boss')bossHit();setTimeout(next,delay)}
+function next(){G.i++;if(G.i>=G.qs.length)finish();else{sfx('whoosh');renderQ()}}
+
+function renderMCQ(q,host,timer){
+  host.innerHTML=`${timer?'<div class="sandbar"><i data-sand style="width:100%"></i></div>':''}<div class="prompt">${q.prompt}</div><div class="opts">${q.opts.map((o,i)=>`<button class="opt ${q.optCls||''}" data-i="${i}">${o.label}</button>`).join('')}</div>`;
+  if(q.sfx)sfx(q.sfx);if(q.say)setTimeout(()=>speak(q.say,q.rate||.8),450);
+  if(timer){let left=timer;const sand=host.querySelector('[data-sand]');qTimer=setInterval(()=>{left--;sand.style.width=Math.max(0,left/timer*100)+'%';if(left<=5&&left>0)sfx('tick');
+    if(left<=0){clearTimer();G.locked=true;G.miss++;G.qmiss++;sfx('gong');react('oops');const r=[...host.querySelectorAll('.opt')].find(b=>q.opts[+b.dataset.i].v===q.ans);r&&r.classList.add('right');
+      G.res[G.i]=G.qmiss;dots();if(G.run.type==='boss')bossHit();setTimeout(next,1900)}},1000)}
+  host.querySelector('.opts').onclick=e=>{const b=e.target.closest('.opt');if(!b||G.locked)return;const o=q.opts[+b.dataset.i];
+    if(o.v===q.ans){b.classList.add('right');q.onRight&&q.onRight(host);win(b,1700)}else miss(b)};
+}
+function renderBoss(q){const n=G.qs.length;
+  $('stage').innerHTML=`<div class="bossbar"><span class="bimg" id="bimg">${CR.bhram.svg()}</span><div class="shieldbox"><span class="eyebrow">Bhram’s mirror shields</span><div class="shields">${Array.from({length:n},(_,i)=>`<span class="shard ${i<G.broken?'broken':''}"></span>`).join('')}</div></div></div><div id="qhost"></div>`;
+  renderMCQ(q,$('qhost'),G.run.P.timer)}
+function bossHit(){const sh=document.querySelectorAll('.shard')[G.broken];G.broken++;if(sh){sh.classList.add('broken');burst(sh,'💎',5)}sfx('shatter');const b=$('bimg');if(b){b.classList.remove('hit','laugh');void b.offsetWidth;b.classList.add('hit')}}
+function renderBazaar(q,P){const[w,em]=q.g;const n=q.items.length;
+  const cells=shuffle([[18,30],[50,22],[82,32],[28,72],[62,74],[88,70]]).slice(0,n);const keeper=G.run.guide||'deepu';
+  $('stage').innerHTML=`<div class="keeper">${CR[keeper].svg()}<div class="bubble"><div class="q">मुझे <span style="color:#d4650a">${w}</span> चाहिए!</div>
+   <div class="sub">${P.hint?`I need ${em}`:''}${sayBtn(`मुझे ${w} चाहिए`,'Listen')}</div></div></div>
+   <div class="field-area" id="fa">${q.items.map((g,i)=>`<button class="item" data-w="${g[0]}" aria-label="${g[2]}" style="left:${cells[i][0]+(R_()-.5)*6}%;top:${cells[i][1]+(R_()-.5)*8}%"><span style="animation-delay:${-i*.6}s">${g[1]}</span></button>`).join('')}</div>`;
+  sfx('coin');setTimeout(()=>speak(`मुझे ${w} चाहिए`),400);
+  $('fa').onclick=e=>{const b=e.target.closest('.item');if(!b||G.locked)return;
+   if(b.dataset.w===w){burst(b);b.classList.add('got');sfx('coin');speak(w);win(null,1500)}else{miss();sfx('pop');b.classList.add('poof');speak(b.dataset.w)}}}
+function renderFort(q,P){const[parts,em,en]=q.b;let pos=0;const built=G.i;
+  const tower=`<svg viewBox="0 0 110 200">${Array.from({length:G.qs.length},(_,k)=>`<rect x="${k%2?18:12}" y="${180-k*20}" width="80" height="18" rx="3" fill="${k<built?'#e8a87c':'rgba(255,255,255,.07)'}" stroke="${k<built?'#8f4a22':'rgba(255,255,255,.12)'}"/>`).join('')}<path d="M8 ${200-G.qs.length*20}h94" stroke="#ffe27a" stroke-dasharray="4 4"/></svg>`;
+  $('stage').innerHTML=`<div class="fort-wrap"><div><div class="prompt"><div class="orb" style="width:120px;height:120px;font-size:60px">${em}</div>
+   <div class="sub">Build the word for <b>${en}</b></div>${P.guide?`<div class="guide">${q.word}</div>`:''}${sayBtn(q.word)}</div>
+   <div class="slots" id="slots">${parts.map(()=>`<div class="sl"></div>`).join('')}</div>
+   <div class="opts" id="tiles">${q.tiles.map(t=>`<button class="tile" data-t="${t.t}">${t.t}</button>`).join('')}</div></div>
+   <div class="tower" aria-hidden="true">${tower}</div></div>`;
+  $('tiles').onclick=e=>{const b=e.target.closest('.tile');if(!b||G.locked)return;
+   if(b.dataset.t===parts[pos]){const sl=$('slots').children[pos];sl.textContent=b.dataset.t;sl.classList.add('on');b.classList.add('used');sfx('thud');speak(b.dataset.t);pos++;
+    if(pos===parts.length){setTimeout(()=>speak(q.word),500);win($('slots'),1900)}}
+   else{miss();b.classList.remove('nope');void b.offsetWidth;b.classList.add('nope')}}}
+
+function finish(){clearTimer();stopJugnu();const run=G.run,n=G.qs.length;
+  const st=G.miss<=Math.floor(n*.15)?3:G.miss<=Math.ceil(n*.45)?2:1;
+  if(run.mode==='free'){
+    S.stars[run.realm]=Math.max(S.stars[run.realm]||0,st);const isNew=own(run.reward);save();sfx('fanfare');const c=CR[run.reward];
+    setTimeout(()=>call(run.reward),900);
+    modal(`<h2>${['','Well done!','Wonderful!','Magnificent!'][st]}</h2><div class="big-stars">${starStr(st)}</div>${isNew?'<div class="newfr">A new creature joins you!</div>':''}
+     <div class="crbig">${c.svg()}</div><div class="quote"><b>${c.name} · ${c.hi}: “${c.line}”</b>${c.en}</div>
+     <div class="row"><button class="btn ghost" data-a="again">Play again</button><button class="btn" data-a="map">Back to the bazaar</button></div>`,
+     a=>{a==='again'?startRun(run):openMap()});
+    return}
+  const A=ADV[run.adv],ch=A.ch[run.ch],p=prog(run.adv);p[run.ch]=Math.max(p[run.ch]||0,st);
+  const gained=[ch.reward];if(ch.type==='boss')gained.push('bhram');
+  const fresh=[...new Set(gained)].filter(k=>own(k));
+  const last=ch.type==='boss',firstClear=last&&!S.done.includes(run.adv);if(last&&firstClear)S.done.push(run.adv);save();
+  sfx(last?'victory':'fanfare');const[ok,ohi,oen]=ch.outro,oc=CR[ok];
+  setTimeout(()=>{call(ok);speak(ohi)},800);
+  modal(`<h2>${last?'Shields shattered!':['','Chapter clear!','Wonderful!','Magnificent!'][st]}</h2><div class="big-stars">${starStr(st)}</div>
+   <div class="crbig">${oc.svg()}</div><div class="quote"><b>${oc.name}: ${ohi}</b>${oen}</div>
+   ${fresh.length?`<div class="newfr">New friend${fresh.length>1?'s':''} for your album: ${fresh.map(k=>CR[k].name).join(' & ')}!</div>`:''}
+   <div class="row"><button class="btn ghost" data-a="again">Replay</button><button class="btn" data-a="go">${last?'See what happens ✦':'Continue the adventure →'}</button></div>`,
+   a=>{if(a==='again'){startRun(run);return}
+    if(last){cutscene(A.ending,()=>{sfx('victory');burst(document.body,'🎉',20);
+      modal(`<span class="badge">${gradeLabel(run.adv)} adventure complete</span><h2>${A.title}</h2><div class="hn hi" style="color:var(--rose)">${A.hi}</div>
+       <div class="friends">${avatar(S,'width="84" height="90"')}${CR[A.hero].svg()}${CR.bhram.svg()}</div>
+       <p style="margin:0;color:var(--muted)">${esc(S.name)}, you saved the Marketplace of Illusions and made a new friend. Try another grade’s adventure, or collect every creature in the album!</p>
+       <div class="row"><button class="btn" data-a="map">Back to the bazaar</button></div>`,()=>openMap())},'The end ✦')}
+    else openAdv(run.adv)});
+}
+
+/* ================= JUGNU BONUS ================= */
+let jT=null;
+function startJugnu(){stopJugnu();const go=()=>{jT=setTimeout(()=>{spawnJugnu();go()},12000+R_()*12000)};go()}
+function stopJugnu(){if(jT){clearTimeout(jT);jT=null}document.querySelectorAll('.jugnu').forEach(j=>j.remove())}
+function spawnJugnu(){const j=document.createElement('button');j.className='jugnu';j.setAttribute('aria-label','Catch the firefly');
+  j.style.top=(15+R_()*55)+'%';j.innerHTML=CR.jugnu.svg();document.body.appendChild(j);sfx('sparkle');
+  j.onclick=()=>{S.jugnu++;own('jugnu');save();refreshHud();call('jugnu');burst(j,'✨');speak('जुगनू!');j.remove()};
+  j.addEventListener('animationend',e=>{if(e.animationName==='fly')j.remove()})}
+
+/* ================= SKY ================= */
+(function(){const cv=$('sky'),cx=cv.getContext('2d');let W,H,stars=[],lan=[];const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ function size(){const d=devicePixelRatio||1;W=cv.width=innerWidth*d;H=cv.height=innerHeight*d;
+  stars=Array.from({length:120},()=>({x:R_()*W,y:R_()*H,r:(R_()*1.6+.3)*d,p:R_()*6}));
+  lan=Array.from({length:10},()=>({x:R_()*W,y:R_()*H,s:(.6+R_()*.8)*d,v:(.15+R_()*.3)*d,p:R_()*6,c:R_()<.5?'255,184,77':'255,143,199'}))}
+ size();addEventListener('resize',size);
+ function frame(t){cx.clearRect(0,0,W,H);const g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#170d2e');g.addColorStop(.7,'#24124a');g.addColorStop(1,'#3a1a55');cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  for(const s of stars){cx.globalAlpha=.35+.65*Math.abs(Math.sin(t/900+s.p));cx.fillStyle='#fff3fa';cx.beginPath();cx.arc(s.x,s.y,s.r,0,7);cx.fill()}
+  for(const l of lan){if(!rm){l.y-=l.v;if(l.y<-40)l.y=H+40}const x=l.x+Math.sin(t/1400+l.p)*14*l.s;
+   const rg=cx.createRadialGradient(x,l.y,0,x,l.y,26*l.s);rg.addColorStop(0,`rgba(${l.c},.55)`);rg.addColorStop(1,`rgba(${l.c},0)`);cx.globalAlpha=1;cx.fillStyle=rg;cx.beginPath();cx.arc(x,l.y,26*l.s,0,7);cx.fill();
+   cx.fillStyle=`rgba(${l.c},.95)`;cx.beginPath();cx.ellipse(x,l.y,6*l.s,8*l.s,0,0,7);cx.fill()}
+  cx.globalAlpha=1;if(!rm)requestAnimationFrame(frame)}
+ requestAnimationFrame(frame)})();
+refreshHud();
+</script>
+
+</html>
