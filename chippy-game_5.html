@@ -1,0 +1,1659 @@
+<title>99 Nights at Aunt Chippy's</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rye&family=Oswald:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Deliberate single dark world: it is always 2 AM at the edge of the woods. Background and
+   every color are declared explicitly on :root so the page holds regardless of host theme. */
+:root{
+  --crust:#1c1210;
+  --crust-deep:#120b09;
+  --oven:#2b1c15;
+  --oven-line:#3d2a1e;
+  --dough:#f2e2c4;
+  --dough-dim:#c9b696;
+  --sugar:#d99a3f;
+  --sugar-bright:#f0b658;
+  --jam:#a3273a;
+  --jam-bright:#e0435a;
+  --mint:#7fae8e;
+  --mint-bright:#9fd0af;
+  --tape:#e0435a;
+  --shadow:rgba(0,0,0,.55);
+  --glass:rgba(18,11,9,.86);
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--crust-deep);
+  color:var(--dough);
+  font-family:'Oswald',system-ui,sans-serif;
+  overflow:hidden;
+}
+h1,h2,h3{text-wrap:balance;margin:0;}
+button{font-family:inherit;}
+::selection{background:var(--jam);color:var(--dough);}
+
+.mono{font-family:'Space Mono','Courier New',monospace;}
+.hidden{display:none !important;}
+
+#app{
+  position:fixed;inset:0;
+  display:flex;
+  align-items:center;justify-content:center;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(95,148,120,.13), transparent 60%),
+    var(--crust-deep);
+}
+
+.scene{
+  position:absolute;inset:0;
+  display:none;
+  align-items:center;justify-content:center;
+}
+.scene.active{display:flex;}
+
+/* ---------- grain / vignette overlay used everywhere ---------- */
+.grain{
+  pointer-events:none;position:absolute;inset:0;z-index:5;
+  background-image:radial-gradient(rgba(0,0,0,0) 1px, rgba(0,0,0,.09) 1px);
+  background-size:3px 3px;
+  mix-blend-mode:overlay;
+  opacity:.5;
+}
+.vignette{
+  pointer-events:none;position:absolute;inset:0;z-index:6;
+  box-shadow:inset 0 0 18vw 4vw rgba(0,0,0,.75);
+}
+
+/* =====================================================================
+   TITLE SCENE — weathered trailhead signboard nailed up at the edge of the woods
+   ===================================================================== */
+#scene-title{
+  flex-direction:column;
+  gap:0;
+  padding:4vh 4vw;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.65)),
+    repeating-linear-gradient(90deg, var(--crust) 0 38px, var(--crust-deep) 38px 40px);
+}
+
+.signboard{
+  position:relative;
+  width:min(760px,92vw);
+  background:
+    linear-gradient(160deg, var(--oven) 0%, var(--crust) 70%);
+  border:10px solid var(--crust-deep);
+  outline:3px solid var(--oven-line);
+  outline-offset:-16px;
+  padding:5.5vh 5vw 4vh;
+  box-shadow:0 30px 60px var(--shadow), inset 0 0 60px rgba(0,0,0,.5);
+  transform:rotate(-.6deg);
+}
+.signboard::before{
+  content:"";
+  position:absolute; left:-2px;right:-2px;top:-2px;bottom:-2px;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(0,0,0,.12) 0 2px, transparent 2px 14px);
+  opacity:.5; pointer-events:none;
+}
+.hook{
+  position:absolute;top:-22px;
+  width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #6a6a6a, #201d1c 70%);
+  box-shadow:0 3px 4px rgba(0,0,0,.6);
+}
+.hook.left{left:14%;} .hook.right{right:16%;}
+
+.eyebrow-row{
+  display:flex;align-items:center;justify-content:center;gap:.8em;
+  margin-bottom:1.2vh;
+}
+.eyebrow-row .rule{height:2px;flex:1;max-width:64px;background:var(--sugar);opacity:.55;}
+.eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:clamp(.6rem,1.4vw,.75rem);
+  letter-spacing:.32em;
+  color:var(--sugar-bright);
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.game-title{
+  font-family:'Rye',serif;
+  text-align:center;
+  line-height:1.05;
+  color:var(--dough);
+  text-shadow:0 3px 0 rgba(0,0,0,.5), 0 0 26px rgba(217,154,63,.25);
+}
+.game-title .num{
+  display:block;
+  font-size:clamp(2.6rem,9vw,4.6rem);
+  color:var(--sugar-bright);
+  letter-spacing:.02em;
+}
+.game-title .rest{
+  display:block;
+  font-size:clamp(1.6rem,5.4vw,2.7rem);
+  margin-top:.15em;
+}
+.game-title .rest span{color:var(--jam-bright);}
+
+.flicker{animation:signFlicker 5.2s infinite;}
+@keyframes signFlicker{
+  0%,3%,6%,100%{opacity:1;}
+  4%{opacity:.35;}
+  5%{opacity:.85;}
+  62%{opacity:1;}
+  63%{opacity:.4;}
+  64%{opacity:1;}
+}
+
+.tagline{
+  text-align:center;
+  margin-top:1.6vh;
+  color:var(--dough-dim);
+  font-size:clamp(.82rem,1.6vw,.98rem);
+  font-style:italic;
+}
+
+.menu-panel{
+  margin-top:3.2vh;
+  display:flex;flex-direction:column;align-items:center;gap:1.5vh;
+}
+
+.best-night{
+  font-family:'Space Mono',monospace;
+  font-size:.82rem;
+  color:var(--dough-dim);
+  letter-spacing:.04em;
+}
+.best-night b{color:var(--mint-bright);font-weight:700;}
+
+.night-select-label{
+  display:flex;align-items:center;gap:.8em;
+  font-size:.85rem;color:var(--dough-dim);
+  font-family:'Space Mono',monospace;
+}
+.night-select-label input[type="range"]{
+  accent-color:var(--jam-bright);
+  width:min(220px,42vw);
+}
+#nightSelectVal{color:var(--sugar-bright);font-weight:700;min-width:1.6em;text-align:center;}
+
+.btn{
+  font-family:'Oswald',sans-serif;
+  font-weight:700;
+  font-size:1rem;
+  letter-spacing:.03em;
+  padding:.85em 2.1em;
+  border-radius:3px;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn:focus-visible{outline:3px solid var(--sugar-bright);outline-offset:2px;}
+.btn-primary{
+  background:linear-gradient(180deg, var(--jam-bright), var(--jam));
+  color:var(--dough);
+  box-shadow:0 4px 0 #6c1522, 0 10px 18px rgba(0,0,0,.4);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 0 #6c1522,0 14px 22px rgba(0,0,0,.45);}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #6c1522;}
+.btn-ghost{
+  background:transparent;
+  color:var(--dough-dim);
+  border-color:var(--oven-line);
+  font-size:.82rem;
+  padding:.6em 1.4em;
+}
+.btn-ghost:hover{color:var(--sugar-bright);border-color:var(--sugar);}
+
+.how-panel{
+  margin-top:2.4vh;
+  max-width:52ch;
+  background:var(--crust-deep);
+  border:1px dashed var(--oven-line);
+  padding:1.6em 1.8em;
+  font-size:.86rem;
+  line-height:1.65;
+  color:var(--dough-dim);
+}
+.how-panel strong{color:var(--sugar-bright);}
+.how-panel .jam-word{color:var(--jam-bright);}
+.how-panel ul{margin:.6em 0 0;padding-left:1.2em;}
+.how-panel li{margin-bottom:.4em;}
+.how-panel .close-row{text-align:right;margin-top:1em;}
+
+/* =====================================================================
+   GAME SCENE — first-person forest (three.js canvas + HUD overlay)
+   ===================================================================== */
+#scene-game{flex-direction:column;}
+#gameRoot{
+  position:relative;
+  width:100%;height:100%;
+  background:#050302;
+  overflow:hidden;
+}
+#c3d{position:absolute;inset:0;display:block;width:100%;height:100%;outline:none;}
+
+#hud{
+  z-index:4;position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:1.6vh 3vw;
+  background:linear-gradient(180deg, rgba(0,0,0,.55), transparent);
+  pointer-events:none;
+}
+.hud-left{display:flex;flex-direction:column;gap:.6vh;}
+.hud-right{display:flex;align-items:center;gap:.8em;}
+.night-label{
+  font-family:'Rye',serif;color:var(--sugar-bright);
+  font-size:clamp(1rem,2.2vw,1.3rem);
+  text-shadow:0 2px 0 rgba(0,0,0,.5);
+}
+.clock{
+  font-family:'Space Mono',monospace;
+  font-size:.78rem;
+  color:var(--dough-dim);
+  letter-spacing:.05em;
+}
+.objective-panel{display:flex;gap:1em;margin-top:.2vh;}
+.obj-item{font-size:.68rem;letter-spacing:.06em;color:var(--dough-dim);opacity:.6;transition:opacity .2s,color .2s;}
+.obj-item.found{color:var(--mint-bright);opacity:1;text-decoration:line-through;}
+.obj-item.gofind{color:var(--sugar-bright);opacity:1;animation:signFlicker 2.4s infinite;}
+
+.power-box{display:flex;align-items:center;gap:.6em;}
+.power-icon{font-size:1.1rem;}
+.power-bar-track{
+  width:min(28vw,150px);height:11px;
+  background:var(--oven);
+  border:1px solid var(--oven-line);
+  border-radius:2px;overflow:hidden;
+}
+.power-bar-fill{
+  height:100%;width:100%;
+  background:linear-gradient(90deg,var(--mint),var(--mint-bright));
+  transition:width .3s linear, background .3s linear;
+}
+.power-bar-fill.mid{background:linear-gradient(90deg,var(--sugar),var(--sugar-bright));}
+.power-bar-fill.low{background:linear-gradient(90deg,var(--jam),var(--jam-bright));}
+.power-pct{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--dough-dim);min-width:3.2em;}
+
+#muteBtn{
+  pointer-events:auto;
+  background:transparent;border:1px solid var(--oven-line);color:var(--dough-dim);
+  width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:.95rem;flex:none;
+}
+#muteBtn:hover{border-color:var(--sugar);color:var(--sugar-bright);}
+
+.crosshair{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(242,226,196,.8);
+  box-shadow:0 0 5px rgba(0,0,0,.9);
+  pointer-events:none;z-index:5;
+}
+
+.toast{
+  position:absolute;top:16vh;left:50%;transform:translateX(-50%) translateY(-6px);
+  background:rgba(0,0,0,.6);border-left:3px solid var(--mint-bright);
+  color:var(--dough);padding:.6em 1.3em;font-size:.92rem;
+  opacity:0;transition:opacity .3s, transform .3s;pointer-events:none;z-index:6;
+  font-family:'Oswald',sans-serif;letter-spacing:.02em;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.hint-bar{
+  position:absolute;bottom:3vh;left:50%;transform:translateX(-50%);
+  font-family:'Space Mono',monospace;font-size:.7rem;color:var(--dough-dim);
+  background:rgba(0,0,0,.4);padding:.5em 1.1em;letter-spacing:.05em;
+  opacity:1;transition:opacity .8s;pointer-events:none;z-index:5;white-space:nowrap;
+}
+.hint-bar.faded{opacity:0;}
+
+.low-battery-overlay{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  box-shadow:inset 0 0 16vw 6vw rgba(163,39,58,0);
+  transition:box-shadow .3s;
+}
+.low-battery-overlay.on{
+  animation:lowBattPulse 1.1s infinite;
+}
+@keyframes lowBattPulse{
+  0%,100%{box-shadow:inset 0 0 16vw 6vw rgba(163,39,58,.35);}
+  50%{box-shadow:inset 0 0 16vw 6vw rgba(163,39,58,.08);}
+}
+
+#lockGate{
+  position:absolute;inset:0;z-index:15;
+  background:rgba(5,3,2,.78);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1em;
+  text-align:center;padding:3em 6vw;cursor:pointer;
+}
+#lockGate.hidden{display:none;}
+#lockGate h2{font-family:'Rye',serif;color:var(--sugar-bright);font-size:clamp(1.3rem,4vw,2rem);}
+#lockGate p{color:var(--dough-dim);font-size:.85rem;max-width:42ch;line-height:1.6;}
+#lockGate .go{color:var(--mint-bright);font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:.14em;margin-top:.6em;}
+
+/* ---------- touch controls ---------- */
+#touchControls{position:absolute;inset:0;z-index:8;display:none;}
+#touchControls.active{display:block;}
+.joy-base{
+  position:absolute;left:6vw;bottom:8vh;width:112px;height:112px;border-radius:50%;
+  background:rgba(242,226,196,.08);border:2px solid rgba(242,226,196,.25);touch-action:none;
+}
+.joy-stick{
+  position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;
+  border-radius:50%;background:rgba(242,226,196,.35);
+}
+.look-zone{position:absolute;right:0;top:0;width:58%;height:100%;touch-action:none;}
+#touchFlash{
+  position:absolute;right:6vw;bottom:9vh;width:68px;height:68px;border-radius:50%;
+  background:var(--sugar);color:var(--crust-deep);font-size:1.5rem;border:none;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.5);
+}
+
+/* =====================================================================
+   JUMPSCARE
+   ===================================================================== */
+#scene-jumpscare{
+  background:#000;flex-direction:column;
+}
+#jumpscareFace{
+  font-size:min(46vh,46vw);
+  animation:jumpBurst .28s ease-out;
+  filter:drop-shadow(0 0 40px rgba(224,67,90,.85)) hue-rotate(-8deg);
+}
+@keyframes jumpBurst{
+  0%{transform:scale(.2);opacity:0;}
+  40%{transform:scale(1.3);opacity:1;}
+  60%{transform:scale(.95);}
+  100%{transform:scale(1.05);}
+}
+.shake{animation:shakeIt .4s;}
+@keyframes shakeIt{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-12px,6px);}
+  40%{transform:translate(10px,-8px);}
+  60%{transform:translate(-8px,-4px);}
+  80%{transform:translate(8px,6px);}
+}
+.gameover-box{
+  position:absolute;bottom:8vh;left:50%;transform:translateX(-50%);
+  text-align:center;
+  background:rgba(0,0,0,.7);
+  padding:2.4em 3em;
+  border-top:3px solid var(--jam-bright);
+}
+.gameover-box h2{
+  font-family:'Rye',serif;color:var(--jam-bright);
+  font-size:clamp(1.6rem,4vw,2.4rem);
+  letter-spacing:.06em;
+}
+.gameover-box p{color:var(--dough-dim);margin:.8em 0 1.4em;font-size:.92rem;}
+.gameover-box .row{display:flex;gap:1em;justify-content:center;}
+
+/* =====================================================================
+   NIGHT RESULT / WIN
+   ===================================================================== */
+#scene-nightresult{
+  flex-direction:column;text-align:center;gap:1em;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(240,182,88,.22), transparent 65%),
+    radial-gradient(ellipse at 50% 100%, rgba(163,39,58,.08), transparent 60%),
+    var(--crust-deep);
+}
+#scene-win{
+  flex-direction:column;text-align:center;gap:1em;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(217,154,63,.12), transparent 60%),
+    var(--crust-deep);
+}
+#resultTitle{
+  font-family:'Rye',serif;color:var(--sugar-bright);
+  font-size:clamp(2rem,6vw,3.2rem);
+}
+#resultSub{color:var(--dough-dim);font-size:1rem;margin-bottom:1em;}
+#scene-win h1{
+  font-family:'Rye',serif;color:var(--mint-bright);
+  font-size:clamp(2.2rem,7vw,3.6rem);
+  text-shadow:0 0 30px rgba(127,174,142,.4);
+}
+#scene-win p{color:var(--dough-dim);margin:1em 0 1.8em;max-width:46ch;}
+
+@media (max-width:640px){
+  .power-bar-track{width:22vw;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .flicker,.shake,#jumpscareFace,.low-battery-overlay.on,.obj-item.gofind{animation:none !important;}
+}
+</style>
+
+<div id="app">
+
+  <!-- ============================= TITLE ============================= -->
+  <div id="scene-title" class="scene active">
+    <div class="signboard">
+      <div class="hook left"></div><div class="hook right"></div>
+      <div class="eyebrow-row"><span class="rule"></span><span class="eyebrow">Hollow Pine Camp · Search &amp; Rescue</span><span class="rule"></span></div>
+      <h1 class="game-title flicker">
+        <span class="num">99 NIGHTS</span>
+        <span class="rest">at Aunt <span>Chippy's</span></span>
+      </h1>
+      <p class="tagline">Three kids went into these woods. Only their names came back.</p>
+
+      <div class="menu-panel">
+        <div class="best-night">Furthest survived: <b id="bestNightLabel">no nights yet</b></div>
+        <div class="best-night">Camp house: <b id="houseStageLabel">just stakes in the ground</b> · Food stocked: <b id="foodStockLabel">0</b></div>
+        <label class="night-select-label">Start at Night
+          <input type="range" id="nightSelect" min="1" max="1" value="1">
+          <span id="nightSelectVal">1</span>
+        </label>
+        <button id="btnPlay" class="btn btn-primary">CLOCK IN</button>
+        <button id="btnHow" class="btn btn-ghost">HOW TO SURVIVE</button>
+      </div>
+
+      <div id="howPanel" class="how-panel hidden">
+        <p><strong>You're the camper who volunteered to look.</strong> Three kids never came back from these woods — Wesley, Birdie, and Otto. Whatever actually got them is still out here, and it doesn't want to be found either.</p>
+        <ul>
+          <li><strong>WASD</strong> to move, <strong>mouse</strong> to look. Click the woods to step in.</li>
+          <li><strong>F</strong> (or the flashlight button) turns your light on and off. It's the only thing that pushes Aunt Chippy back. <span class="jam-word">It also burns battery the whole time it's on, and once it's dead, it's dead for the night.</span></li>
+          <li>Find all three campers, chop enough logs, and forage enough food, then get back to the campfire and the tent before she reaches you.</li>
+          <li>Every night you make it back, the logs go toward the house you're building at camp, and the food goes into your stock — both stick around for next time.</li>
+          <li>She's faster than you in the open, patient in the dark, and her antlers give her away long before her footsteps do.</li>
+        </ul>
+        <p>Ninety-nine nights. Nobody's finished the house, kept the food stocked, and made it back that many times.</p>
+        <div class="close-row"><button id="btnHowClose" class="btn btn-ghost">Got it</button></div>
+      </div>
+    </div>
+    <div class="grain"></div><div class="vignette"></div>
+  </div>
+
+  <!-- ============================= GAME ============================= -->
+  <div id="scene-game" class="scene">
+    <div id="gameRoot">
+      <canvas id="c3d"></canvas>
+
+      <div id="hud">
+        <div class="hud-left">
+          <div class="night-label">NIGHT <span id="nightLabel">1</span></div>
+          <div class="clock mono"><span id="clockTime">12 AM</span></div>
+          <div class="objective-panel mono" id="objPanel"></div>
+        </div>
+        <div class="hud-right">
+          <div class="power-box">
+            <span class="power-icon">🔦</span>
+            <div class="power-bar-track"><div id="powerBar" class="power-bar-fill"></div></div>
+            <span class="power-pct mono" id="powerPct">100%</span>
+          </div>
+          <button id="muteBtn" title="Mute">🔊</button>
+        </div>
+      </div>
+
+      <div class="low-battery-overlay" id="lowBattOverlay"></div>
+      <div class="crosshair"></div>
+      <div class="toast" id="toast"></div>
+      <div class="hint-bar" id="hintBar">WASD MOVE · MOUSE LOOK · F FLASHLIGHT</div>
+
+      <div id="lockGate">
+        <h2>STEP INTO THE WOODS</h2>
+        <p>Find Wesley, Birdie, and Otto, chop some logs, forage some food, then get back to the campfire and the tent. Aunt Chippy can't stand the light — use it. Mind the battery.</p>
+        <div class="go">CLICK ANYWHERE TO BEGIN</div>
+      </div>
+
+      <div id="touchControls">
+        <div class="joy-base" id="joyBase"><div class="joy-stick" id="joyStick"></div></div>
+        <div class="look-zone" id="lookZone"></div>
+        <button id="touchFlash">🔦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= JUMPSCARE ============================= -->
+  <div id="scene-jumpscare" class="scene">
+    <div id="jumpscareFace">🦌</div>
+    <div class="gameover-box">
+      <h2>SHE FOUND YOU</h2>
+      <p id="jumpscareMsg"></p>
+      <div class="row">
+        <button id="btnRetry" class="btn btn-primary">TRY AGAIN</button>
+        <button id="btnMenu1" class="btn btn-ghost">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= NIGHT RESULT ============================= -->
+  <div id="scene-nightresult" class="scene">
+    <div>
+      <h2 id="resultTitle">6:00 AM</h2>
+      <p id="resultSub">Night 1 survived.</p>
+      <div class="row" style="display:flex;gap:1em;justify-content:center;">
+        <button id="btnContinue" class="btn btn-primary">CONTINUE</button>
+        <button id="btnMenu2" class="btn btn-ghost">MAIN MENU</button>
+      </div>
+    </div>
+    <div class="grain"></div>
+  </div>
+
+  <!-- ============================= WIN ============================= -->
+  <div id="scene-win" class="scene">
+    <div>
+      <h1>SUNRISE, NIGHT 99.</h1>
+      <p>Ninety-nine nights, and you found all three every single time. Wesley, Birdie, Otto, a full pantry, and a finished house with every window lit at the edge of Hollow Pine. Nobody else who's walked into these woods can say that.</p>
+      <button id="btnMenu3" class="btn btn-primary">MAIN MENU</button>
+    </div>
+    <div class="grain"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var HAS_THREE = !!window.THREE;
+  var isTouchDevice = (function(){
+    try{ return (window.matchMedia && matchMedia('(pointer:coarse)').matches) || ('ontouchstart' in window); }
+    catch(e){ return false; }
+  })();
+
+  /* ============================ AUDIO ============================ */
+  var Audio_ = (function(){
+    var ctx=null, muted=false, ambientNodes=null, heartbeatId=null, lastGrowl=0;
+    function ac(){ if(!ctx){ ctx = new (window.AudioContext||window.webkitAudioContext)(); } return ctx; }
+    function tone(freq,dur,type,vol,glideTo){
+      if(muted) return;
+      try{
+        var c=ac(); var o=c.createOscillator(); var g=c.createGain();
+        o.type=type||'sine'; o.frequency.setValueAtTime(freq,c.currentTime);
+        if(glideTo) o.frequency.exponentialRampToValueAtTime(glideTo,c.currentTime+dur);
+        g.gain.setValueAtTime(vol||0.15,c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
+        o.connect(g); g.connect(c.destination);
+        o.start(); o.stop(c.currentTime+dur);
+      }catch(e){}
+    }
+    function noiseBurst(dur,vol){
+      if(muted) return;
+      try{
+        var c=ac(); var bufSize=Math.floor(c.sampleRate*dur);
+        var buf=c.createBuffer(1,bufSize,c.sampleRate);
+        var data=buf.getChannelData(0);
+        for(var i=0;i<bufSize;i++){ data[i]=(Math.random()*2-1)*(1-i/bufSize); }
+        var src=c.createBufferSource(); src.buffer=buf;
+        var g=c.createGain(); g.gain.setValueAtTime(vol||0.3,c.currentTime);
+        var filt=c.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=1800;
+        src.connect(filt); filt.connect(g); g.connect(c.destination);
+        src.start();
+      }catch(e){}
+    }
+    return {
+      init:function(){ try{ ac(); }catch(e){} },
+      toggleMute:function(){ muted=!muted; return muted; },
+      isMuted:function(){ return muted; },
+      blip:function(){ tone(520,0.06,'square',0.06); },
+      click:function(){ tone(300,0.08,'square',0.09,180); },
+      chime:function(){ tone(880,0.16,'sine',0.14); setTimeout(function(){tone(1320,0.22,'sine',0.11);},120); },
+      growl:function(){
+        var now=performance.now();
+        if(now-lastGrowl<1400) return;
+        lastGrowl=now;
+        tone(80,0.5,'sawtooth',0.1,55);
+      },
+      flee:function(){ tone(220,0.3,'triangle',0.09,90); },
+      bell:function(){ tone(880,0.5,'sine',0.12); setTimeout(function(){tone(1174,0.6,'sine',0.1);},220); },
+      jumpscare:function(){ noiseBurst(0.9,0.5); tone(140,0.7,'sawtooth',0.3,40); },
+      startAmbient:function(){
+        if(muted || ambientNodes) return;
+        try{
+          var c=ac();
+          var o=c.createOscillator(); var g=c.createGain();
+          o.type='sine'; o.frequency.value=52;
+          g.gain.value=0.018;
+          o.connect(g); g.connect(c.destination); o.start();
+          ambientNodes={o:o,g:g};
+        }catch(e){}
+      },
+      stopAmbient:function(){
+        if(ambientNodes){ try{ambientNodes.o.stop();}catch(e){} ambientNodes=null; }
+      },
+      heartbeatStart:function(){
+        if(heartbeatId) return;
+        heartbeatId=setInterval(function(){ tone(68,0.15,'sine',0.13); },650);
+      },
+      heartbeatStop:function(){ if(heartbeatId){ clearInterval(heartbeatId); heartbeatId=null; } }
+    };
+  })();
+
+  /* ============================ CONSTANTS ============================ */
+  var KIDS_DATA = [
+    {id:'wesley', label:'Wesley'},
+    {id:'birdie', label:'Birdie'},
+    {id:'otto',   label:'Otto'}
+  ];
+  var ARENA = 42;           // half-width of the playable square
+  var CLEARING_R = 6;       // no trees near spawn
+  var PLAYER_H = 1.7;
+  var PLAYER_R = 0.4;
+  var TREE_R = 0.9;
+  var PICKUP_R = 2.1;
+  var CATCH_R = 1.35;
+  var WIN_R = 3.2;
+  var FLASH_RANGE = 15;
+  var FLASH_ANGLE = 0.40; // radians, spotlight half-angle
+  var WOOD_PLACED = 6, WOOD_NEEDED = 4;
+  var FOOD_PLACED = 5, FOOD_NEEDED = 3;
+  var HOUSE_MAX_STAGE = 5;
+  var CAMP_X = 0, CAMP_Z = 10;
+
+  function diffForNight(night){
+    return {
+      huntSpeed: Math.min(2.6 + night*0.05, 4.3),
+      patrolSpeed: 1.5,
+      senseRadius: Math.min(14 + night*0.15, 22),
+      fearRate: Math.max(0.85 - night*0.01, 0.35),
+      braveCooldown: Math.max(9 - night*0.12, 3),
+      fogDensity: Math.min(0.045 + night*0.0007, 0.09),
+      battDrain: Math.min(1.3 + night*0.02, 2.6)
+    };
+  }
+
+  /* ============================ STATE ============================ */
+  var night = 1;
+  var bestCompleted = 0;
+  var houseStage = 0;
+  var foodStock = 0;
+  var running = false;      // true while a night is actively in play (not menu/gameover)
+  var paused = true;        // true while lockGate is up (desktop) — freezes simulation
+  var gameOverHandled = false;
+
+  var battery = 100;
+  var flashlightOn = false;
+  var foundCount = 0;
+  var foundFlags = {};
+  var woodCount = 0;
+  var foodCount = 0;
+  var elapsedSec = 0;
+  var hudAccum = 0;
+
+  var player = { yaw:0, pitch:0 };
+  var keys = {};
+  var fKeyDown = false;
+  var joyVec = {x:0,y:0};
+  var joyTouchId = null;
+  var lookTouchId = null;
+  var lookLast = {x:0,y:0};
+
+  function loadBest(){
+    try{ bestCompleted = parseInt(localStorage.getItem('chippy_bestNight')||'0',10) || 0; }
+    catch(e){ bestCompleted = 0; }
+  }
+  function saveBest(){
+    try{ localStorage.setItem('chippy_bestNight', String(bestCompleted)); }catch(e){}
+  }
+  function loadHouse(){
+    try{ houseStage = parseInt(localStorage.getItem('chippy_houseStage')||'0',10) || 0; }
+    catch(e){ houseStage = 0; }
+  }
+  function saveHouseStage(){
+    try{ localStorage.setItem('chippy_houseStage', String(houseStage)); }catch(e){}
+  }
+  function loadFoodStock(){
+    try{ foodStock = parseInt(localStorage.getItem('chippy_foodStock')||'0',10) || 0; }
+    catch(e){ foodStock = 0; }
+  }
+  function saveFoodStock(){
+    try{ localStorage.setItem('chippy_foodStock', String(foodStock)); }catch(e){}
+  }
+
+  /* ============================ SCENES ============================ */
+  var currentSceneId = 'scene-title';
+  function showScene(id){
+    currentSceneId = id;
+    var scenes = document.querySelectorAll('.scene');
+    for(var i=0;i<scenes.length;i++){ scenes[i].classList.remove('active'); }
+    $(id).classList.add('active');
+  }
+
+  var HOUSE_LABELS = ['just stakes in the ground','a floor laid down','four walls up','a door and windows in','a roof overhead','finished, lights in every window'];
+  function refreshMenu(){
+    loadBest(); loadHouse(); loadFoodStock();
+    $('bestNightLabel').textContent = bestCompleted>0 ? ('Night ' + bestCompleted) : 'no nights yet';
+    $('houseStageLabel').textContent = HOUSE_LABELS[Math.min(houseStage, HOUSE_LABELS.length-1)];
+    $('foodStockLabel').textContent = String(foodStock);
+    var maxStart = Math.max(1, bestCompleted+1);
+    var sel = $('nightSelect');
+    sel.max = String(maxStart);
+    sel.value = String(maxStart);
+    $('nightSelectVal').textContent = sel.value;
+  }
+
+  $('nightSelect').addEventListener('input', function(){ $('nightSelectVal').textContent=this.value; });
+  $('btnHow').addEventListener('click', function(){ $('howPanel').classList.remove('hidden'); Audio_.blip(); });
+  $('btnHowClose').addEventListener('click', function(){ $('howPanel').classList.add('hidden'); Audio_.blip(); });
+
+  $('btnPlay').addEventListener('click', function(){
+    Audio_.init();
+    var n = parseInt($('nightSelect').value,10) || 1;
+    startNight(n);
+  });
+
+  $('muteBtn').addEventListener('click', function(){
+    var m = Audio_.toggleMute();
+    this.textContent = m ? '🔇' : '🔊';
+    if(m){ Audio_.stopAmbient(); } else if(running){ Audio_.startAmbient(); }
+  });
+
+  ['btnMenu1','btnMenu2','btnMenu3'].forEach(function(id){
+    $(id).addEventListener('click', function(){ goToMenu(); });
+  });
+  $('btnRetry').addEventListener('click', function(){ startNight(night); });
+  $('btnContinue').addEventListener('click', function(){ startNight(night+1); });
+
+  function goToMenu(){
+    running = false; paused = true;
+    if(document.pointerLockElement) document.exitPointerLock();
+    Audio_.stopAmbient(); Audio_.heartbeatStop();
+    refreshMenu();
+    showScene('scene-title');
+  }
+
+  /* ============================ THREE.JS WORLD ============================ */
+  var renderer, scene, camera, clock3, spotlight, spotTarget;
+  var hemiLight = null, sunLight = null;
+  var trees = [];       // {mesh trunk, mesh foliage} — used for collision + occlusion
+  var kidMeshes = [];   // {group, id, label, baseY, phase}
+  var woodMeshes = [];  // {group, baseY, phase}
+  var foodMeshes = [];  // {group, baseY, phase}
+  var campGroup = null, campFireLight = null, campSmoke = null;
+  var sunrise = null;   // {t0, dur, startDensity, onDone} — dawn lighting tween on night-survived
+  var chippy = null;    // {group, legL, legR, lights:[], embers:[], pos, mode, target, fear, cooldown, phase}
+  var threeReady = false;
+  var loopStarted = false;
+
+  var tmpV1 = null, tmpV2 = null, tmpFwd = null, raycaster = null;
+
+  function initThree(){
+    if(threeReady || !HAS_THREE) return;
+    try{
+      var canvas = $('c3d');
+      renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 1.5));
+
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x070d09, 0.05);
+      scene.background = new THREE.Color(0x05080a);
+
+      camera = new THREE.PerspectiveCamera(72, 1, 0.1, 200);
+      camera.rotation.order = 'YXZ';
+      camera.position.set(0, PLAYER_H, 8);
+
+      clock3 = new THREE.Clock();
+      tmpV1 = new THREE.Vector3(); tmpV2 = new THREE.Vector3(); tmpFwd = new THREE.Vector3();
+      raycaster = new THREE.Raycaster();
+
+      // lighting
+      hemiLight = new THREE.HemisphereLight(0x1b2a30, 0x0b0906, 0.65);
+      scene.add(hemiLight);
+      sunLight = new THREE.DirectionalLight(0x9fb8c9, 0.22);
+      sunLight.position.set(-20, 30, -10);
+      scene.add(sunLight);
+
+      // ground
+      var groundGeo = new THREE.PlaneGeometry(400,400);
+      var groundMat = new THREE.MeshStandardMaterial({color:0x1a2116, roughness:1});
+      var ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI/2;
+      scene.add(ground);
+
+      // flashlight
+      spotlight = new THREE.SpotLight(0xfff2d0, 1.9, FLASH_RANGE, FLASH_ANGLE, 0.45, 1.4);
+      spotlight.visible = false;
+      spotTarget = new THREE.Object3D();
+      scene.add(spotlight); scene.add(spotTarget);
+      spotlight.target = spotTarget;
+
+      rebuildCamp();
+      buildChippy();
+
+      threeReady = true;
+      handleResize();
+      window.addEventListener('resize', handleResize);
+      if(!loopStarted){ loopStarted = true; requestAnimationFrame(animate); }
+    }catch(e){
+      threeReady = false;
+      showLockError();
+    }
+  }
+
+  function showLockError(){
+    $('lockGate').innerHTML = '<h2>THE WOODS WON\'T LOAD</h2><p>Your browser could not start 3D graphics for this game. Try a different browser or device.</p>';
+  }
+
+  function handleResize(){
+    if(!threeReady) return;
+    var canvas = $('c3d');
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if(w<=0||h<=0) return;
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w,h,false);
+  }
+
+  /* ---------- Aunt Chippy: bipedal deer-thing, weak to light ---------- */
+  function buildChippy(){
+    var group = new THREE.Group();
+    var darkMat = new THREE.MeshStandardMaterial({color:0x120e0c, roughness:.95});
+    var antlerMat = new THREE.MeshStandardMaterial({color:0x552200, emissive:0xff5a1f, emissiveIntensity:1.8});
+
+    var torso = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.5,1.7,8), darkMat);
+    torso.position.y = 1.55;
+    group.add(torso);
+
+    var head = new THREE.Group();
+    var skull = new THREE.Mesh(new THREE.SphereGeometry(0.32,10,8), darkMat);
+    var snout = new THREE.Mesh(new THREE.ConeGeometry(0.16,0.55,8), darkMat);
+    snout.rotation.x = Math.PI/2; snout.position.set(0,-0.05,0.42);
+    head.add(skull); head.add(snout);
+    head.position.y = 2.55;
+    group.add(head);
+
+    function makeAntler(sign){
+      var a = new THREE.Group();
+      var base = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.06,0.55,5), antlerMat);
+      base.position.set(sign*0.18, 0.32, -0.05);
+      base.rotation.z = sign*0.35;
+      a.add(base);
+      [0.22,-0.05].forEach(function(zoff,i){
+        var branch = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.045,0.38,5), antlerMat);
+        branch.position.set(sign*(0.34+i*0.08), 0.58+i*0.12, -0.05+zoff);
+        branch.rotation.z = sign*(0.7+i*0.3);
+        branch.rotation.x = 0.3;
+        a.add(branch);
+      });
+      var tipLight = new THREE.PointLight(0xff6a2a, 1.6, 7);
+      tipLight.position.set(sign*0.42, 0.92, -0.05);
+      a.add(tipLight);
+      var emberGeo = new THREE.BufferGeometry();
+      var count = 10;
+      var pos = new Float32Array(count*3);
+      for(var i=0;i<count;i++){
+        pos[i*3]   = sign*0.4 + (Math.random()-0.5)*0.2;
+        pos[i*3+1] = 0.9 + Math.random()*0.4;
+        pos[i*3+2] = -0.05 + (Math.random()-0.5)*0.2;
+      }
+      emberGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+      var emberMat = new THREE.PointsMaterial({color:0xffa04a, size:0.06, transparent:true, opacity:0.85, depthWrite:false});
+      var embers = new THREE.Points(emberGeo, emberMat);
+      a.add(embers);
+      return {group:a, light:tipLight, embers:embers, basePos:pos.slice()};
+    }
+    var antlerL = makeAntler(-1);
+    var antlerR = makeAntler(1);
+    head.add(antlerL.group); head.add(antlerR.group);
+
+    function makeLeg(sign){
+      var leg = new THREE.Group();
+      var thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.1,1.5,6), darkMat);
+      thigh.position.y = -0.75;
+      leg.add(thigh);
+      leg.position.set(sign*0.22, 0.75, 0);
+      return leg;
+    }
+    var legL = makeLeg(-1), legR = makeLeg(1);
+    group.add(legL); group.add(legR);
+
+    function makeArm(sign){
+      var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,1.3,6), darkMat);
+      arm.position.set(sign*0.5, 1.25, 0);
+      return arm;
+    }
+    group.add(makeArm(-1)); group.add(makeArm(1));
+
+    scene.add(group);
+    chippy = {
+      group:group, legL:legL, legR:legR,
+      antlers:[antlerL, antlerR],
+      pos:new THREE.Vector3(20,0,-20),
+      mode:'patrol', target:new THREE.Vector3(20,0,-20),
+      fear:0, cooldown:0, phase:0, speed:0
+    };
+    group.position.copy(chippy.pos);
+  }
+
+  function resetChippy(n){
+    chippy.pos.set((Math.random()-0.5)*ARENA*1.4, 0, (Math.random()-0.5)*ARENA*1.4);
+    if(chippy.pos.length() < 14) chippy.pos.setLength(18);
+    chippy.group.position.copy(chippy.pos);
+    chippy.group.visible = true;
+    chippy.mode = 'patrol';
+    chippy.target.copy(chippy.pos);
+    chippy.fear = 0; chippy.cooldown = 0; chippy.phase = 0; chippy.speed = 0;
+  }
+
+  function pickPatrolTarget(){
+    var t = new THREE.Vector3((Math.random()-0.5)*ARENA*1.7, 0, (Math.random()-0.5)*ARENA*1.7);
+    chippy.target.copy(t);
+  }
+
+  /* ---------- camp: campfire, tent (the safe place), and the house you're building ---------- */
+  function rebuildCamp(){
+    if(campGroup) scene.remove(campGroup);
+    campGroup = new THREE.Group();
+
+    // campfire
+    var fireBase = new THREE.Group();
+    var logMat = new THREE.MeshStandardMaterial({color:0x3a2416, roughness:1});
+    for(var i=0;i<5;i++){
+      var log = new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,1.1,6), logMat);
+      log.rotation.z = Math.PI/2;
+      log.rotation.y = (i/5)*Math.PI*2;
+      log.position.y = 0.12;
+      fireBase.add(log);
+    }
+    var flameMat = new THREE.MeshStandardMaterial({color:0xff6a1f, emissive:0xff8a2a, emissiveIntensity:2.2, transparent:true, opacity:0.9});
+    var flame = new THREE.Mesh(new THREE.ConeGeometry(0.28,0.7,8), flameMat);
+    flame.position.y = 0.55;
+    fireBase.add(flame);
+    campFireLight = new THREE.PointLight(0xffa04a, 2.2, 14);
+    campFireLight.position.y = 0.6;
+    fireBase.add(campFireLight);
+    fireBase.position.set(CAMP_X-1.6, 0, CAMP_Z-0.4);
+    campGroup.add(fireBase);
+
+    // tent
+    var tentMat = new THREE.MeshStandardMaterial({color:0xb5824a, roughness:.9});
+    var tentDarkMat = new THREE.MeshStandardMaterial({color:0x5c3f22, roughness:.9});
+    var tent = new THREE.Group();
+    var sideGeo = new THREE.BoxGeometry(2.2, 1.5, 0.08);
+    var sideL = new THREE.Mesh(sideGeo, tentMat);
+    sideL.rotation.z = Math.PI/3.1; sideL.position.set(-0.62,0.75,0);
+    var sideR = new THREE.Mesh(sideGeo, tentMat);
+    sideR.rotation.z = -Math.PI/3.1; sideR.position.set(0.62,0.75,0);
+    var back = new THREE.Mesh(new THREE.ConeGeometry(1.05,1.5,3), tentDarkMat);
+    back.rotation.x = Math.PI/2; back.rotation.y = Math.PI/2; back.position.set(0,0.75,-1.05);
+    tent.add(sideL); tent.add(sideR); tent.add(back);
+    tent.position.set(CAMP_X+2.2, 0, CAMP_Z-0.6);
+    campGroup.add(tent);
+
+    // the house — grows one stage per night you make it back with enough logs
+    var stakeMat = new THREE.MeshStandardMaterial({color:0x4a3220, roughness:1});
+    var houseX = CAMP_X, houseZ = CAMP_Z+3.4;
+    var stakeGeo = new THREE.CylinderGeometry(0.05,0.05,0.6,5);
+    [[-1.6,-1.6],[1.6,-1.6],[-1.6,1.6],[1.6,1.6]].forEach(function(p){
+      var stake = new THREE.Mesh(stakeGeo, stakeMat);
+      stake.position.set(houseX+p[0], 0.3, houseZ+p[1]);
+      campGroup.add(stake);
+    });
+    if(houseStage>=1){
+      var floor = new THREE.Mesh(new THREE.BoxGeometry(3.6,0.15,3.6), stakeMat);
+      floor.position.set(houseX,0.08,houseZ);
+      campGroup.add(floor);
+    }
+    if(houseStage>=2){
+      var wallMat = new THREE.MeshStandardMaterial({color:0x5c4028, roughness:1});
+      var shell = new THREE.Mesh(new THREE.BoxGeometry(3.6,2.0,3.6), wallMat);
+      shell.position.set(houseX,1.15,houseZ);
+      campGroup.add(shell);
+    }
+    if(houseStage>=3){
+      var doorMat = new THREE.MeshStandardMaterial({color:0x1c130c});
+      var door = new THREE.Mesh(new THREE.BoxGeometry(0.8,1.4,0.06), doorMat);
+      door.position.set(houseX, 0.8, houseZ-1.83);
+      campGroup.add(door);
+      var winMat = new THREE.MeshStandardMaterial({color:0xffdf9e, emissive:0xffdf9e, emissiveIntensity: houseStage>=5?1.6:0.5});
+      [-1.2,1.2].forEach(function(x){
+        var win = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.5,0.06), winMat);
+        win.position.set(houseX+x, 1.4, houseZ-1.83);
+        campGroup.add(win);
+      });
+    }
+    if(houseStage>=4){
+      var roofMat = new THREE.MeshStandardMaterial({color:0x2e2016, roughness:1});
+      var roof = new THREE.Mesh(new THREE.CylinderGeometry(0, 2.7, 1.4, 4), roofMat);
+      roof.rotation.y = Math.PI/4;
+      roof.position.set(houseX, 2.85, houseZ);
+      campGroup.add(roof);
+      var chimney = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.9,0.4), roofMat);
+      chimney.position.set(houseX+1.0, 3.4, houseZ-0.4);
+      campGroup.add(chimney);
+    }
+    if(houseStage>=5){
+      var smokeGeo = new THREE.BufferGeometry();
+      var sc = 8, spos = new Float32Array(sc*3);
+      for(var s=0;s<sc;s++){
+        spos[s*3]=houseX+1.0+(Math.random()-0.5)*0.2;
+        spos[s*3+1]=3.9+Math.random()*0.6;
+        spos[s*3+2]=houseZ-0.4+(Math.random()-0.5)*0.2;
+      }
+      smokeGeo.setAttribute('position', new THREE.BufferAttribute(spos,3));
+      var smokeMat = new THREE.PointsMaterial({color:0x8a8a8a, size:0.18, transparent:true, opacity:0.5, depthWrite:false});
+      campSmoke = new THREE.Points(smokeGeo, smokeMat);
+      campGroup.add(campSmoke);
+    } else {
+      campSmoke = null;
+    }
+
+    scene.add(campGroup);
+  }
+
+  function updateCampAmbience(dt){
+    if(campFireLight){
+      var t = clock3.getElapsedTime();
+      campFireLight.intensity = 1.9 + Math.sin(t*9)*0.3 + (Math.random()-0.5)*0.2;
+    }
+    if(campSmoke){
+      var pos = campSmoke.geometry.attributes.position;
+      for(var i=0;i<pos.count;i++){
+        var y = pos.getY(i) + dt*0.3;
+        if(y > 4.6) y = 3.9;
+        pos.setY(i,y);
+      }
+      pos.needsUpdate = true;
+    }
+  }
+
+  /* ---------- forest ---------- */
+  var trunkGeo, foliageGeo, trunkMat, foliageMat, kidGeo, kidMat, woodGeo, woodMat, foodGeo, foodMat;
+  function scatterResource(count, geo, mat, arr, lightColor, isFood){
+    for(var i=0;i<count;i++){
+      var x,z,tries=0;
+      do{
+        x = (Math.random()-0.5)*ARENA*2;
+        z = (Math.random()-0.5)*ARENA*2;
+        tries++;
+      } while((Math.hypot(x,z)<CLEARING_R || Math.hypot(x,z-CAMP_Z)<6) && tries<20);
+      var group = new THREE.Group();
+      var mesh = new THREE.Mesh(geo, mat);
+      if(!isFood) mesh.rotation.z = Math.PI/2;
+      group.add(mesh);
+      var light = new THREE.PointLight(lightColor, 0.7, 4);
+      light.position.y = 0.25;
+      group.add(light);
+      var baseY = isFood ? 0.5 : 0.35;
+      group.position.set(x, baseY, z);
+      scene.add(group);
+      arr.push({group:group, baseY:baseY, phase:Math.random()*10});
+    }
+  }
+
+  function buildNight(n){
+    foundCount = 0;
+    foundFlags = {};
+    woodCount = 0;
+    foodCount = 0;
+    elapsedSec = 0;
+
+    // clear old trees/kids/resources
+    trees.forEach(function(t){ scene.remove(t.mesh); });
+    trees = [];
+    kidMeshes.forEach(function(k){ scene.remove(k.group); });
+    kidMeshes = [];
+    woodMeshes.forEach(function(k){ scene.remove(k.group); });
+    woodMeshes = [];
+    foodMeshes.forEach(function(k){ scene.remove(k.group); });
+    foodMeshes = [];
+
+    if(!trunkGeo){
+      trunkGeo = new THREE.CylinderGeometry(0.18,0.28,2.6,6);
+      foliageGeo = new THREE.ConeGeometry(1.3,3.4,6);
+      trunkMat = new THREE.MeshStandardMaterial({color:0x2a1c12, roughness:1});
+      foliageMat = new THREE.MeshStandardMaterial({color:0x11221a, roughness:1});
+      kidGeo = new THREE.SphereGeometry(0.26,10,10);
+      kidMat = new THREE.MeshStandardMaterial({color:0xf2e2c4, emissive:0xf2e2c4, emissiveIntensity:1.1});
+      woodGeo = new THREE.CylinderGeometry(0.1,0.12,0.7,6);
+      woodMat = new THREE.MeshStandardMaterial({color:0x5a3a22, roughness:1});
+      foodGeo = new THREE.SphereGeometry(0.18,8,8);
+      foodMat = new THREE.MeshStandardMaterial({color:0xb5342c, emissive:0xb5342c, emissiveIntensity:0.5});
+    }
+
+    var d = diffForNight(n);
+    scene.fog.density = d.fogDensity;
+    scene.fog.color.set(0x070d09);
+    scene.background.set(0x05080a);
+    hemiLight.intensity = 0.65;
+    sunLight.color.set(0x9fb8c9);
+    sunLight.intensity = 0.22;
+
+    var treeCount = 46;
+    for(var i=0;i<treeCount;i++){
+      var x,z,tries=0;
+      do{
+        x = (Math.random()-0.5)*ARENA*2;
+        z = (Math.random()-0.5)*ARENA*2;
+        tries++;
+      } while((Math.hypot(x,z)<CLEARING_R || Math.hypot(x,z-10)<5) && tries<20);
+      var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      var foliage = new THREE.Mesh(foliageGeo, foliageMat);
+      var scl = 0.8 + Math.random()*0.7;
+      trunk.scale.set(scl,scl,scl);
+      foliage.scale.set(scl,scl,scl);
+      trunk.position.set(x, 1.3*scl, z);
+      foliage.position.set(x, 3.0*scl, z);
+      scene.add(trunk); scene.add(foliage);
+      trees.push({mesh:trunk, x:x, z:z, r:TREE_R*scl});
+      trees.push({mesh:foliage, x:x, z:z, r:TREE_R*scl});
+    }
+
+    // place 3 missing campers with spread
+    var placed = [];
+    KIDS_DATA.forEach(function(kd, idx){
+      var angleBase = (idx/3)*Math.PI*2 + Math.random()*0.8;
+      var dist = 14 + Math.random()*(ARENA-18);
+      var x = Math.cos(angleBase)*dist;
+      var z = Math.sin(angleBase)*dist + 2; // slight offset off the camp's approach line
+      var group = new THREE.Group();
+      var marker = new THREE.Mesh(kidGeo, kidMat);
+      group.add(marker);
+      var light = new THREE.PointLight(0xf2e2c4, 1.1, 6);
+      light.position.y = 0.3;
+      group.add(light);
+      group.position.set(x, 1.0, z);
+      scene.add(group);
+      kidMeshes.push({group:group, marker:marker, label:kd.label, id:kd.id, baseY:1.0, phase:Math.random()*10});
+      placed.push({x:x,z:z});
+    });
+
+    scatterResource(WOOD_PLACED, woodGeo, woodMat, woodMeshes, 0xffa060, false);
+    scatterResource(FOOD_PLACED, foodGeo, foodMat, foodMeshes, 0xff6a5a, true);
+
+    resetChippy(n);
+    resetPlayer();
+    renderObjectives();
+  }
+
+  function resetPlayer(){
+    camera.position.set(0, PLAYER_H, 6);
+    player.yaw = Math.PI; player.pitch = 0;
+    camera.rotation.set(0, Math.PI, 0);
+  }
+
+  /* ============================ INPUT ============================ */
+  window.addEventListener('keydown', function(e){
+    var k = e.key.toLowerCase();
+    keys[k] = true;
+    if(k==='f' && !fKeyDown){ fKeyDown = true; toggleFlashlight(); }
+  });
+  window.addEventListener('keyup', function(e){
+    var k = e.key.toLowerCase();
+    keys[k] = false;
+    if(k==='f') fKeyDown = false;
+  });
+
+  document.addEventListener('mousemove', function(e){
+    if(document.pointerLockElement !== $('c3d')) return;
+    player.yaw   -= e.movementX * 0.0022;
+    player.pitch -= e.movementY * 0.0022;
+    player.pitch = Math.max(-1.3, Math.min(1.3, player.pitch));
+  });
+
+  $('lockGate').addEventListener('click', function(){
+    if(isTouchDevice) return;
+    var c = $('c3d');
+    if(c.requestPointerLock) c.requestPointerLock();
+  });
+
+  document.addEventListener('pointerlockchange', function(){
+    var locked = document.pointerLockElement === $('c3d');
+    if(locked){
+      paused = false;
+      $('lockGate').classList.add('hidden');
+    } else if(running){
+      paused = true;
+      $('lockGate').classList.remove('hidden');
+    }
+  });
+
+  function toggleFlashlight(){
+    if(!running || paused) return;
+    if(!flashlightOn && battery<=0) return;
+    flashlightOn = !flashlightOn;
+    Audio_.click();
+  }
+  $('touchFlash').addEventListener('click', toggleFlashlight);
+
+  // touch joystick
+  $('joyBase').addEventListener('touchstart', function(e){
+    var t = e.changedTouches[0];
+    joyTouchId = t.identifier;
+    e.preventDefault();
+  }, {passive:false});
+  $('joyBase').addEventListener('touchmove', function(e){
+    for(var i=0;i<e.changedTouches.length;i++){
+      var t = e.changedTouches[i];
+      if(t.identifier !== joyTouchId) continue;
+      var rect = $('joyBase').getBoundingClientRect();
+      var cx = rect.left+rect.width/2, cy = rect.top+rect.height/2;
+      var dx = t.clientX-cx, dy = t.clientY-cy;
+      var maxR = 46;
+      var len = Math.hypot(dx,dy);
+      if(len>maxR){ dx = dx/len*maxR; dy = dy/len*maxR; }
+      $('joyStick').style.transform = 'translate('+dx+'px,'+dy+'px)';
+      joyVec.x = dx/maxR; joyVec.y = dy/maxR;
+    }
+    e.preventDefault();
+  }, {passive:false});
+  function joyEnd(e){
+    for(var i=0;i<e.changedTouches.length;i++){
+      if(e.changedTouches[i].identifier === joyTouchId){
+        joyTouchId = null; joyVec.x=0; joyVec.y=0;
+        $('joyStick').style.transform = 'translate(0,0)';
+      }
+    }
+  }
+  $('joyBase').addEventListener('touchend', joyEnd);
+  $('joyBase').addEventListener('touchcancel', joyEnd);
+
+  // touch look
+  $('lookZone').addEventListener('touchstart', function(e){
+    var t = e.changedTouches[0];
+    lookTouchId = t.identifier;
+    lookLast.x = t.clientX; lookLast.y = t.clientY;
+  });
+  $('lookZone').addEventListener('touchmove', function(e){
+    for(var i=0;i<e.changedTouches.length;i++){
+      var t = e.changedTouches[i];
+      if(t.identifier !== lookTouchId) continue;
+      var dx = t.clientX-lookLast.x, dy = t.clientY-lookLast.y;
+      player.yaw   -= dx*0.0032;
+      player.pitch -= dy*0.0032;
+      player.pitch = Math.max(-1.3, Math.min(1.3, player.pitch));
+      lookLast.x = t.clientX; lookLast.y = t.clientY;
+    }
+    e.preventDefault();
+  }, {passive:false});
+  function lookEnd(e){
+    for(var i=0;i<e.changedTouches.length;i++){
+      if(e.changedTouches[i].identifier === lookTouchId) lookTouchId = null;
+    }
+  }
+  $('lookZone').addEventListener('touchend', lookEnd);
+  $('lookZone').addEventListener('touchcancel', lookEnd);
+
+  /* ============================ HUD ============================ */
+  var HOURS = ['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM'];
+
+  function renderObjectives(){
+    var panel = $('objPanel');
+    panel.innerHTML = '';
+    KIDS_DATA.forEach(function(kd){
+      var span = document.createElement('span');
+      span.className = 'obj-item' + (foundFlags[kd.id] ? ' found' : '');
+      span.textContent = kd.label;
+      panel.appendChild(span);
+    });
+    var wSpan = document.createElement('span');
+    wSpan.className = 'obj-item' + (woodCount>=WOOD_NEEDED ? ' found' : '');
+    wSpan.textContent = 'Logs ' + Math.min(woodCount,WOOD_NEEDED) + '/' + WOOD_NEEDED;
+    panel.appendChild(wSpan);
+    var fSpan = document.createElement('span');
+    fSpan.className = 'obj-item' + (foodCount>=FOOD_NEEDED ? ' found' : '');
+    fSpan.textContent = 'Food ' + Math.min(foodCount,FOOD_NEEDED) + '/' + FOOD_NEEDED;
+    panel.appendChild(fSpan);
+    var allReady = foundCount>=3 && woodCount>=WOOD_NEEDED && foodCount>=FOOD_NEEDED;
+    if(allReady){
+      var last = document.createElement('span');
+      last.className = 'obj-item gofind';
+      last.textContent = '· BACK TO CAMP';
+      panel.appendChild(last);
+    }
+  }
+
+  function updateHUD(){
+    var pw = Math.max(0, Math.round(battery));
+    $('powerPct').textContent = pw+'%';
+    var bar = $('powerBar');
+    bar.style.width = pw+'%';
+    bar.className = 'power-bar-fill' + (pw<20?' low':(pw<50?' mid':''));
+    $('lowBattOverlay').classList.toggle('on', pw>0 && pw<15);
+    if(pw<=0) Audio_.heartbeatStart(); else Audio_.heartbeatStop();
+
+    var hourIdx = Math.min(6, Math.floor(elapsedSec/40));
+    $('clockTime').textContent = HOURS[hourIdx];
+    $('nightLabel').textContent = night;
+  }
+
+  function showToast(msg){
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._h);
+    showToast._h = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  /* ============================ NIGHT FLOW ============================ */
+  function startNight(n){
+    night = n;
+    running = true;
+    gameOverHandled = false;
+    battery = 100;
+    flashlightOn = false;
+
+    showScene('scene-game');
+    initThree();
+    if(!threeReady){ return; }
+    buildNight(n);
+
+    $('hintBar').classList.remove('faded');
+    setTimeout(function(){ $('hintBar').classList.add('faded'); }, 5000);
+
+    if(isTouchDevice){
+      $('lockGate').classList.add('hidden');
+      $('touchControls').classList.add('active');
+      paused = false;
+    } else {
+      $('lockGate').classList.remove('hidden');
+      $('touchControls').classList.remove('active');
+      paused = true;
+    }
+
+    Audio_.startAmbient();
+    updateHUD();
+  }
+
+  /* ============================ SIMULATION ============================ */
+  function collideTrees(pos){
+    for(var i=0;i<trees.length;i++){
+      var t = trees[i];
+      var dx = pos.x-t.x, dz = pos.z-t.z;
+      var d = Math.hypot(dx,dz);
+      var minD = t.r + PLAYER_R;
+      if(d < minD && d>0.0001){
+        pos.x = t.x + dx/d*minD;
+        pos.z = t.z + dz/d*minD;
+      }
+    }
+  }
+
+  function isChippyLit(){
+    var dist = camera.position.distanceTo(chippy.pos);
+    if(dist > FLASH_RANGE) return {lit:false, dist:dist};
+    if(!flashlightOn) return {lit:false, dist:dist};
+    tmpV1.copy(chippy.pos); tmpV1.y = camera.position.y;
+    tmpV2.subVectors(tmpV1, camera.position).normalize();
+    camera.getWorldDirection(tmpFwd);
+    var angle = tmpFwd.angleTo(tmpV2);
+    if(angle > FLASH_ANGLE) return {lit:false, dist:dist};
+    // occlusion check
+    raycaster.set(camera.position, tmpV2);
+    raycaster.far = dist;
+    var hits = raycaster.intersectObjects(trees.map(function(t){return t.mesh;}));
+    if(hits.length>0) return {lit:false, dist:dist};
+    return {lit:true, dist:dist};
+  }
+
+  function updateChippy(dt){
+    var d = diffForNight(night);
+    var lit = isChippyLit();
+
+    if(lit.lit){
+      chippy.fear = Math.min(1, chippy.fear + dt*d.fearRate);
+      // recoil away from player while lit
+      tmpV2.subVectors(chippy.pos, camera.position); tmpV2.y=0;
+      if(tmpV2.lengthSq()>0.0001){ tmpV2.normalize(); chippy.target.copy(chippy.pos).addScaledVector(tmpV2, 6); }
+      chippy.speed = d.patrolSpeed*1.3;
+      Audio_.growl();
+      if(chippy.fear>=1){
+        Audio_.flee();
+        pickPatrolTarget();
+        chippy.fear = 0;
+        chippy.cooldown = d.braveCooldown;
+        chippy.mode = 'patrol';
+      }
+    } else {
+      chippy.fear = Math.max(0, chippy.fear - dt*0.18);
+      if(chippy.cooldown>0){
+        chippy.cooldown -= dt;
+        if(chippy.mode!=='patrol' || chippy.target.distanceTo(chippy.pos)<1.5) pickPatrolTarget();
+        chippy.speed = d.patrolSpeed;
+      } else if(lit.dist < d.senseRadius){
+        chippy.mode = 'hunt';
+        chippy.target.copy(camera.position); chippy.target.y = 0;
+        chippy.speed = d.huntSpeed;
+        if(lit.dist < 9) Audio_.growl();
+      } else {
+        chippy.mode = 'patrol';
+        if(chippy.target.distanceTo(chippy.pos) < 1.5) pickPatrolTarget();
+        chippy.speed = d.patrolSpeed;
+      }
+    }
+
+    // move toward target
+    tmpV1.subVectors(chippy.target, chippy.pos); tmpV1.y = 0;
+    var distToTarget = tmpV1.length();
+    if(distToTarget > 0.05){
+      tmpV1.normalize();
+      var step = chippy.speed*dt;
+      chippy.pos.x += tmpV1.x*step;
+      chippy.pos.z += tmpV1.z*step;
+      var yaw = Math.atan2(tmpV1.x, tmpV1.z);
+      chippy.group.rotation.y = yaw;
+    }
+    chippy.pos.x = Math.max(-ARENA*1.9, Math.min(ARENA*1.9, chippy.pos.x));
+    chippy.pos.z = Math.max(-ARENA*1.9, Math.min(ARENA*1.9, chippy.pos.z));
+    chippy.group.position.copy(chippy.pos);
+
+    // leg swing
+    var moving = chippy.speed>0.05 && distToTarget>0.1;
+    if(moving){
+      chippy.phase += dt*chippy.speed*2.2;
+      chippy.legL.rotation.x = Math.sin(chippy.phase)*0.5;
+      chippy.legR.rotation.x = -Math.sin(chippy.phase)*0.5;
+    }
+
+    // antler fire flicker
+    var t = clock3.getElapsedTime();
+    chippy.antlers.forEach(function(a,i){
+      a.light.intensity = 1.4 + Math.sin(t*18+i*3)*0.35 + (Math.random()-0.5)*0.25;
+      var pos = a.embers.geometry.attributes.position;
+      for(var p=0;p<pos.count;p++){
+        var y = pos.getY(p) + dt*0.6;
+        if(y > 1.5) y = 0.85;
+        pos.setY(p, y);
+      }
+      pos.needsUpdate = true;
+    });
+
+    // catch check
+    var distToPlayer = camera.position.distanceTo(chippy.pos);
+    if(distToPlayer < CATCH_R && !lit.lit){
+      triggerJumpscare();
+    }
+  }
+
+  function collectFrom(arr, t, onCollect){
+    for(var i=arr.length-1;i>=0;i--){
+      var k = arr[i];
+      k.group.position.y = k.baseY + Math.sin(t*1.4+k.phase)*0.15;
+      var dist = camera.position.distanceTo(k.group.position);
+      if(dist < PICKUP_R){
+        scene.remove(k.group);
+        arr.splice(i,1);
+        onCollect(k);
+      }
+    }
+  }
+
+  function updatePickups(dt){
+    var t = clock3.getElapsedTime();
+    collectFrom(kidMeshes, t, function(k){
+      foundFlags[k.id] = true;
+      foundCount++;
+      Audio_.chime();
+      showToast('Found ' + k.label + '.');
+      renderObjectives();
+    });
+    collectFrom(woodMeshes, t, function(){
+      woodCount++;
+      Audio_.chime();
+      showToast('+1 log (' + Math.min(woodCount,WOOD_NEEDED) + '/' + WOOD_NEEDED + ')');
+      renderObjectives();
+    });
+    collectFrom(foodMeshes, t, function(){
+      foodCount++;
+      Audio_.chime();
+      showToast('+1 food (' + Math.min(foodCount,FOOD_NEEDED) + '/' + FOOD_NEEDED + ')');
+      renderObjectives();
+    });
+  }
+
+  function updatePlayer(dt){
+    var mx=0, my=0; // strafe, forward
+    if(isTouchDevice){
+      mx = joyVec.x; my = -joyVec.y;
+    } else {
+      if(keys['w']||keys['arrowup']) my += 1;
+      if(keys['s']||keys['arrowdown']) my -= 1;
+      if(keys['a']||keys['arrowleft']) mx -= 1;
+      if(keys['d']||keys['arrowright']) mx += 1;
+    }
+    var len = Math.hypot(mx,my);
+    if(len>1){ mx/=len; my/=len; }
+
+    var speed = 4.4;
+    var sinY = Math.sin(player.yaw), cosY = Math.cos(player.yaw);
+    // forward vector (yaw=0 looks toward -Z per resetPlayer offset by PI, so derive directly)
+    var fx = -sinY, fz = -cosY;
+    var rx = cosY, rz = -sinY;
+
+    var newX = camera.position.x + (fx*my + rx*mx)*speed*dt;
+    var newZ = camera.position.z + (fz*my + rz*mx)*speed*dt;
+    tmpV1.set(newX, 0, newZ);
+    collideTrees(tmpV1);
+    tmpV1.x = Math.max(-ARENA, Math.min(ARENA, tmpV1.x));
+    tmpV1.z = Math.max(-ARENA-4, Math.min(ARENA, tmpV1.z));
+    camera.position.x = tmpV1.x;
+    camera.position.z = tmpV1.z;
+    camera.position.y = PLAYER_H;
+
+    camera.rotation.set(player.pitch, player.yaw, 0);
+  }
+
+  function updateFlashlight(dt){
+    spotlight.visible = flashlightOn;
+    if(flashlightOn){
+      var d = diffForNight(night);
+      battery = Math.max(0, battery - d.battDrain*dt);
+      if(battery<=0){ flashlightOn=false; }
+    }
+    spotlight.position.copy(camera.position);
+    camera.getWorldDirection(tmpFwd);
+    spotTarget.position.copy(camera.position).addScaledVector(tmpFwd, 5);
+    spotTarget.updateMatrixWorld();
+  }
+
+  function checkWin(){
+    if(foundCount>=3 && woodCount>=WOOD_NEEDED && foodCount>=FOOD_NEEDED){
+      var d2 = Math.hypot(camera.position.x-CAMP_X, camera.position.z-CAMP_Z);
+      if(d2 < WIN_R) nightSurvived();
+    }
+  }
+
+  var _nightFog = null, _dawnFog = null, _nightSky = null, _dawnSky = null, _sunNightColor = null, _sunDawnColor = null;
+  function ensureSunriseColors(){
+    if(_nightFog) return;
+    _nightFog = new THREE.Color(0x070d09);
+    _dawnFog = new THREE.Color(0xf4c9a0);
+    _nightSky = new THREE.Color(0x05080a);
+    _dawnSky = new THREE.Color(0xffdcb0);
+    _sunNightColor = new THREE.Color(0x9fb8c9);
+    _sunDawnColor = new THREE.Color(0xffdca0);
+  }
+  function applySunriseLighting(p, startDensity){
+    ensureSunriseColors();
+    var e = p*p*(3-2*p); // smoothstep
+    scene.fog.color.copy(_nightFog).lerp(_dawnFog, e);
+    scene.fog.density = startDensity - (startDensity-0.012)*e;
+    scene.background.copy(_nightSky).lerp(_dawnSky, e);
+    hemiLight.intensity = 0.65 + (1.5-0.65)*e;
+    sunLight.color.copy(_sunNightColor).lerp(_sunDawnColor, e);
+    sunLight.intensity = 0.22 + (1.1-0.22)*e;
+  }
+
+  /* ============================ MAIN LOOP ============================ */
+  function animate(){
+    requestAnimationFrame(animate);
+    if(!threeReady) return;
+    var dt = Math.min(0.05, clock3.getDelta());
+
+    if(currentSceneId === 'scene-game' && running && !paused){
+      elapsedSec += dt;
+      updatePlayer(dt);
+      updateFlashlight(dt);
+      updateChippy(dt);
+      updatePickups(dt);
+      checkWin();
+
+      hudAccum += dt;
+      if(hudAccum > 0.12){ hudAccum = 0; updateHUD(); }
+    }
+
+    if(currentSceneId === 'scene-game' && sunrise){
+      var st = clock3.getElapsedTime() - sunrise.t0;
+      var p = Math.min(1, st/sunrise.dur);
+      applySunriseLighting(p, sunrise.startDensity);
+      if(p>=1){
+        var cb = sunrise.onDone;
+        sunrise = null;
+        cb();
+      }
+    }
+
+    if(currentSceneId === 'scene-game'){
+      updateCampAmbience(dt);
+      renderer.render(scene, camera);
+    }
+  }
+
+  /* ============================ OUTCOMES ============================ */
+  function triggerJumpscare(){
+    if(gameOverHandled) return;
+    gameOverHandled = true;
+    running = false;
+    if(document.pointerLockElement) document.exitPointerLock();
+    Audio_.stopAmbient(); Audio_.heartbeatStop();
+    Audio_.jumpscare();
+    $('jumpscareFace').className='shake';
+    $('jumpscareMsg').textContent = 'Aunt Chippy caught you in the dark. You found ' + foundCount + ' of 3 campers, Night ' + night + '.';
+    showScene('scene-jumpscare');
+  }
+
+  function nightSurvived(){
+    if(gameOverHandled) return;
+    gameOverHandled = true;
+    running = false;
+    if(document.pointerLockElement) document.exitPointerLock();
+    Audio_.heartbeatStop();
+    Audio_.bell();
+    flashlightOn = false;
+    if(spotlight) spotlight.visible = false;
+    if(chippy) chippy.group.visible = false;
+    sunrise = { t0: clock3.getElapsedTime(), dur: 2.0, startDensity: scene.fog.density, onDone: finishNightSurvived };
+  }
+
+  function finishNightSurvived(){
+    Audio_.stopAmbient();
+    if(night > bestCompleted){ bestCompleted = night; saveBest(); }
+    if(woodCount >= WOOD_NEEDED){
+      houseStage = Math.min(HOUSE_MAX_STAGE, houseStage+1);
+      saveHouseStage();
+      rebuildCamp();
+    }
+    foodStock += foodCount;
+    saveFoodStock();
+    if(night >= 99){
+      showScene('scene-win');
+    } else {
+      $('resultTitle').textContent = 'SUNRISE';
+      $('resultSub').textContent = 'Night ' + night + ' — all three campers found, ' + woodCount + ' logs and ' + foodCount + ' food brought back to camp.';
+      showScene('scene-nightresult');
+    }
+  }
+
+  /* ============================ INIT ============================ */
+  if(!HAS_THREE) showLockError();
+  refreshMenu();
+})();
+</script>

@@ -1,0 +1,2914 @@
+<meta charset="UTF-8">
+<title>Yuki's Prison Escape</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  :root{
+    --ink:#0c0a08;
+    --stone-dark:#221d18;
+    --stone-mid:#3c342a;
+    --stone-light:#6b5e49;
+    --parchment:#ecdfc4;
+    --parchment-dim:#b2a488;
+    --ember:#c9482c;
+    --ember-glow:#ff7a44;
+    --sakura:#ef9cb9;
+    --sakura-deep:#c9648a;
+    --gold:#d7ac52;
+    --moss:#6f8f6a;
+    --panel:#17130fdd;
+    --panel-solid:#171310;
+    --line: rgba(236,223,196,0.16);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;width:100%;height:100%;background:var(--ink);overflow:hidden;}
+  body{
+    font-family:"Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+    color:var(--parchment);
+    -webkit-font-smoothing:antialiased;
+    user-select:none;
+  }
+  #stage{position:fixed;inset:0;width:100%;height:100%;background:var(--ink);}
+  #stage canvas{display:block;width:100%;height:100%;}
+
+  .eyebrow{
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--gold);
+    opacity:0.85;
+  }
+
+  /* ---------- HUD ---------- */
+  #hud{
+    position:fixed; top:0; left:0; right:0;
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:16px 18px;
+    pointer-events:none;
+    z-index:20;
+    background:linear-gradient(to bottom, rgba(8,6,4,0.75), rgba(8,6,4,0));
+  }
+  .hud-cluster{display:flex; gap:14px; align-items:center;}
+  .stat-chip{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:7px 12px 6px;
+    display:flex; align-items:center; gap:8px;
+    backdrop-filter: blur(3px);
+  }
+  .stat-chip .glyph{font-size:16px; line-height:1;}
+  .stat-chip .val{
+    font-family:"JetBrains Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size:15px; font-weight:700; color:var(--parchment);
+  }
+  .stat-chip .lbl{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--parchment-dim);}
+  #timer-chip .val{color:var(--gold); font-size:17px;}
+  #keys-chip.full .val{color:var(--sakura);}
+  #recap-chip .val{color:var(--ember-glow);}
+
+  #icon-btn{
+    pointer-events:auto;
+    background:var(--panel); border:1px solid var(--line); border-radius:3px;
+    width:36px; height:36px; color:var(--parchment); font-size:16px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  #icon-btn:hover{border-color:var(--gold);}
+
+  /* ---------- Detection meter ---------- */
+  #detect-wrap{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    z-index:20; display:flex; flex-direction:column; align-items:center; gap:4px;
+    opacity:0; transition:opacity .25s ease;
+    pointer-events:none;
+  }
+  #detect-wrap.show{opacity:1;}
+  #detect-label{
+    font-family:"Cinzel", serif; font-weight:700; font-size:12px; letter-spacing:0.14em;
+    color:var(--ember-glow); text-transform:uppercase; text-shadow:0 0 8px rgba(255,90,40,.6);
+  }
+  #detect-bar{ width:180px; height:8px; background:#160f0c; border:1px solid var(--line); border-radius:4px; overflow:hidden;}
+  #detect-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--ember-glow)); transition:width .06s linear; }
+
+  /* ---------- Minimap ---------- */
+  #minimap-wrap{
+    position:fixed; top:70px; right:18px; z-index:20;
+    background:var(--panel-solid); border:2px solid var(--stone-light); border-radius:4px;
+    padding:6px; box-shadow:0 6px 18px rgba(0,0,0,0.5);
+  }
+  #minimap-wrap .eyebrow{display:block; text-align:center; margin-bottom:4px;}
+  #minimap{display:block; background:#0a0705; border-radius:2px;}
+
+  /* ---------- Hint bar ---------- */
+  #hint-bar{
+    position:fixed; bottom:26px; left:50%; transform:translate(-50%,8px);
+    z-index:20; background:var(--panel); border:1px solid var(--line); border-radius:3px;
+    padding:9px 18px; font-size:13px; color:var(--parchment-dim);
+    opacity:0; transition:opacity .35s ease, transform .35s ease;
+    pointer-events:none; text-align:center; max-width:min(86vw,520px);
+  }
+  #hint-bar.show{opacity:1; transform:translate(-50%,0);}
+  #hint-bar b{color:var(--gold); font-weight:700;}
+
+  /* ---------- Vignette / caught flash ---------- */
+  #vignette{
+    position:fixed; inset:0; z-index:30; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(201,72,44,0) 45%, rgba(201,72,44,0.55) 100%);
+    opacity:0; transition:opacity .12s ease;
+  }
+  #vignette.flash{opacity:1; transition:opacity .04s ease;}
+
+  /* ---------- Cutscenes ---------- */
+  .letterbox{
+    position:fixed; left:0; right:0; height:0; background:#000; z-index:25;
+    transition:height .55s cubic-bezier(.2,.7,.3,1); pointer-events:none;
+  }
+  #letterbox-top{top:0;}
+  #letterbox-bottom.bottom{bottom:0;}
+  body.cutscene .letterbox{height:10.5%;}
+  #cutscene-caption{
+    position:fixed; bottom:14%; left:50%; transform:translateX(-50%);
+    z-index:26; text-align:center; opacity:0; transition:opacity .45s ease;
+    pointer-events:none; max-width:min(80vw,620px);
+  }
+  #cutscene-caption.show{opacity:1;}
+  #cs-text{
+    font-family:"Cinzel", serif; font-weight:700; font-size:clamp(17px,2.6vw,26px);
+    color:var(--parchment); text-shadow:0 2px 14px rgba(0,0,0,0.9); text-wrap:balance;
+  }
+  #cs-sub{
+    margin-top:8px; font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--gold); text-shadow:0 2px 10px rgba(0,0,0,0.9);
+  }
+  #skip-cutscene-btn{
+    position:fixed; top:18px; right:18px; z-index:27; display:none;
+    background:var(--panel); border:1px solid var(--line); color:var(--parchment);
+    padding:8px 15px; border-radius:3px; font-size:12px; cursor:pointer;
+    font-family:"Zen Kaku Gothic New", sans-serif; letter-spacing:0.03em;
+  }
+  #skip-cutscene-btn:hover{border-color:var(--gold); color:var(--gold);}
+  body.cutscene #skip-cutscene-btn{display:block;}
+  body.cutscene #hud{opacity:0.32; transition:opacity .4s ease;}
+
+  #caught-banner{
+    position:fixed; top:36%; left:50%; transform:translate(-50%,-50%) scale(0.85);
+    z-index:31; text-align:center; max-width:min(90vw,560px);
+    opacity:0; transition:opacity .18s ease, transform .18s ease; pointer-events:none;
+  }
+  #caught-banner.show{opacity:1; transform:translate(-50%,-50%) scale(1);}
+  #caught-title{
+    font-family:"Cinzel", serif; font-weight:900; font-size:clamp(26px,4.6vw,44px);
+    color:var(--ember-glow); letter-spacing:0.06em; text-transform:uppercase;
+    text-shadow:0 0 24px rgba(255,90,40,0.85), 0 4px 0 rgba(0,0,0,0.6);
+  }
+  #caught-quote{
+    margin:12px auto 0; font-family:"Zen Kaku Gothic New", sans-serif; font-style:italic;
+    font-size:clamp(14px,2.1vw,18px); color:var(--parchment); max-width:46ch;
+    text-shadow:0 2px 10px rgba(0,0,0,0.85);
+  }
+  #caught-quote .speaker{
+    display:block; margin-top:6px; font-style:normal; font-size:11.5px;
+    letter-spacing:0.14em; text-transform:uppercase; font-weight:700;
+  }
+
+  /* ---------- Overlays (start / win) ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:40;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 30%, rgba(60,45,30,0.35), rgba(4,3,2,0.92) 72%);
+    padding:24px;
+    transition:opacity .4s ease, visibility .4s ease;
+  }
+  .overlay.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+
+  .dossier{
+    width:min(560px,94vw);
+    background:
+      linear-gradient(var(--panel-solid),var(--panel-solid));
+    border:1px solid var(--stone-light);
+    border-radius:2px;
+    padding:34px 34px 28px;
+    position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(236,223,196,0.05);
+    max-height:88vh; overflow-y:auto;
+  }
+  .dossier::before{
+    content:"";
+    position:absolute; inset:8px;
+    border:1px solid rgba(236,223,196,0.14);
+    pointer-events:none;
+  }
+  .stamp{
+    position:absolute; top:22px; right:26px;
+    font-family:"Cinzel", serif; font-weight:900; font-size:11px; letter-spacing:0.18em;
+    color:var(--ember); border:2px solid var(--ember); border-radius:3px;
+    padding:4px 8px; transform:rotate(8deg); opacity:0.8;
+  }
+  .dossier h1{
+    font-family:"Cinzel", serif; font-weight:900; font-size:clamp(26px,4.4vw,36px);
+    line-height:1.08; margin:6px 0 4px; color:var(--parchment);
+    text-wrap:balance;
+  }
+  .dossier h1 span{color:var(--sakura);}
+  .dossier .sub{
+    font-size:13.5px; color:var(--parchment-dim); margin:0 0 20px; line-height:1.55; max-width:60ch;
+  }
+  .dossier .sub b{color:var(--gold); font-weight:700;}
+  .roster{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px;
+  }
+  .warden-card{
+    border:1px solid var(--line); border-radius:3px; padding:11px 12px; background:rgba(0,0,0,0.22);
+  }
+  .warden-card .name{font-family:"Cinzel", serif; font-weight:700; font-size:14px; margin-bottom:3px;}
+  .warden-card.sanemi .name{color:#cdd6d2;}
+  .warden-card.obanai .name{color:#9fb89a;}
+  .warden-card .role{font-size:11px; color:var(--parchment-dim); line-height:1.5;}
+  .controls-legend{
+    display:grid; grid-template-columns:auto 1fr; gap:7px 12px; font-size:12.5px; color:var(--parchment-dim);
+    margin-bottom:24px; padding-top:16px; border-top:1px solid var(--line);
+  }
+  kbd{
+    font-family:"JetBrains Mono", monospace; font-size:11px; background:#0e0b09; color:var(--parchment);
+    border:1px solid var(--stone-light); border-bottom-width:2px; border-radius:3px; padding:2px 7px;
+    min-width:16px; text-align:center; display:inline-block;
+  }
+  .btn-primary{
+    font-family:"Cinzel", serif; font-weight:700; font-size:15px; letter-spacing:0.05em;
+    background:linear-gradient(180deg, var(--sakura), var(--sakura-deep));
+    color:#2a0f18; border:none; border-radius:3px; padding:13px 20px; cursor:pointer;
+    width:100%; text-transform:uppercase; box-shadow:0 6px 16px rgba(201,100,138,0.25);
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-primary:active{transform:translateY(1px);}
+  .btn-secondary{
+    margin-top:10px; width:100%; background:transparent; border:1px solid var(--line); color:var(--parchment-dim);
+    border-radius:3px; padding:9px; font-size:12px; cursor:pointer; font-family:"Zen Kaku Gothic New",sans-serif;
+  }
+  .btn-secondary:hover{color:var(--parchment); border-color:var(--gold);}
+
+  #win-screen .dossier{text-align:center;}
+  #win-screen h1{color:var(--gold);}
+  .win-stats{display:flex; justify-content:center; gap:26px; margin:22px 0;}
+  .win-stat .n{font-family:"JetBrains Mono",monospace; font-size:26px; font-weight:700; color:var(--parchment); font-variant-numeric:tabular-nums;}
+  .win-stat .l{font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--parchment-dim); margin-top:2px;}
+  #best-line{font-size:12px; color:var(--gold); margin-bottom:18px;}
+
+  /* ---------- Touch controls ---------- */
+  #touch-controls{display:none; position:fixed; inset:0; z-index:22; pointer-events:none;}
+  #touch-controls.active{display:block;}
+  .tbtn{
+    position:fixed; pointer-events:auto;
+    width:58px; height:58px; border-radius:50%;
+    background:rgba(23,19,16,0.62); border:1px solid rgba(236,223,196,0.28);
+    color:var(--parchment); font-size:20px; display:flex; align-items:center; justify-content:center;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tbtn:active, .tbtn.pressed{background:rgba(239,156,185,0.32); border-color:var(--sakura);}
+  #btn-fwd{left:74px; bottom:132px;}
+  #btn-back{left:74px; bottom:16px;}
+  #btn-left{left:16px; bottom:74px;}
+  #btn-right{left:132px; bottom:74px;}
+  #btn-sneak{
+    right:20px; bottom:34px; width:84px; height:84px; border-radius:50%;
+    font-family:"Cinzel",serif; font-weight:700; font-size:12px; letter-spacing:0.06em;
+    background:rgba(23,19,16,0.72); border:1px solid rgba(239,156,185,0.4);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #vignette, #caught-banner, .overlay, #hint-bar{transition:none !important;}
+  }
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--stone-light); border-radius:4px;}
+</style>
+
+<div id="stage"></div>
+
+<div id="hud">
+  <div class="hud-cluster">
+    <div class="stat-chip" id="keys-chip"><span class="glyph">🗝️</span><span class="val" id="keys-val">0/3</span></div>
+    <div class="stat-chip" id="recap-chip"><span class="glyph">⛓️</span><span class="val" id="recap-val">0</span></div>
+  </div>
+  <div class="hud-cluster">
+    <div class="stat-chip" id="timer-chip"><span class="lbl">TIME</span><span class="val" id="timer-val">00:00.0</span></div>
+    <button id="icon-btn" title="Mute">🔊</button>
+  </div>
+</div>
+
+<div id="detect-wrap">
+  <div id="detect-label">Detected</div>
+  <div id="detect-bar"><div id="detect-fill"></div></div>
+</div>
+
+<div id="minimap-wrap">
+  <span class="eyebrow">Blueprint</span>
+  <canvas id="minimap" width="150" height="150"></canvas>
+</div>
+
+<div id="hint-bar"></div>
+<div id="vignette"></div>
+<div id="letterbox-top" class="letterbox"></div>
+<div id="letterbox-bottom" class="letterbox bottom"></div>
+<div id="cutscene-caption">
+  <div id="cs-text"></div>
+  <div id="cs-sub"></div>
+</div>
+<button id="skip-cutscene-btn">Skip ▶</button>
+<div id="caught-banner">
+  <div id="caught-title">Caught!</div>
+  <div id="caught-quote"><span id="caught-line"></span><span class="speaker" id="caught-speaker"></span></div>
+</div>
+
+<div class="overlay" id="start-screen">
+  <div class="dossier">
+    <div class="stamp">Cell&nbsp;13</div>
+    <div class="eyebrow">Hashira Training Grounds &mdash; Intake File</div>
+    <h1>Yuki's <span>Prison Escape</span></h1>
+    <p class="sub">You are <b>Yuki</b>, newest trainee locked inside the stone labyrinth run by Wardens <b>Sanemi</b> and <b>Obanai</b>. Slip past their patrols, recover the three cell keys, and reach the gate before your detection meter fills &mdash; and watch your step. The wardens have hidden <b>tripwires</b> and <b>snares</b> through the corridors.</p>
+    <div class="roster">
+      <div class="warden-card sanemi">
+        <div class="name">Warden Sanemi</div>
+        <div class="role">Short-tempered, sharp-eyed. Wide vision cone, quick to anger &mdash; keep your distance.</div>
+      </div>
+      <div class="warden-card obanai">
+        <div class="name">Warden Obanai</div>
+        <div class="role">Silent and methodical. Patrols tight loops, listens for footsteps up close.</div>
+      </div>
+    </div>
+    <div class="controls-legend">
+      <span><kbd>W</kbd><kbd>S</kbd> / <kbd>↑</kbd><kbd>↓</kbd></span><span>Move forward / back</span>
+      <span><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd></span><span>Turn</span>
+      <span><kbd>Shift</kbd></span><span>Hold to sneak &mdash; slower, but wardens see less</span>
+    </div>
+    <button class="btn-primary" id="begin-btn">Begin Escape</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="win-screen">
+  <div class="dossier">
+    <div class="eyebrow">Escape Confirmed</div>
+    <h1>You're Out.</h1>
+    <p class="sub" style="margin:0 auto 6px; text-align:center;">Yuki slipped through the gate before the wardens ever knew she was gone.</p>
+    <div class="win-stats">
+      <div class="win-stat"><div class="n" id="win-time">00:00.0</div><div class="l">Time</div></div>
+      <div class="win-stat"><div class="n" id="win-recap">0</div><div class="l">Recaptures</div></div>
+    </div>
+    <div id="best-line"></div>
+    <button class="btn-primary" id="again-btn">Escape Again</button>
+    <button class="btn-secondary" id="close-btn">Just admire the view</button>
+  </div>
+</div>
+
+<div id="touch-controls">
+  <button class="tbtn" id="btn-fwd">▲</button>
+  <button class="tbtn" id="btn-back">▼</button>
+  <button class="tbtn" id="btn-left">◀</button>
+  <button class="tbtn" id="btn-right">▶</button>
+  <button class="tbtn" id="btn-sneak">SNEAK</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ======================================================================
+   YUKI'S PRISON ESCAPE
+   Procedural 3D stealth-maze game built on three.js.
+   ====================================================================== */
+
+if(typeof THREE === "undefined"){
+  document.getElementById("stage").innerHTML =
+    '<div style="color:#ecdfc4;padding:40px;font-family:sans-serif;">Could not load the 3D engine (three.js). Please check your connection and reload.</div>';
+  return;
+}
+
+/* ---------------- Audio (tiny synthesized SFX, no assets) ---------------- */
+var AudioMod = (function(){
+  var ctx = null, muted = false;
+  try{ muted = localStorage.getItem("yuki_muted") === "1"; }catch(e){}
+  function ensure(){
+    if(!ctx){
+      try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ ctx = null; }
+    }
+    return ctx;
+  }
+  function tone(freq, start, dur, type, gainPeak){
+    var c = ensure(); if(!c || muted) return;
+    try{
+      var osc = c.createOscillator(); var gain = c.createGain();
+      osc.type = type||"sine"; osc.frequency.setValueAtTime(freq, c.currentTime+start);
+      gain.gain.setValueAtTime(0.0001, c.currentTime+start);
+      gain.gain.exponentialRampToValueAtTime(gainPeak||0.18, c.currentTime+start+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+start+dur);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(c.currentTime+start); osc.stop(c.currentTime+start+dur+0.05);
+    }catch(e){}
+  }
+  return {
+    unlock:function(){ ensure(); },
+    key:function(){ tone(660,0,0.11,"triangle",0.15); tone(990,0.09,0.16,"triangle",0.14); },
+    caught:function(){ tone(220,0,0.22,"sawtooth",0.16); tone(140,0.12,0.3,"sawtooth",0.14); },
+    win:function(){ tone(523,0,0.16,"triangle",0.15); tone(659,0.13,0.16,"triangle",0.15); tone(784,0.26,0.34,"triangle",0.16); },
+    alarm:function(){ tone(880,0,0.14,"square",0.13); tone(660,0.16,0.14,"square",0.13); tone(880,0.32,0.14,"square",0.13); tone(660,0.48,0.18,"square",0.13); },
+    snare:function(){ tone(300,0,0.09,"sawtooth",0.13); tone(180,0.07,0.22,"sawtooth",0.12); },
+    toggleMute:function(){
+      muted = !muted;
+      try{ localStorage.setItem("yuki_muted", muted?"1":"0"); }catch(e){}
+      return muted;
+    },
+    isMuted:function(){ return muted; }
+  };
+})();
+
+/* ---------------- Voice lines (browser text-to-speech, no cloned/real voice actors) ---------------- */
+var VoiceMod = (function(){
+  var supported = ("speechSynthesis" in window);
+  function speak(text, opts){
+    if(!supported || !text) return;
+    if(AudioMod.isMuted()) return;
+    try{
+      var u = new SpeechSynthesisUtterance(text);
+      u.pitch = (opts && opts.pitch) || 1;
+      u.rate = (opts && opts.rate) || 1;
+      u.volume = (opts && opts.volume!==undefined) ? opts.volume : 0.85;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  function stop(){
+    if(!supported) return;
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+  }
+  function unlock(){
+    if(!supported) return;
+    try{
+      var u = new SpeechSynthesisUtterance("");
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  return {speak:speak, stop:stop, unlock:unlock, supported:supported};
+})();
+
+var WARDEN_VOICE = {
+  sanemi: {pitch:0.72, rate:1.1, volume:0.9},
+  obanai: {pitch:0.55, rate:0.82, volume:0.8}
+};
+
+/* ---------------- Companion cast voices (also browser TTS, never cloned/real voice actors) ---------------- */
+var CHAR_VOICE = {
+  yuki:    {pitch:1.5,  rate:1.12, volume:0.85},
+  tanjiro: {pitch:1.05, rate:1.05, volume:0.85},
+  zenitsu: {pitch:1.35, rate:1.3,  volume:0.85},
+  genya:   {pitch:0.78, rate:0.95, volume:0.85}
+};
+var MITSURI_VOICE = {pitch:1.55, rate:1.15, volume:0.9};
+var CHAR_NAME_COLOR = {yuki:"#ef9cb9", tanjiro:"#8fae7a", zenitsu:"#e8d24a", genya:"#b0937a", mitsuri:"#f0a8c0"};
+
+/* ---------------- DOM refs ---------------- */
+var $ = function(id){ return document.getElementById(id); };
+var stage = $("stage");
+var hintBar = $("hint-bar");
+var vignette = $("vignette");
+var caughtBanner = $("caught-banner");
+var detectWrap = $("detect-wrap");
+var detectFill = $("detect-fill");
+var keysVal = $("keys-val"), keysChip = $("keys-chip");
+var recapVal = $("recap-val");
+var timerVal = $("timer-val");
+var startScreen = $("start-screen");
+var winScreen = $("win-screen");
+var minimapCanvas = $("minimap");
+var minimapCtx = minimapCanvas.getContext("2d");
+var muteBtn = $("icon-btn");
+var csCaption = $("cutscene-caption");
+var csText = $("cs-text");
+var csSub = $("cs-sub");
+var skipCutsceneBtn = $("skip-cutscene-btn");
+
+muteBtn.textContent = AudioMod.isMuted() ? "🔇" : "🔊";
+muteBtn.addEventListener("click", function(){
+  var m = AudioMod.toggleMute();
+  muteBtn.textContent = m ? "🔇" : "🔊";
+  if(m) VoiceMod.stop();
+});
+
+var hintTimeout = null;
+function showHint(html, ms){
+  hintBar.innerHTML = html;
+  hintBar.classList.add("show");
+  if(hintTimeout) clearTimeout(hintTimeout);
+  if(ms){
+    hintTimeout = setTimeout(function(){ hintBar.classList.remove("show"); }, ms);
+  }
+}
+function hideHint(){ hintBar.classList.remove("show"); }
+
+/* ---------------- Renderer / scene / camera ---------------- */
+var renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding !== undefined ? THREE.sRGBEncoding : THREE.LinearEncoding;
+stage.appendChild(renderer.domElement);
+
+var scene = new THREE.Scene();
+var FOG_COLOR = 0x0c0a09;
+scene.background = new THREE.Color(FOG_COLOR);
+scene.fog = new THREE.FogExp2(FOG_COLOR, 0.032);
+
+var camera = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 200);
+camera.position.set(0, 6, 10);
+
+window.addEventListener("resize", function(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+var REDUCED_MOTION = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------------- Lighting (rebuilt per level for torch placement) ---------------- */
+var hemi = new THREE.HemisphereLight(0x35405c, 0x0c0906, 0.65);
+scene.add(hemi);
+var moon = new THREE.DirectionalLight(0x8fa3d9, 0.28);
+moon.position.set(-20, 30, -10);
+scene.add(moon);
+
+/* ==========================================================================
+   MAZE GENERATION
+   grid dimensions = (2n+1) x (2n+1). true = wall, false = floor.
+   ========================================================================== */
+var CELL = 4;
+var N = 7; // n x n rooms
+var maze; // {grid, w, h}
+var offsetX = 0, offsetZ = 0;
+
+function shuffle(arr){
+  for(var i=arr.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+
+function generateMaze(n){
+  var w = n*2+1, h = n*2+1;
+  var grid = [];
+  for(var y=0;y<h;y++){ grid.push(new Array(w).fill(true)); }
+  var visited = [];
+  for(var vy=0; vy<n; vy++){ visited.push(new Array(n).fill(false)); }
+
+  // iterative stack-based backtracker (avoids recursion depth issues)
+  var stack = [[0,0]];
+  visited[0][0] = true;
+  grid[1][1] = false;
+  while(stack.length){
+    var cur = stack[stack.length-1];
+    var cx=cur[0], cy=cur[1];
+    var dirs = shuffle([[0,-1],[0,1],[-1,0],[1,0]]);
+    var moved = false;
+    for(var i=0;i<dirs.length;i++){
+      var nx = cx+dirs[i][0], ny = cy+dirs[i][1];
+      if(nx>=0 && ny>=0 && nx<n && ny<n && !visited[ny][nx]){
+        visited[ny][nx] = true;
+        grid[cy*2+1+dirs[i][1]][cx*2+1+dirs[i][0]] = false;
+        grid[ny*2+1][nx*2+1] = false;
+        stack.push([nx,ny]);
+        moved = true;
+        break;
+      }
+    }
+    if(!moved) stack.pop();
+  }
+
+  // carve extra loops for multiple stealth routes
+  for(var y2=1;y2<h-1;y2++){
+    for(var x2=1;x2<w-1;x2++){
+      if(!grid[y2][x2]) continue;
+      var isHEdge = (y2%2===1 && x2%2===0);
+      var isVEdge = (y2%2===0 && x2%2===1);
+      if((isHEdge||isVEdge) && Math.random() < 0.16){
+        grid[y2][x2] = false;
+      }
+    }
+  }
+  return {grid:grid, w:w, h:h};
+}
+
+function isWallAt(gx,gy){
+  if(gx<0||gy<0||gy>=maze.h||gx>=maze.w) return true;
+  return maze.grid[gy][gx];
+}
+
+function gridToWorld(gx,gy){
+  return new THREE.Vector3(gx*CELL - offsetX, 0, gy*CELL - offsetZ);
+}
+function worldToGrid(x,z){
+  return {gx: Math.round((x+offsetX)/CELL), gy: Math.round((z+offsetZ)/CELL)};
+}
+
+function bfs(sx,sy){
+  var dist = {};
+  var key = function(x,y){ return x+","+y; };
+  var q = [[sx,sy]];
+  dist[key(sx,sy)] = 0;
+  var order = [[sx,sy]];
+  while(q.length){
+    var c = q.shift();
+    var d = dist[key(c[0],c[1])];
+    var neigh = [[c[0]+1,c[1]],[c[0]-1,c[1]],[c[0],c[1]+1],[c[0],c[1]-1]];
+    for(var i=0;i<neigh.length;i++){
+      var nx=neigh[i][0], ny=neigh[i][1];
+      if(!isWallAt(nx,ny) && dist[key(nx,ny)]===undefined){
+        dist[key(nx,ny)] = d+1;
+        q.push([nx,ny]);
+        order.push([nx,ny]);
+      }
+    }
+  }
+  return {dist:dist, order:order, key:key};
+}
+
+function shortestPath(sx,sy,tx,ty){
+  var key = function(x,y){ return x+","+y; };
+  var prev = {};
+  var visited = {};
+  var q = [[sx,sy]];
+  visited[key(sx,sy)] = true;
+  while(q.length){
+    var c = q.shift();
+    if(c[0]===tx && c[1]===ty) break;
+    var neigh = [[c[0]+1,c[1]],[c[0]-1,c[1]],[c[0],c[1]+1],[c[0],c[1]-1]];
+    for(var i=0;i<neigh.length;i++){
+      var nx=neigh[i][0], ny=neigh[i][1];
+      if(!isWallAt(nx,ny) && !visited[key(nx,ny)]){
+        visited[key(nx,ny)] = true;
+        prev[key(nx,ny)] = c;
+        q.push([nx,ny]);
+      }
+    }
+  }
+  var path = [[tx,ty]];
+  var ck = key(tx,ty);
+  while(prev[ck]){
+    path.push(prev[ck]);
+    ck = key(prev[ck][0], prev[ck][1]);
+  }
+  path.reverse();
+  return path;
+}
+
+/* ==========================================================================
+   PROCEDURAL TEXTURES
+   ========================================================================== */
+function makeStoneTexture(){
+  var size = 256;
+  var c = document.createElement("canvas"); c.width=c.height=size;
+  var ctx = c.getContext("2d");
+  ctx.fillStyle = "#241f19"; ctx.fillRect(0,0,size,size);
+  for(var i=0;i<900;i++){
+    var x=Math.random()*size, y=Math.random()*size, r=Math.random()*2.4+0.3;
+    var v = Math.random();
+    ctx.fillStyle = "rgba("+(v>0.5?"70,60,46":"18,14,10")+","+(0.12+Math.random()*0.22)+")";
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(10,8,6,0.5)"; ctx.lineWidth = 2;
+  for(var gx=0; gx<size; gx+=32){
+    ctx.beginPath(); ctx.moveTo(gx + (Math.random()*6-3), 0); ctx.lineTo(gx+(Math.random()*6-3), size); ctx.stroke();
+  }
+  for(var gy=0; gy<size; gy+=32){
+    ctx.beginPath(); ctx.moveTo(0, gy+(Math.random()*6-3)); ctx.lineTo(size, gy+(Math.random()*6-3)); ctx.stroke();
+  }
+  var tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+function makeFloorTexture(){
+  var size = 256;
+  var c = document.createElement("canvas"); c.width=c.height=size;
+  var ctx = c.getContext("2d");
+  ctx.fillStyle = "#1c1712"; ctx.fillRect(0,0,size,size);
+  var tile = 64;
+  for(var y=0;y<size;y+=tile){
+    for(var x=0;x<size;x+=tile){
+      var shade = 20 + Math.floor(Math.random()*14);
+      ctx.fillStyle = "rgb("+(shade+8)+","+(shade+3)+","+shade+")";
+      ctx.fillRect(x+1,y+1,tile-2,tile-2);
+    }
+  }
+  ctx.strokeStyle = "rgba(0,0,0,0.45)"; ctx.lineWidth=2;
+  for(var gx=0; gx<=size; gx+=tile){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,size); ctx.stroke(); }
+  for(var gy=0; gy<=size; gy+=tile){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(size,gy); ctx.stroke(); }
+  var tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+function makeLabelSprite(text, color){
+  var c = document.createElement("canvas");
+  c.width = 256; c.height = 72;
+  var ctx = c.getContext("2d");
+  ctx.font = "700 34px Georgia, serif";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.lineWidth = 6; ctx.strokeStyle = "rgba(8,6,4,0.85)";
+  ctx.strokeText(text, 128, 40);
+  ctx.fillStyle = color;
+  ctx.fillText(text, 128, 40);
+  var tex = new THREE.CanvasTexture(c);
+  var mat = new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false});
+  var spr = new THREE.Sprite(mat);
+  spr.scale.set(1.7, 0.48, 1);
+  return spr;
+}
+function makeMarkSprite(text, color){
+  var c = document.createElement("canvas"); c.width=c.height=96;
+  var ctx = c.getContext("2d");
+  ctx.font = "900 74px Georgia, serif";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillStyle = color; ctx.shadowColor=color; ctx.shadowBlur=18;
+  ctx.fillText(text, 48, 52);
+  var tex = new THREE.CanvasTexture(c);
+  var mat = new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, opacity:0});
+  var spr = new THREE.Sprite(mat);
+  spr.scale.set(0.7,0.7,1);
+  return spr;
+}
+
+function roundRectPath(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function wrapLines(ctx, text, maxWidth){
+  var words = text.split(" ");
+  var lines = [], cur = "";
+  for(var i=0;i<words.length;i++){
+    var test = cur ? cur+" "+words[i] : words[i];
+    if(ctx.measureText(test).width > maxWidth && cur){
+      lines.push(cur); cur = words[i];
+    } else { cur = test; }
+  }
+  if(cur) lines.push(cur);
+  return lines;
+}
+function makeBarkSprite(){
+  var canvas = document.createElement("canvas");
+  canvas.width = 340; canvas.height = 150;
+  var ctx = canvas.getContext("2d");
+  var tex = new THREE.CanvasTexture(canvas);
+  var mat = new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, opacity:0});
+  var spr = new THREE.Sprite(mat);
+  spr.scale.set(2.15,0.95,1);
+  spr.userData.canvas = canvas;
+  spr.userData.ctx = ctx;
+  spr.userData.tex = tex;
+  spr.userData.lastText = "";
+  return spr;
+}
+function drawBarkBubble(sprite, text, accentColor){
+  var ctx = sprite.userData.ctx, canvas = sprite.userData.canvas;
+  if(sprite.userData.lastText === text) return;
+  sprite.userData.lastText = text;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.font = "600 25px Georgia, serif";
+  var maxW = canvas.width - 46;
+  var lines = wrapLines(ctx, text, maxW);
+  var lineH = 30;
+  var bubbleH = Math.max(64, lines.length*lineH + 34);
+  var bubbleY = 10;
+  ctx.fillStyle = "rgba(20,16,13,0.94)";
+  ctx.strokeStyle = accentColor || "rgba(236,223,196,0.55)";
+  ctx.lineWidth = 3;
+  roundRectPath(ctx, 10, bubbleY, canvas.width-20, bubbleH, 16);
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2-13, bubbleY+bubbleH-3);
+  ctx.lineTo(canvas.width/2, bubbleY+bubbleH+18);
+  ctx.lineTo(canvas.width/2+13, bubbleY+bubbleH-3);
+  ctx.closePath();
+  ctx.fillStyle = "rgba(20,16,13,0.94)";
+  ctx.fill();
+  ctx.fillStyle = "#ecdfc4";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  var startY = bubbleY + bubbleH/2 - ((lines.length-1)*lineH)/2;
+  for(var i=0;i<lines.length;i++){
+    ctx.fillText(lines[i], canvas.width/2, startY + i*lineH);
+  }
+  sprite.userData.tex.needsUpdate = true;
+}
+
+var stoneTex = makeStoneTexture();
+var floorTex = makeFloorTexture();
+
+/* ==========================================================================
+   CHARACTER BUILDERS
+   ========================================================================== */
+function limb(radiusTop, radiusBottom, length, mat){
+  var geo = new THREE.CylinderGeometry(radiusTop, radiusBottom, length, 8);
+  var m = new THREE.Mesh(geo, mat);
+  m.position.y = -length/2;
+  return m;
+}
+
+function buildYuki(){
+  var group = new THREE.Group();
+
+  var skinMat = new THREE.MeshStandardMaterial({color:0xf0c39e, roughness:0.75, metalness:0.02});
+  var hairMat = new THREE.MeshStandardMaterial({color:0x18140f, roughness:0.4, metalness:0.05});
+  var topMat  = new THREE.MeshStandardMaterial({color:0xef9cb9, roughness:0.6, metalness:0.02});
+  var shortsMat = new THREE.MeshStandardMaterial({color:0xb85073, roughness:0.6, metalness:0.02});
+  var shoeMat = new THREE.MeshStandardMaterial({color:0x2a2420, roughness:0.7});
+  var trimMat = new THREE.MeshStandardMaterial({color:0xfaf1e2, roughness:0.5});
+
+  // hip pivot (whole body sits above ground at y=0 local; group origin = feet)
+  var hip = new THREE.Group();
+  hip.position.y = 0.95;
+  group.add(hip);
+
+  var torso = new THREE.Mesh(new THREE.BoxGeometry(0.46,0.56,0.28), topMat);
+  torso.position.y = 0.34;
+  hip.add(torso);
+
+  var trimStripe = new THREE.Mesh(new THREE.BoxGeometry(0.47,0.05,0.29), trimMat);
+  trimStripe.position.y = 0.08;
+  hip.add(trimStripe);
+
+  var shorts = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.26,0.26), shortsMat);
+  shorts.position.y = 0.02;
+  hip.add(shorts);
+
+  var neck = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.09,0.1,8), skinMat);
+  neck.position.y = 0.67;
+  hip.add(neck);
+
+  var headGroup = new THREE.Group();
+  headGroup.position.y = 0.86;
+  hip.add(headGroup);
+
+  var head = new THREE.Mesh(new THREE.SphereGeometry(0.22,16,14), skinMat);
+  headGroup.add(head);
+
+  // simple face
+  var eyeGeo = new THREE.SphereGeometry(0.022,6,6);
+  var eyeMat = new THREE.MeshBasicMaterial({color:0x1a120f});
+  var eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.075,0.01,0.205);
+  var eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.075,0.01,0.205);
+  headGroup.add(eyeL, eyeR);
+  var blush = new THREE.MeshBasicMaterial({color:0xe98fa3, transparent:true, opacity:0.55});
+  var blushGeo = new THREE.CircleGeometry(0.035,10);
+  var blL = new THREE.Mesh(blushGeo, blush); blL.position.set(-0.13,-0.03,0.185); blL.rotation.y=-0.3;
+  var blR = new THREE.Mesh(blushGeo, blush); blR.position.set(0.13,-0.03,0.185); blR.rotation.y=0.3;
+  headGroup.add(blL, blR);
+
+  // hair cap
+  var hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.235,16,14, 0, Math.PI*2, 0, Math.PI*0.62), hairMat);
+  hairCap.position.y = 0.02;
+  headGroup.add(hairCap);
+  var bangs = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.14,0.12), hairMat);
+  bangs.position.set(0,0.09,0.16);
+  bangs.rotation.x = -0.15;
+  headGroup.add(bangs);
+  // twin tails
+  for(var s=-1;s<=1;s+=2){
+    var tail = new THREE.Mesh(new THREE.ConeGeometry(0.065,0.42,8), hairMat);
+    tail.position.set(s*0.235, -0.08, -0.06);
+    tail.rotation.z = s*0.55;
+    tail.rotation.x = 0.25;
+    headGroup.add(tail);
+  }
+
+  // arms
+  var armMatOuter = topMat;
+  function buildArm(side){
+    var shoulder = new THREE.Group();
+    shoulder.position.set(side*0.28, 0.58, 0);
+    var sleeve = limb(0.075,0.07,0.16, armMatOuter);
+    shoulder.add(sleeve);
+    var forearmPivot = new THREE.Group();
+    forearmPivot.position.y = -0.16;
+    var forearm = limb(0.06,0.055,0.28, skinMat);
+    forearmPivot.add(forearm);
+    shoulder.add(forearmPivot);
+    var hand = new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), skinMat);
+    hand.position.y = -0.28;
+    forearmPivot.add(hand);
+    hip.add(shoulder);
+    return shoulder;
+  }
+  var armL = buildArm(-1), armR = buildArm(1);
+
+  // legs
+  function buildLeg(side){
+    var thighPivot = new THREE.Group();
+    thighPivot.position.set(side*0.12, -0.1, 0);
+    var thigh = limb(0.075,0.07,0.34, skinMat);
+    thighPivot.add(thigh);
+    var shinPivot = new THREE.Group();
+    shinPivot.position.y = -0.34;
+    var shin = limb(0.065,0.05,0.34, skinMat);
+    shinPivot.add(shin);
+    thighPivot.add(shinPivot);
+    var shoe = new THREE.Mesh(new THREE.BoxGeometry(0.13,0.09,0.2), shoeMat);
+    shoe.position.set(0,-0.36,0.03);
+    shinPivot.add(shoe);
+    hip.add(thighPivot);
+    return thighPivot;
+  }
+  var legL = buildLeg(-1), legR = buildLeg(1);
+
+  // rope prop for the "tied up" catch pose (hidden until needed)
+  var ropeMat = new THREE.MeshStandardMaterial({color:0x8a6a42, roughness:0.95});
+  var ropeGroup = new THREE.Group();
+  ropeGroup.visible = false;
+  for(var rI=0; rI<3; rI++){
+    var ropeRing = new THREE.Mesh(new THREE.TorusGeometry(0.095,0.022,6,12), ropeMat);
+    ropeRing.rotation.y = Math.PI/2;
+    ropeRing.position.set(0, 0.42 - rI*0.055, 0.3);
+    ropeGroup.add(ropeRing);
+  }
+  hip.add(ropeGroup);
+
+  var bark = makeBarkSprite();
+  bark.position.y = 2.05;
+  group.add(bark);
+
+  group.userData.parts = {hip:hip, headGroup:headGroup, armL:armL, armR:armR, legL:legL, legR:legR};
+  group.userData.rope = ropeGroup;
+  group.userData.bark = bark;
+  return group;
+}
+
+/* ---------------- Companion builder (Tanjiro / Zenitsu / Genya / cameo cast) ---------------- */
+var COMPANION_PALETTES = {
+  tanjiro: {
+    skin:0xe9bf99, hair:0x241d16, hairTip:0x8a2b22, top:0x394a34, topAlt:0x1c231a, bottom:0x4a3a2c,
+    trim:0xe4d7bd, shoe:0x2a2420, earring:0xc94a3a, name:"Tanjiro", nameColor:"#8fae7a", hairStyle:"tanjiro"
+  },
+  zenitsu: {
+    skin:0xecc7a0, hair:0xf0d24a, hairTip:0xd97a2a, top:0xf2e14a, topAlt:0xe8862c, bottom:0x3a3128,
+    trim:0xfff6cf, shoe:0x2a2420, name:"Zenitsu", nameColor:"#e8d24a", hairStyle:"zenitsu"
+  },
+  genya: {
+    skin:0xd8ac86, hair:0x5c3a2a, hairTip:0x5c3a2a, top:0x2c2823, topAlt:0x1a1713, bottom:0x25211d,
+    trim:0xe9dfc9, shoe:0x201c18, name:"Genya", nameColor:"#b0937a", hairStyle:"genya"
+  },
+  mitsuri: {
+    skin:0xf0cba3, hair:0xe8748f, hairTip:0x6fae5a, top:0xf0a8c0, topAlt:0x6fae5a, bottom:0xf0a8c0,
+    trim:0xfaf1e2, shoe:0x5a3a4a, eye:0xe8608f, name:"Mitsuri", nameColor:"#f0a8c0", hairStyle:"mitsuri"
+  }
+};
+
+function buildCompanion(paletteKey){
+  var p = COMPANION_PALETTES[paletteKey];
+  var group = new THREE.Group();
+
+  var skinMat = new THREE.MeshStandardMaterial({color:p.skin, roughness:0.75, metalness:0.02});
+  var hairMat = new THREE.MeshStandardMaterial({color:p.hair, roughness:0.4, metalness:0.05});
+  var hairTipMat = new THREE.MeshStandardMaterial({color:p.hairTip, roughness:0.4, metalness:0.05});
+  var topMat  = new THREE.MeshStandardMaterial({color:p.top, roughness:0.6, metalness:0.02});
+  var topAltMat = new THREE.MeshStandardMaterial({color:p.topAlt, roughness:0.6, metalness:0.02});
+  var bottomMat = new THREE.MeshStandardMaterial({color:p.bottom, roughness:0.6, metalness:0.02});
+  var shoeMat = new THREE.MeshStandardMaterial({color:p.shoe, roughness:0.7});
+  var trimMat = new THREE.MeshStandardMaterial({color:p.trim, roughness:0.5});
+
+  var hip = new THREE.Group();
+  hip.position.y = 0.98;
+  group.add(hip);
+
+  var torso = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.58,0.3), topMat);
+  torso.position.y = 0.34;
+  hip.add(torso);
+
+  var trimStripe = new THREE.Mesh(new THREE.BoxGeometry(0.51,0.06,0.31), trimMat);
+  trimStripe.position.y = 0.06;
+  hip.add(trimStripe);
+
+  var legsBlock = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.24,0.27), bottomMat);
+  legsBlock.position.y = 0.0;
+  hip.add(legsBlock);
+
+  var neck = new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.095,0.1,8), skinMat);
+  neck.position.y = 0.68;
+  hip.add(neck);
+
+  var headGroup = new THREE.Group();
+  headGroup.position.y = 0.88;
+  hip.add(headGroup);
+
+  var head = new THREE.Mesh(new THREE.SphereGeometry(0.225,16,14), skinMat);
+  headGroup.add(head);
+
+  var eyeGeo = new THREE.SphereGeometry(0.022,6,6);
+  var eyeMat = new THREE.MeshBasicMaterial({color: p.eye !== undefined ? p.eye : 0x1a120f});
+  var eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.078,0.01,0.208);
+  var eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.078,0.01,0.208);
+  headGroup.add(eyeL, eyeR);
+
+  // hairstyle per character
+  if(p.hairStyle === "tanjiro"){
+    var capT = new THREE.Mesh(new THREE.SphereGeometry(0.238,16,14,0,Math.PI*2,0,Math.PI*0.6), hairMat);
+    capT.position.y = 0.02;
+    headGroup.add(capT);
+    var bangsT = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.13,0.12), hairTipMat);
+    bangsT.position.set(0,0.1,0.16); bangsT.rotation.x=-0.15;
+    headGroup.add(bangsT);
+    var spikeT = new THREE.Mesh(new THREE.ConeGeometry(0.05,0.2,6), hairTipMat);
+    spikeT.position.set(0,0.24,-0.02); spikeT.rotation.x=-0.3;
+    headGroup.add(spikeT);
+    for(var eS=-1; eS<=1; eS+=2){
+      var earring = new THREE.Mesh(new THREE.CircleGeometry(0.035,10), new THREE.MeshBasicMaterial({color:p.earring}));
+      earring.position.set(eS*0.215,-0.06,0.03); earring.rotation.y = eS*Math.PI/2;
+      headGroup.add(earring);
+    }
+  } else if(p.hairStyle === "zenitsu"){
+    var capZ = new THREE.Mesh(new THREE.SphereGeometry(0.24,16,14,0,Math.PI*2,0,Math.PI*0.66), hairMat);
+    capZ.position.y = 0.03;
+    headGroup.add(capZ);
+    for(var zi=-2; zi<=2; zi++){
+      var spikeZ = new THREE.Mesh(new THREE.ConeGeometry(0.04,0.17,6), hairTipMat);
+      spikeZ.position.set(zi*0.075, 0.21, -0.03*Math.abs(zi));
+      spikeZ.rotation.x = -0.3 - Math.abs(zi)*0.1;
+      headGroup.add(spikeZ);
+    }
+  } else if(p.hairStyle === "genya"){
+    var capG = new THREE.Mesh(new THREE.SphereGeometry(0.235,14,10,0,Math.PI*2,0,Math.PI*0.55), hairMat);
+    capG.position.y = 0.02;
+    headGroup.add(capG);
+    var wrapG = new THREE.Mesh(new THREE.CylinderGeometry(0.235,0.235,0.11,14,1,true), trimMat);
+    wrapG.material.side = THREE.DoubleSide;
+    wrapG.position.y = -0.03;
+    headGroup.add(wrapG);
+  } else if(p.hairStyle === "mitsuri"){
+    var capM = new THREE.Mesh(new THREE.SphereGeometry(0.225,16,14,0,Math.PI*2,0,Math.PI*0.6), hairMat);
+    capM.position.y = 0.02;
+    headGroup.add(capM);
+    for(var mS=-1; mS<=1; mS+=2){
+      var braid = new THREE.Mesh(new THREE.ConeGeometry(0.05,0.4,8), hairTipMat);
+      braid.position.set(mS*0.2,-0.1,-0.05); braid.rotation.z = mS*0.5; braid.rotation.x=0.2;
+      headGroup.add(braid);
+    }
+    // small flower hairpin -- her signature accessory
+    var flowerMat = new THREE.MeshBasicMaterial({color:0xffdce8});
+    var flowerCenterMat = new THREE.MeshBasicMaterial({color:0xffd23f});
+    for(var fp=0; fp<5; fp++){
+      var fAng = fp/5*Math.PI*2;
+      var petal = new THREE.Mesh(new THREE.SphereGeometry(0.026,6,6), flowerMat);
+      petal.position.set(0.155+Math.cos(fAng)*0.028, 0.195+Math.sin(fAng)*0.028, 0.06);
+      headGroup.add(petal);
+    }
+    var flowerCenter = new THREE.Mesh(new THREE.SphereGeometry(0.018,6,6), flowerCenterMat);
+    flowerCenter.position.set(0.155,0.195,0.06);
+    headGroup.add(flowerCenter);
+  }
+
+  function buildArm(side){
+    var shoulder = new THREE.Group();
+    shoulder.position.set(side*0.3, 0.58, 0);
+    var sleeve = limb(0.08,0.075,0.17, topAltMat);
+    shoulder.add(sleeve);
+    var forearmPivot = new THREE.Group();
+    forearmPivot.position.y = -0.17;
+    var forearm = limb(0.065,0.06,0.29, skinMat);
+    forearmPivot.add(forearm);
+    shoulder.add(forearmPivot);
+    var hand = new THREE.Mesh(new THREE.SphereGeometry(0.062,8,8), skinMat);
+    hand.position.y = -0.29;
+    forearmPivot.add(hand);
+    hip.add(shoulder);
+    return shoulder;
+  }
+  var armL = buildArm(-1), armR = buildArm(1);
+
+  function buildLeg(side){
+    var thighPivot = new THREE.Group();
+    thighPivot.position.set(side*0.13, -0.1, 0);
+    var thigh = limb(0.08,0.075,0.36, bottomMat);
+    thighPivot.add(thigh);
+    var shinPivot = new THREE.Group();
+    shinPivot.position.y = -0.36;
+    var shin = limb(0.07,0.055,0.36, bottomMat);
+    shinPivot.add(shin);
+    thighPivot.add(shinPivot);
+    var shoe = new THREE.Mesh(new THREE.BoxGeometry(0.14,0.09,0.21), shoeMat);
+    shoe.position.set(0,-0.38,0.03);
+    shinPivot.add(shoe);
+    hip.add(thighPivot);
+    return thighPivot;
+  }
+  var legL = buildLeg(-1), legR = buildLeg(1);
+
+  var label = makeLabelSprite(p.name, p.nameColor);
+  label.position.y = 2.05;
+  group.add(label);
+
+  var bark = makeBarkSprite();
+  bark.position.y = 2.55;
+  group.add(bark);
+
+  group.userData.parts = {hip:hip, headGroup:headGroup, armL:armL, armR:armR, legL:legL, legR:legR};
+  group.userData.paletteKey = paletteKey;
+  group.userData.bark = bark;
+  return group;
+}
+
+function setTiedPose(playerGroup, tied){
+  var parts = playerGroup.userData.parts;
+  var rope = playerGroup.userData.rope;
+  if(tied){
+    parts.hip.rotation.x = 0.16;
+    parts.hip.position.y -= 0.12;
+    parts.armL.rotation.set(1.55, 0, -0.55);
+    parts.armR.rotation.set(1.55, 0, 0.55);
+    var forearmL = parts.armL.children[1];
+    var forearmR = parts.armR.children[1];
+    if(forearmL) forearmL.rotation.set(-0.35,0,0);
+    if(forearmR) forearmR.rotation.set(-0.35,0,0);
+    if(rope) rope.visible = true;
+  } else {
+    parts.hip.rotation.x = 0;
+    parts.hip.position.y += 0.12;
+    parts.armL.rotation.set(0,0,0);
+    parts.armR.rotation.set(0,0,0);
+    var fL = parts.armL.children[1];
+    var fR = parts.armR.children[1];
+    if(fL) fL.rotation.set(0,0,0);
+    if(fR) fR.rotation.set(0,0,0);
+    if(rope) rope.visible = false;
+  }
+}
+
+var WARDEN_LINES = {
+  sanemi: {
+    search: [
+      "Huh?! Who's there?!",
+      "I know you're skulking around here somewhere!",
+      "Come out and face me, trainee!",
+      "Don't think you can hide from me!",
+      "I can hear you breathing, brat."
+    ],
+    catch: [
+      "Tch! Should've run faster, trainee!",
+      "Caught you slacking off!",
+      "Not on my watch!",
+      "Nowhere left to run, brat.",
+      "That's enough out of you."
+    ],
+    training: [
+      "Fifty laps around the yard — NOW!",
+      "Drop and give me a hundred push-ups!",
+      "Back to the drill posts. We start over!",
+      "You'll run my course till you can't stand!",
+      "This is what slacking earns you, trainee!"
+    ],
+    alarm: [
+      "An alarm?! Someone's been at my wires!",
+      "Tch, that's my cue!",
+      "A rat in the tripwires — I'll deal with this myself!"
+    ],
+    intro: "You think you can escape my training grounds? Ha! Nobody does — not on my watch.",
+    chase: [
+      "Get back here, trainee!!",
+      "You're not getting away that easy!",
+      "I'll drag you back myself!"
+    ],
+    defeat: [
+      "Tch... she actually made it.",
+      "...Unbelievable. Next time, brat.",
+      "This isn't over, trainee!"
+    ]
+  },
+  obanai: {
+    search: [
+      "...I hear you breathing.",
+      "Footsteps. Close by.",
+      "You can't stay hidden forever.",
+      "...Come out, now.",
+      "...I know this maze better than you."
+    ],
+    catch: [
+      "...Found you.",
+      "Stay still.",
+      "This ends here.",
+      "You won't slip by me again.",
+      "...Quiet now. Come along."
+    ],
+    training: [
+      "...Back to the posts. We start over.",
+      "You'll hold that stance until dawn.",
+      "...No rest. Again.",
+      "Discipline. That's what you lack.",
+      "...The drills continue until you learn."
+    ],
+    alarm: [
+      "...An alarm. She's close.",
+      "...There. I hear it.",
+      "...The wire. She tripped the wire."
+    ],
+    intro: "...No one has slipped past me. No one will. Try, if you like.",
+    chase: [
+      "...You won't make it.",
+      "...Stop. Now.",
+      "...I won't let you leave."
+    ],
+    defeat: [
+      "...She's gone.",
+      "...Impressive. For a trainee.",
+      "...Next time won't end the same."
+    ]
+  }
+};
+
+function randLine(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ---------------- Yuki & the companions' lines (cell intro + ambient chatter while running) ---------------- */
+var CHAR_LINES = {
+  yuki: {
+    cell: "I'm not staying locked up in here. I'm getting all of us out — tonight.",
+    ambient: [
+      "This way — I think I hear water, that has to mean an exit!",
+      "Stay quiet, Obanai patrols close to here.",
+      "Just a little further, everyone — keep up!",
+      "Careful, mind the floor — some of the tiles are wired.",
+      "We're almost to another key, I can feel it!"
+    ],
+    keyFound: "Got one! Keep moving!",
+    win: "We made it — we're actually free!"
+  },
+  tanjiro: {
+    cell: "Yuki, don't lose hope. We'll find a way out of here, together.",
+    ambient: [
+      "I smell fresh air this way — I'm sure of it!",
+      "Everyone stay close, we move as one.",
+      "I won't let them drag any of us back to that yard.",
+      "Keep going, we can't stop now!",
+      "If we work together, we can outlast them."
+    ],
+    win: "We did it — all of us, together!"
+  },
+  zenitsu: {
+    cell: "W-we're really doing this? What if they catch us again?!",
+    ambient: [
+      "I'm terrified, but I'm not letting go of you guys!",
+      "Wait — did you hear that?! Was that Sanemi?!",
+      "My legs are shaking, but I'm still running, see?!",
+      "Please, please let there be an exit soon!",
+      "I can't believe I'm actually being brave right now!"
+    ],
+    win: "We're free?! We're actually, really free?!"
+  },
+  genya: {
+    cell: "Quit staring and get these ropes off me. We're not dying in this cell.",
+    ambient: [
+      "Move it — standing around just gets us caught.",
+      "Tch. I'll watch our backs, just keep moving.",
+      "Don't slow down on my account.",
+      "A warden shows up, I'll handle it. Keep going.",
+      "Enough talking. Run."
+    ],
+    win: "...Took long enough. Let's move."
+  }
+};
+
+var MITSURI_LINES = [
+  "Aw, somebody tried to run off? Don't worry, I'll take good care of you~",
+  "Hee-hee, you're a fast one! But I still caught you, didn't I?",
+  "There, there~ Struggling just makes the rope tighter, you know!",
+  "Sanemi, Obanai — I've got this one! Go find the others~"
+];
+
+var WARDEN_PALETTES = {
+  sanemi: {
+    hair:0xf1ede2, skin:0xe9c3a3, coat:0x33403c, coatDark:0x222b28, trim:0x8fb5a6,
+    eye:0xc5cbd0, eye2:0x9fd2e2, // mismatched pale eyes
+    haori:0xf5f0e3, haoriShade:0xdad2bd, scar:0x8a4f47,
+    name:"Sanemi", nameColor:"#f1ede2"
+  },
+  obanai: {
+    hair:0x16130f, skin:0xe7bd97, coat:0x1d2417, coatDark:0x11150d, trim:0xe8e2d2, eye:0xd7c94a,
+    haori:0xc3d7bc, haoriAlt:0xf1ece0, bandage:0xe9e2d0,
+    snake:0xf2ecd9, snakePattern:0xe8a0b0,
+    name:"Obanai", nameColor:"#9fb89a"
+  }
+};
+
+function buildWarden(paletteKey){
+  var p = WARDEN_PALETTES[paletteKey];
+  var group = new THREE.Group();
+  var skinMat = new THREE.MeshStandardMaterial({color:p.skin, roughness:0.75});
+  var hairMat = new THREE.MeshStandardMaterial({color:p.hair, roughness:0.45});
+  var coatMat = new THREE.MeshStandardMaterial({color:p.coat, roughness:0.65});
+  var coatDarkMat = new THREE.MeshStandardMaterial({color:p.coatDark, roughness:0.6});
+  var trimMat = new THREE.MeshStandardMaterial({color:p.trim, roughness:0.5});
+  var eyeMat = new THREE.MeshBasicMaterial({color:p.eye});
+
+  var hip = new THREE.Group();
+  hip.position.y = 1.12;
+  group.add(hip);
+
+  var torso = new THREE.Mesh(new THREE.BoxGeometry(0.58,0.72,0.34), coatMat);
+  torso.position.y = 0.4;
+  hip.add(torso);
+  var sash = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.09,0.36), trimMat);
+  sash.position.y = 0.14;
+  hip.add(sash);
+  var legsBlock = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.3), coatDarkMat);
+  legsBlock.position.y = -0.18;
+  hip.add(legsBlock);
+
+  var neck = new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.1,0.1,8), skinMat);
+  neck.position.y = 0.82;
+  hip.add(neck);
+
+  var headGroup = new THREE.Group();
+  headGroup.position.y = 1.03;
+  hip.add(headGroup);
+  var head = new THREE.Mesh(new THREE.SphereGeometry(0.25,16,14), skinMat);
+  headGroup.add(head);
+  var eyeGeo = new THREE.SphereGeometry(0.03,6,6);
+  var eyeMatL = eyeMat;
+  var eyeMatR = (paletteKey === "sanemi") ? new THREE.MeshBasicMaterial({color:p.eye2}) : eyeMat;
+  var eyeL = new THREE.Mesh(eyeGeo,eyeMatL); eyeL.position.set(-0.085,0.02,0.225);
+  var eyeR = new THREE.Mesh(eyeGeo,eyeMatR); eyeR.position.set(0.085,0.02,0.225);
+  headGroup.add(eyeL,eyeR);
+
+  if(paletteKey === "sanemi"){
+    var hairTop = new THREE.Mesh(new THREE.SphereGeometry(0.26,14,10,0,Math.PI*2,0,Math.PI*0.55), hairMat);
+    hairTop.position.y = 0.03;
+    headGroup.add(hairTop);
+    for(var i=-2;i<=2;i++){
+      var spike = new THREE.Mesh(new THREE.ConeGeometry(0.035,0.16,6), hairMat);
+      spike.position.set(i*0.075, 0.2, -0.02);
+      spike.rotation.x = -0.25 - Math.abs(i)*0.08;
+      headGroup.add(spike);
+    }
+    // scars -- a defining Sanemi trait
+    var scarMat = new THREE.MeshBasicMaterial({color:p.scar, transparent:true, opacity:0.8});
+    for(var sci=0; sci<3; sci++){
+      var scar = new THREE.Mesh(new THREE.BoxGeometry(0.012,0.085,0.01), scarMat);
+      scar.position.set(0.135+sci*0.02, 0.05-sci*0.025, 0.198);
+      scar.rotation.z = 0.4;
+      headGroup.add(scar);
+    }
+  } else {
+    var hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.5,0.1), hairMat);
+    hairBack.position.set(0,-0.12,-0.19);
+    headGroup.add(hairBack);
+    var hairTopO = new THREE.Mesh(new THREE.SphereGeometry(0.255,14,10,0,Math.PI*2,0,Math.PI*0.58), hairMat);
+    hairTopO.position.y=0.02;
+    headGroup.add(hairTopO);
+    var wrap = new THREE.Mesh(new THREE.CylinderGeometry(0.245,0.245,0.09,14,1,true), trimMat);
+    wrap.material.side = THREE.DoubleSide;
+    wrap.position.y = -0.04;
+    headGroup.add(wrap);
+    // bandages wrapped over the lower face -- Obanai's signature look
+    var bandageMat = new THREE.MeshStandardMaterial({color:p.bandage, roughness:0.6});
+    var bandage = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.245,0.13,14,1,true), bandageMat);
+    bandage.material.side = THREE.DoubleSide;
+    bandage.position.y = -0.1;
+    headGroup.add(bandage);
+  }
+
+  // haori overlays -- layered on top of the standard corps uniform
+  if(paletteKey === "sanemi"){
+    var haoriMat = new THREE.MeshStandardMaterial({color:p.haori, roughness:0.55});
+    var haoriShadeMat = new THREE.MeshStandardMaterial({color:p.haoriShade, roughness:0.55});
+    var haoriBack = new THREE.Mesh(new THREE.BoxGeometry(0.64,0.6,0.06), haoriMat);
+    haoriBack.position.set(0,0.34,-0.22);
+    hip.add(haoriBack);
+    var collarL = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.5,0.08), haoriMat);
+    collarL.position.set(-0.25,0.36,0.12); collarL.rotation.y = 0.18;
+    hip.add(collarL);
+    var collarR = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.5,0.08), haoriMat);
+    collarR.position.set(0.25,0.36,0.12); collarR.rotation.y = -0.18;
+    hip.add(collarR);
+    // ragged, tattered hem -- uneven strip lengths for a torn silhouette
+    var hemLens = [0.2,0.32,0.16,0.36,0.22,0.3];
+    for(var hi=0; hi<hemLens.length; hi++){
+      var hlen = hemLens[hi];
+      var stripW = 0.64/hemLens.length;
+      var strip = new THREE.Mesh(new THREE.BoxGeometry(stripW-0.008, hlen, 0.055), haoriShadeMat);
+      strip.position.set(-0.32 + (hi+0.5)*stripW, 0.04 - hlen/2, -0.22);
+      hip.add(strip);
+    }
+  } else if(paletteKey === "obanai"){
+    var haoriMat2 = new THREE.MeshStandardMaterial({color:p.haori, roughness:0.55});
+    var haoriAltMat = new THREE.MeshStandardMaterial({color:p.haoriAlt, roughness:0.55});
+    var haoriBack2 = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.66,0.05), haoriMat2);
+    haoriBack2.position.set(0,0.34,-0.2);
+    hip.add(haoriBack2);
+    // checkered accent squares -- a nod to his pale plaid haori
+    for(var cx=-1; cx<=1; cx+=2){
+      for(var cy=0; cy<3; cy++){
+        if((cx===1 && cy%2===0) || (cx===-1 && cy%2===1)){
+          var sq = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.18,0.012), haoriAltMat);
+          sq.position.set(cx*0.14, 0.12+cy*0.2, -0.232);
+          hip.add(sq);
+        }
+      }
+    }
+    // Kaburamaru, the white snake draped over his shoulder
+    var snakeMat = new THREE.MeshStandardMaterial({color:p.snake, roughness:0.5});
+    var snakePts = [
+      new THREE.Vector3(0.3,0.66,-0.06),
+      new THREE.Vector3(0.22,0.54,0.08),
+      new THREE.Vector3(0.06,0.44,0.19),
+      new THREE.Vector3(-0.06,0.32,0.16),
+      new THREE.Vector3(-0.03,0.22,0.06)
+    ];
+    var snakeCurve = new THREE.CatmullRomCurve3(snakePts);
+    var snakeGeo = new THREE.TubeGeometry(snakeCurve, 20, 0.045, 6, false);
+    var snakeBody = new THREE.Mesh(snakeGeo, snakeMat);
+    hip.add(snakeBody);
+    var snakeHead = new THREE.Mesh(new THREE.SphereGeometry(0.055,8,8), snakeMat);
+    snakeHead.position.copy(snakePts[0]);
+    hip.add(snakeHead);
+    var snakeEyeMat = new THREE.MeshBasicMaterial({color:0x1a120f});
+    var snakeEye = new THREE.Mesh(new THREE.SphereGeometry(0.01,6,6), snakeEyeMat);
+    snakeEye.position.copy(snakePts[0]).add(new THREE.Vector3(0.03,0.01,0.03));
+    hip.add(snakeEye);
+    var snakePatternMat = new THREE.MeshBasicMaterial({color:p.snakePattern});
+    var patch = new THREE.Mesh(new THREE.SphereGeometry(0.022,6,6), snakePatternMat);
+    patch.position.copy(snakePts[2]).add(new THREE.Vector3(0.02,0,0.02));
+    hip.add(patch);
+  }
+
+  function buildArm(side){
+    var shoulder = new THREE.Group();
+    shoulder.position.set(side*0.35,0.7,0);
+    var upper = limb(0.09,0.085,0.32,coatMat);
+    shoulder.add(upper);
+    var forearmPivot = new THREE.Group();
+    forearmPivot.position.y = -0.32;
+    var forearm = limb(0.075,0.07,0.3, side<0? coatDarkMat: skinMat);
+    forearmPivot.add(forearm);
+    shoulder.add(forearmPivot);
+    var hand = new THREE.Mesh(new THREE.SphereGeometry(0.075,8,8), skinMat);
+    hand.position.y=-0.3;
+    forearmPivot.add(hand);
+    hip.add(shoulder);
+    return shoulder;
+  }
+  var armL = buildArm(-1), armR = buildArm(1);
+
+  function buildLeg(side){
+    var thighPivot = new THREE.Group();
+    thighPivot.position.set(side*0.15,-0.38,0);
+    var thigh = limb(0.09,0.085,0.42, coatDarkMat);
+    thighPivot.add(thigh);
+    var shinPivot = new THREE.Group();
+    shinPivot.position.y=-0.42;
+    var shin = limb(0.08,0.065,0.4, coatDarkMat);
+    shinPivot.add(shin);
+    thighPivot.add(shinPivot);
+    var boot = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.11,0.24), coatDarkMat);
+    boot.position.set(0,-0.42,0.03);
+    shinPivot.add(boot);
+    hip.add(thighPivot);
+    return thighPivot;
+  }
+  var legL = buildLeg(-1), legR = buildLeg(1);
+
+  var label = makeLabelSprite(p.name, p.nameColor);
+  label.position.y = 2.05;
+  group.add(label);
+
+  var mark = makeMarkSprite("!", "#ff5b3d");
+  mark.position.y = 2.45;
+  group.add(mark);
+
+  var bark = makeBarkSprite();
+  bark.position.y = 2.95;
+  group.add(bark);
+
+  // vision cone (unit radius, forward = +Z)
+  var fovDeg = 52, segs = 18, coneRadius = 1;
+  var positions = [0,0.03,0];
+  positions.push(0,0.03,0);
+  var verts = [[0,0.035,0]];
+  for(var s2=0;s2<=segs;s2++){
+    var a = THREE.MathUtils.degToRad(-fovDeg/2) + (THREE.MathUtils.degToRad(fovDeg) * s2/segs);
+    verts.push([Math.sin(a)*coneRadius, 0.035, Math.cos(a)*coneRadius]);
+  }
+  var idx = [];
+  for(var s3=1;s3<verts.length-1;s3++){ idx.push(0,s3,s3+1); }
+  var coneGeo = new THREE.BufferGeometry();
+  var flat = [];
+  for(var vi=0; vi<verts.length; vi++){ flat.push(verts[vi][0], verts[vi][1], verts[vi][2]); }
+  coneGeo.setAttribute("position", new THREE.Float32BufferAttribute(flat,3));
+  coneGeo.setIndex(idx);
+  coneGeo.computeVertexNormals();
+  var coneMat = new THREE.MeshBasicMaterial({color:0xffe08a, transparent:true, opacity:0.13, side:THREE.DoubleSide, depthWrite:false});
+  var cone = new THREE.Mesh(coneGeo, coneMat);
+  group.add(cone);
+
+  group.userData.parts = {hip:hip, headGroup:headGroup, armL:armL, armR:armR, legL:legL, legR:legR};
+  group.userData.cone = cone;
+  group.userData.coneMat = coneMat;
+  group.userData.mark = mark;
+  group.userData.bark = bark;
+  group.userData.paletteKey = paletteKey;
+  return group;
+}
+
+/* ==========================================================================
+   KEY & GATE
+   ========================================================================== */
+function buildKeyMesh(){
+  var g = new THREE.Group();
+  var mat = new THREE.MeshStandardMaterial({color:0xd7ac52, emissive:0x9a6a12, emissiveIntensity:0.55, roughness:0.35, metalness:0.6});
+  var ring = new THREE.Mesh(new THREE.TorusGeometry(0.14,0.045,10,20), mat);
+  ring.rotation.x = Math.PI/2;
+  g.add(ring);
+  var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,0.34,8), mat);
+  shaft.position.y = -0.24;
+  g.add(shaft);
+  var tooth1 = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.05,0.03), mat);
+  tooth1.position.set(0.06,-0.36,0);
+  g.add(tooth1);
+  var tooth2 = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.05,0.03), mat);
+  tooth2.position.set(0.045,-0.29,0);
+  g.add(tooth2);
+  var glow = new THREE.PointLight(0xffcf7a, 0.9, 3.2, 2);
+  glow.position.y = -0.1;
+  g.add(glow);
+  return g;
+}
+
+function buildGate(open){
+  var g = new THREE.Group();
+  var barMat = new THREE.MeshStandardMaterial({color:0x21201d, roughness:0.4, metalness:0.75});
+  var frameMat = new THREE.MeshStandardMaterial({color:0x3a3226, roughness:0.6});
+  var frame = new THREE.Mesh(new THREE.BoxGeometry(CELL*0.98, 3.6, 0.5), frameMat);
+  frame.position.y = 1.8;
+  g.add(frame);
+  var portcullis = new THREE.Group();
+  var barCount = 7;
+  for(var i=0;i<barCount;i++){
+    var bar = new THREE.Mesh(new THREE.BoxGeometry(0.08,3.2,0.1), barMat);
+    bar.position.set(-CELL*0.4 + i*(CELL*0.8/(barCount-1)), 0, 0);
+    portcullis.add(bar);
+  }
+  var crossbar = new THREE.Mesh(new THREE.BoxGeometry(CELL*0.85,0.1,0.12), barMat);
+  crossbar.position.y = 0.6;
+  portcullis.add(crossbar);
+  portcullis.position.y = 1.7;
+  g.add(portcullis);
+  g.userData.portcullis = portcullis;
+  g.userData.closedY = 1.7;
+  g.userData.openY = 4.9;
+  return g;
+}
+
+/* ---------------- Safe zone (win-cutscene finish marker, beyond the gate) ---------------- */
+function buildSafeZone(){
+  var g = new THREE.Group();
+  var glowMat = new THREE.MeshStandardMaterial({
+    color:0xffe9b8, emissive:0xffb84d, emissiveIntensity:0.6,
+    roughness:0.4, metalness:0.1, transparent:true, opacity:0.85
+  });
+  var disc = new THREE.Mesh(new THREE.CircleGeometry(1.3, 24), glowMat);
+  disc.rotation.x = -Math.PI/2;
+  disc.position.y = 0.02;
+  g.add(disc);
+  var ringMat = new THREE.MeshBasicMaterial({color:0xfff2cf, transparent:true, opacity:0.9, side:THREE.DoubleSide});
+  var ring = new THREE.Mesh(new THREE.RingGeometry(1.25, 1.42, 24), ringMat);
+  ring.rotation.x = -Math.PI/2;
+  ring.position.y = 0.03;
+  g.add(ring);
+  var light = new THREE.PointLight(0xffcf7a, 1.7, 6.5, 2);
+  light.position.y = 1.4;
+  g.add(light);
+  return g;
+}
+
+/* ---------------- Booby traps ---------------- */
+function makeSnareTexture(){
+  var size = 128;
+  var c = document.createElement("canvas"); c.width=c.height=size;
+  var ctx = c.getContext("2d");
+  ctx.clearRect(0,0,size,size);
+  ctx.strokeStyle = "rgba(90,66,38,0.65)";
+  ctx.lineWidth = 4;
+  var cx=size/2, cy=size/2;
+  for(var r=8; r<size/2-2; r+=9){
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,Math.random()*0.6, Math.PI*1.7+Math.random()*0.6);
+    ctx.stroke();
+  }
+  var tex = new THREE.CanvasTexture(c);
+  return tex;
+}
+var snareTex = null;
+
+function buildTripwire(){
+  var g = new THREE.Group();
+  var postMat = new THREE.MeshStandardMaterial({color:0x2b2620, roughness:0.85});
+  var wireMat = new THREE.MeshBasicMaterial({color:0xffb84d, transparent:true, opacity:0.5});
+  var post1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,0.55,6), postMat);
+  post1.position.set(-1.55,0.27,0);
+  g.add(post1);
+  var post2 = post1.clone();
+  post2.position.x = 1.55;
+  g.add(post2);
+  var wire = new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,3.1,6), wireMat);
+  wire.rotation.z = Math.PI/2;
+  wire.position.y = 0.42;
+  g.add(wire);
+  g.userData.wire = wire;
+  g.userData.wireMat = wireMat;
+  return g;
+}
+
+function buildSnarePlate(){
+  if(!snareTex) snareTex = makeSnareTexture();
+  var g = new THREE.Group();
+  var mat = new THREE.MeshStandardMaterial({map:snareTex, color:0x8a7250, roughness:0.95, transparent:true, opacity:0.75});
+  var plate = new THREE.Mesh(new THREE.CircleGeometry(0.56,20), mat);
+  plate.rotation.x = -Math.PI/2;
+  plate.position.y = 0.018;
+  g.add(plate);
+  g.userData.plate = plate;
+  g.userData.plateMat = mat;
+  return g;
+}
+
+/* ==========================================================================
+   HOLDING CELLS
+   A small decorative, non-interactive scene used only by the intro cutscene.
+   Built once at boot and added straight to `scene` (not levelGroup) far
+   outside the maze bounds -- it survives "Escape Again" rebuilds unchanged,
+   and the camera's far plane (200) guarantees it's never visible during
+   normal gameplay.
+   ========================================================================== */
+var CELL_BLOCK_Z = 480;
+var CELL_POSITIONS = {yuki:-7.5, tanjiro:-2.5, zenitsu:2.5, genya:7.5};
+var cellCharacters = {};
+
+function buildCellBlockScene(){
+  var group = new THREE.Group();
+  group.position.set(0, 0, CELL_BLOCK_Z);
+
+  var floorTexClone = floorTex.clone(); floorTexClone.needsUpdate = true;
+  floorTexClone.repeat.set(6, 3.5);
+  var floorMat = new THREE.MeshStandardMaterial({map:floorTexClone, roughness:0.95});
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(24, 14), floorMat);
+  floor.rotation.x = -Math.PI/2;
+  group.add(floor);
+
+  var wallMat = new THREE.MeshStandardMaterial({map:stoneTex, roughness:0.92});
+  var back = new THREE.Mesh(new THREE.BoxGeometry(24, 4, 0.6), wallMat);
+  back.position.set(0, 2, -5);
+  group.add(back);
+  var sideL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 4, 14), wallMat);
+  sideL.position.set(-12, 2, 2);
+  group.add(sideL);
+  var sideR = sideL.clone();
+  sideR.position.x = 12;
+  group.add(sideR);
+
+  var tpos = [[-9,-3],[9,-3]];
+  for(var ti=0; ti<tpos.length; ti++){
+    var tl = new THREE.PointLight(0xffa552, 1.2, 16, 2);
+    tl.position.set(tpos[ti][0], 2.4, tpos[ti][1]);
+    group.add(tl);
+  }
+  var ambientLt = new THREE.AmbientLight(0x51494a, 0.55);
+  group.add(ambientLt);
+
+  // cell dividers between each prisoner
+  var barMat = new THREE.MeshStandardMaterial({color:0x2c2822, roughness:0.5, metalness:0.4});
+  var dividerX = [-5, 0, 5];
+  for(var di=0; di<dividerX.length; di++){
+    for(var bi=-2; bi<=2; bi++){
+      var bar = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,3.4,6), barMat);
+      bar.position.set(dividerX[di] + bi*0.5, 1.7, 1.4);
+      group.add(bar);
+    }
+  }
+  // front bars, gapped so faces read clearly through them
+  for(var fb=-9; fb<=9.01; fb+=0.65){
+    var frontBar = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,3.4,6), barMat);
+    frontBar.position.set(fb, 1.7, 3.1);
+    group.add(frontBar);
+  }
+
+  // the four prisoners, tied up, seated against the back wall of their cell
+  var keys = ["yuki","tanjiro","zenitsu","genya"];
+  for(var ci=0; ci<keys.length; ci++){
+    var key = keys[ci];
+    var ch = (key==="yuki") ? buildYuki() : buildCompanion(key);
+    ch.position.set(CELL_POSITIONS[key], 0, -3.5);
+    ch.rotation.y = 0; // faces +Z, toward the bars
+    setTiedPose(ch, true);
+    group.add(ch);
+    cellCharacters[key] = ch;
+  }
+
+  // Sanemi & Obanai standing cameo guard, facing the cells
+  var sanemiG = buildWarden("sanemi");
+  sanemiG.position.set(-4, 0, 4.6);
+  sanemiG.rotation.y = Math.PI;
+  group.add(sanemiG);
+  var obanaiG = buildWarden("obanai");
+  obanaiG.position.set(4, 0, 4.6);
+  obanaiG.rotation.y = Math.PI;
+  group.add(obanaiG);
+  cellCharacters.sanemi = sanemiG;
+  cellCharacters.obanai = obanaiG;
+
+  scene.add(group);
+  return group;
+}
+
+/* ==========================================================================
+   GAME STATE
+   ========================================================================== */
+var levelGroup = null;
+var wallMesh = null;
+var torches = [];
+var keyMeshes = [];
+var gate = null;
+var traps = [];
+var exitCell = null, startCell = null;
+var player, playerYaw = 0;
+var guards = [];
+var raycaster = new THREE.Raycaster();
+
+// Tanjiro / Zenitsu / Genya trail-follow companions: they simply retrace
+// Yuki's own recorded path a few samples behind, so they never need their
+// own pathfinding or wall-collision checks -- her path already avoided walls.
+var companions = [];
+var yukiTrail = [];
+var TRAIL_MAX = 600;
+var trailSampleAccum = 0;
+var nextAllyChatterAt = 0;
+
+// Mitsuri: not a maze companion -- a narrative cameo who steps into view
+// beside Yuki when she "arrives" during a recapture. Built once, hidden
+// until her beat, so she never has to run the maze herself.
+var mitsuriMesh = null;
+
+var state = "intro"; // intro | cutscene | playing | caught-pause | won
+var keysCollected = 0;
+var recaptures = 0;
+var elapsed = 0;
+var invulnUntil = 0;
+var alarmUntil = 0;
+var snaredUntil = 0;
+
+var moveState = {fwd:false, back:false, left:false, right:false, sneak:false};
+
+function clearLevel(){
+  if(levelGroup){ scene.remove(levelGroup); }
+  levelGroup = new THREE.Group();
+  scene.add(levelGroup);
+  torches = [];
+  keyMeshes = [];
+  guards = [];
+  companions = [];
+  traps = [];
+  wallMesh = null;
+  gate = null;
+  alarmUntil = 0;
+  snaredUntil = 0;
+}
+
+function buildLevel(){
+  clearLevel();
+  maze = generateMaze(N);
+  offsetX = (maze.w-1) * CELL / 2;
+  offsetZ = (maze.h-1) * CELL / 2;
+
+  // ---- floor ----
+  var floorTexClone = floorTex.clone(); floorTexClone.needsUpdate = true;
+  floorTexClone.repeat.set(maze.w*0.9, maze.h*0.9);
+  var floorMat = new THREE.MeshStandardMaterial({map:floorTexClone, roughness:0.95});
+  var floorGeo = new THREE.PlaneGeometry(maze.w*CELL, maze.h*CELL);
+  var floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI/2;
+  levelGroup.add(floor);
+
+  // ---- walls (instanced) ----
+  var wallCells = [];
+  for(var y=0;y<maze.h;y++){
+    for(var x=0;x<maze.w;x++){
+      if(maze.grid[y][x]) wallCells.push([x,y]);
+    }
+  }
+  var wallH = 3.2;
+  var wallGeo = new THREE.BoxGeometry(CELL, wallH, CELL);
+  var wallMat = new THREE.MeshStandardMaterial({map:stoneTex, roughness:0.92});
+  wallMesh = new THREE.InstancedMesh(wallGeo, wallMat, wallCells.length);
+  var dummy = new THREE.Object3D();
+  var colorTmp = new THREE.Color();
+  for(var i=0;i<wallCells.length;i++){
+    var wp = gridToWorld(wallCells[i][0], wallCells[i][1]);
+    dummy.position.set(wp.x, wallH/2, wp.z);
+    dummy.updateMatrix();
+    wallMesh.setMatrixAt(i, dummy.matrix);
+    if(wallMesh.setColorAt){
+      var shade = 0.85 + Math.random()*0.3;
+      colorTmp.setRGB(shade,shade,shade);
+      wallMesh.setColorAt(i, colorTmp);
+    }
+  }
+  wallMesh.instanceMatrix.needsUpdate = true;
+  levelGroup.add(wallMesh);
+
+  // ---- reachability / start / exit ----
+  var startG = [1,1];
+  var reach = bfs(startG[0], startG[1]);
+  var farthest = startG, farthestD = -1;
+  for(var k in reach.dist){
+    if(reach.dist[k] > farthestD){ farthestD = reach.dist[k]; farthest = k.split(",").map(Number); }
+  }
+  startCell = startG;
+  exitCell = farthest;
+
+  // ---- torches ----
+  var floorCells = reach.order;
+  for(var t=0; t<floorCells.length; t++){
+    if(t % 6 === 2){
+      var fc = floorCells[t];
+      var wp2 = gridToWorld(fc[0], fc[1]);
+      var torchGroup = new THREE.Group();
+      var torchLight = new THREE.PointLight(0xffa552, 1.15, 7.5, 2);
+      torchLight.position.set(wp2.x, 2.05, wp2.z);
+      torchGroup.add(torchLight);
+      var flameMat = new THREE.MeshBasicMaterial({color:0xffb066});
+      var flame = new THREE.Mesh(new THREE.ConeGeometry(0.07,0.22,6), flameMat);
+      flame.position.set(wp2.x, 2.05, wp2.z);
+      torchGroup.add(flame);
+      levelGroup.add(torchGroup);
+      torches.push({light:torchLight, flame:flame, base:1.15, phase:Math.random()*10});
+    }
+  }
+
+  // ---- keys ----
+  var candidates = floorCells.filter(function(c){
+    var d = reach.dist[reach.key(c[0],c[1])];
+    return d > farthestD*0.28 && !(c[0]===startCell[0]&&c[1]===startCell[1]) && !(c[0]===exitCell[0]&&c[1]===exitCell[1]);
+  });
+  shuffle(candidates);
+  var chosenKeys = [];
+  for(var ci=0; ci<candidates.length && chosenKeys.length<3; ci++){
+    var cand = candidates[ci];
+    var okSep = true;
+    for(var kk=0; kk<chosenKeys.length; kk++){
+      var dx = chosenKeys[kk][0]-cand[0], dz = chosenKeys[kk][1]-cand[1];
+      if(Math.abs(dx)+Math.abs(dz) < 4){ okSep = false; break; }
+    }
+    if(okSep) chosenKeys.push(cand);
+  }
+  while(chosenKeys.length<3 && candidates.length>0){ chosenKeys.push(candidates[chosenKeys.length % candidates.length]); }
+  keyMeshes = [];
+  for(var kmi=0; kmi<chosenKeys.length; kmi++){
+    var kc = chosenKeys[kmi];
+    var wp3 = gridToWorld(kc[0], kc[1]);
+    var km = buildKeyMesh();
+    km.position.set(wp3.x, 0.85, wp3.z);
+    km.userData.baseY = 0.85;
+    km.userData.phase = Math.random()*10;
+    levelGroup.add(km);
+    keyMeshes.push(km);
+  }
+  keysCollected = 0;
+
+  // ---- gate at exit ----
+  gate = buildGate();
+  var ewp = gridToWorld(exitCell[0], exitCell[1]);
+  // orient gate to face an open neighbor
+  var neigh = [[1,0,0],[-1,0,Math.PI],[0,1,Math.PI/2],[0,-1,-Math.PI/2]];
+  var gateRot = 0;
+  for(var ni=0; ni<neigh.length; ni++){
+    if(!isWallAt(exitCell[0]+neigh[ni][0], exitCell[1]+neigh[ni][1])){ gateRot = neigh[ni][2]; break; }
+  }
+  gate.position.set(ewp.x, 0, ewp.z);
+  gate.rotation.y = gateRot;
+  levelGroup.add(gate);
+
+  // ---- guards ----
+  var palettes = ["sanemi","obanai"];
+  for(var gI=0; gI<2; gI++){
+    var a = floorCells[Math.floor(Math.random()*floorCells.length)];
+    var attempts = 0, b = a;
+    while(attempts<40){
+      var cand2 = floorCells[Math.floor(Math.random()*floorCells.length)];
+      var dcheck = reach.dist[reach.key(cand2[0],cand2[1])];
+      var dcheckA = 0;
+      var dx2 = cand2[0]-a[0], dz2=cand2[1]-a[1];
+      if(Math.abs(dx2)+Math.abs(dz2) >= 6){ b = cand2; break; }
+      attempts++;
+    }
+    var path = shortestPath(a[0],a[1],b[0],b[1]);
+    if(path.length < 4){ path = floorCells.slice(0, Math.min(8,floorCells.length)); }
+    var wgroup = buildWarden(palettes[gI]);
+    var startWp = gridToWorld(path[0][0], path[0][1]);
+    wgroup.position.set(startWp.x, 0, startWp.z);
+    levelGroup.add(wgroup);
+    guards.push({
+      mesh: wgroup,
+      path: path,
+      pathIdx: 0,
+      forward: true,
+      yaw: 0,
+      speed: 1.55 + Math.random()*0.35,
+      detection: 0,
+      walkPhase: Math.random()*10,
+      wasAlerted: false,
+      lastBarkAt: -99999,
+      barkUntil: 0,
+      chasing: false,
+      lastSeenPos: null,
+      lostTrailAt: 0
+    });
+  }
+
+  // ---- booby traps: hidden tripwires (alert the wardens) & snares (slow you down) ----
+  var trapCandidates = floorCells.filter(function(c){
+    var d = reach.dist[reach.key(c[0],c[1])];
+    var notStart = !(c[0]===startCell[0] && c[1]===startCell[1]);
+    var notExit = !(c[0]===exitCell[0] && c[1]===exitCell[1]);
+    var openNeighbors = (!isWallAt(c[0]-1,c[1])?1:0) + (!isWallAt(c[0]+1,c[1])?1:0) + (!isWallAt(c[0],c[1]-1)?1:0) + (!isWallAt(c[0],c[1]+1)?1:0);
+    return d > 3 && notStart && notExit && openNeighbors <= 2; // corridor cells, not open junctions
+  });
+  shuffle(trapCandidates);
+  var usedTrapCells = [];
+  function trapCellOk(cell){
+    for(var kk2=0; kk2<chosenKeys.length; kk2++){
+      if(Math.abs(chosenKeys[kk2][0]-cell[0])+Math.abs(chosenKeys[kk2][1]-cell[1]) < 2) return false;
+    }
+    if(Math.abs(startCell[0]-cell[0])+Math.abs(startCell[1]-cell[1]) < 3) return false;
+    for(var ui=0; ui<usedTrapCells.length; ui++){
+      if(Math.abs(usedTrapCells[ui][0]-cell[0])+Math.abs(usedTrapCells[ui][1]-cell[1]) < 3) return false;
+    }
+    return true;
+  }
+  var trapPlan = ["alarm","snare","alarm","snare"];
+  var placed = 0;
+  for(var tci=0; tci<trapCandidates.length && placed<trapPlan.length; tci++){
+    var tc = trapCandidates[tci];
+    if(!trapCellOk(tc)) continue;
+    usedTrapCells.push(tc);
+    var twp = gridToWorld(tc[0], tc[1]);
+    var type = trapPlan[placed++];
+    var trapMesh;
+    if(type === "alarm"){
+      trapMesh = buildTripwire();
+      var nsOpen = !isWallAt(tc[0], tc[1]-1) || !isWallAt(tc[0], tc[1]+1);
+      trapMesh.rotation.y = nsOpen ? 0 : Math.PI/2;
+    } else {
+      trapMesh = buildSnarePlate();
+    }
+    trapMesh.position.set(twp.x, 0, twp.z);
+    levelGroup.add(trapMesh);
+    traps.push({type:type, mesh:trapMesh, pos:new THREE.Vector3(twp.x,0,twp.z), armed:true});
+  }
+
+  // ---- player ----
+  player = buildYuki();
+  var swp = gridToWorld(startCell[0], startCell[1]);
+  player.position.set(swp.x, 0, swp.z);
+  playerYaw = 0;
+  player.rotation.y = playerYaw;
+  levelGroup.add(player);
+
+  // ---- companions: Tanjiro, Zenitsu, Genya, trailing behind Yuki's own path ----
+  yukiTrail = [];
+  for(var tfi=0; tfi<TRAIL_MAX; tfi++){ yukiTrail.push({x:swp.x, z:swp.z, yaw:0}); }
+  trailSampleAccum = 0;
+  companions = [];
+  var compOrder = [["tanjiro",14],["zenitsu",26],["genya",38]];
+  for(var coi=0; coi<compOrder.length; coi++){
+    var cKey = compOrder[coi][0];
+    var cmesh = buildCompanion(cKey);
+    cmesh.position.set(swp.x, 0, swp.z);
+    levelGroup.add(cmesh);
+    companions.push({key:cKey, mesh:cmesh, yaw:0, followDelay:compOrder[coi][1], walkPhase:Math.random()*10});
+  }
+  nextAllyChatterAt = performance.now() + 8000 + Math.random()*6000;
+
+  // camera snap behind player
+  updateCamera(true);
+  drawMinimapBase();
+}
+
+/* ==========================================================================
+   COLLISION
+   ========================================================================== */
+function resolveCollision(pos, radius){
+  var g = worldToGrid(pos.x, pos.z);
+  for(var dy=-1; dy<=1; dy++){
+    for(var dx=-1; dx<=1; dx++){
+      var gx = g.gx+dx, gy = g.gy+dy;
+      if(!isWallAt(gx,gy)) continue;
+      var wp = gridToWorld(gx,gy);
+      var minX = wp.x - CELL/2, maxX = wp.x + CELL/2;
+      var minZ = wp.z - CELL/2, maxZ = wp.z + CELL/2;
+      var cx = Math.max(minX, Math.min(pos.x, maxX));
+      var cz = Math.max(minZ, Math.min(pos.z, maxZ));
+      var ddx = pos.x - cx, ddz = pos.z - cz;
+      var distSq = ddx*ddx + ddz*ddz;
+      if(distSq < radius*radius){
+        var dist = Math.sqrt(distSq) || 0.0001;
+        var push = (radius - dist);
+        pos.x += (ddx/dist) * push;
+        pos.z += (ddz/dist) * push;
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   INPUT
+   ========================================================================== */
+var keyMap = {};
+window.addEventListener("keydown", function(e){
+  keyMap[e.code] = true;
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].indexOf(e.code)>=0) e.preventDefault();
+  if(state === "cutscene") endCutscene();
+  syncMoveState();
+});
+window.addEventListener("keyup", function(e){
+  keyMap[e.code] = false;
+  syncMoveState();
+});
+function syncMoveState(){
+  moveState.fwd = !!(keyMap["KeyW"] || keyMap["ArrowUp"]) || moveState.touchFwd;
+  moveState.back = !!(keyMap["KeyS"] || keyMap["ArrowDown"]) || moveState.touchBack;
+  moveState.left = !!(keyMap["KeyA"] || keyMap["ArrowLeft"]) || moveState.touchLeft;
+  moveState.right = !!(keyMap["KeyD"] || keyMap["ArrowRight"]) || moveState.touchRight;
+  moveState.sneak = !!(keyMap["ShiftLeft"] || keyMap["ShiftRight"]) || moveState.touchSneak;
+}
+
+/* touch controls */
+var isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints>0;
+if(isTouch){
+  $("touch-controls").classList.add("active");
+  function bindTouch(id, flag){
+    var el = $(id);
+    var set = function(v){ moveState[flag]=v; syncMoveState(); el.classList.toggle("pressed", v); };
+    el.addEventListener("touchstart", function(ev){ ev.preventDefault(); set(true); }, {passive:false});
+    el.addEventListener("touchend", function(ev){ ev.preventDefault(); set(false); }, {passive:false});
+    el.addEventListener("touchcancel", function(){ set(false); });
+  }
+  bindTouch("btn-fwd","touchFwd");
+  bindTouch("btn-back","touchBack");
+  bindTouch("btn-left","touchLeft");
+  bindTouch("btn-right","touchRight");
+  bindTouch("btn-sneak","touchSneak");
+}
+
+/* ==========================================================================
+   CAMERA
+   ========================================================================== */
+var camPos = new THREE.Vector3(0,6,10);
+var camLook = new THREE.Vector3();
+function updateCamera(snap){
+  if(!player) return;
+  var forward = new THREE.Vector3(Math.sin(playerYaw),0,Math.cos(playerYaw));
+  var desired, lookTarget;
+
+  if(state === "caught-pause"){
+    // cinematic close side-on shot so the tied-up pose & warden dialogue are visible;
+    // kept tight (corridors are only 4 units wide) and wall-clamped so it can't clip through a wall
+    var side = new THREE.Vector3(forward.z, 0, -forward.x);
+    desired = player.position.clone()
+      .add(new THREE.Vector3(0,1.85,0))
+      .add(side.multiplyScalar(1.3))
+      .sub(forward.clone().multiplyScalar(0.85));
+    if(maze) resolveCollision(desired, 0.5);
+    lookTarget = player.position.clone().add(new THREE.Vector3(0,1.05,0));
+    camPos.lerp(desired, snap ? 1 : 0.18);
+    camLook.lerp(lookTarget, snap ? 1 : 0.22);
+  } else {
+    desired = player.position.clone()
+      .add(new THREE.Vector3(0,4.6,0))
+      .sub(forward.clone().multiplyScalar(6.4));
+    if(maze) resolveCollision(desired, 0.45);
+    lookTarget = player.position.clone().add(new THREE.Vector3(0,1.3,0)).add(forward.clone().multiplyScalar(2.2));
+    if(snap){
+      camPos.copy(desired);
+      camLook.copy(lookTarget);
+    } else {
+      camPos.lerp(desired, 0.085);
+      camLook.lerp(lookTarget, 0.14);
+    }
+  }
+  camera.position.copy(camPos);
+  camera.lookAt(camLook);
+}
+
+/* ==========================================================================
+   CUTSCENES
+   A small scripted-shot system: each beat is a fixed camera position/lookAt
+   held for a duration, with a quick blended pan in from the previous shot.
+   ========================================================================== */
+var CUTSCENE_BEATS = null;
+var cutsceneIdx = 0;
+var cutsceneT = 0;
+var cutsceneFromPos = new THREE.Vector3();
+var cutsceneFromLook = new THREE.Vector3();
+var cutsceneOnComplete = null;
+
+function buildIntroCutscene(){
+  var startWp = gridToWorld(startCell[0], startCell[1]);
+  var cz = CELL_BLOCK_Z;
+  function cellWorld(key){ return new THREE.Vector3(CELL_POSITIONS[key], 1.3, cz - 3.5); }
+
+  var beats = [
+    {
+      cam: new THREE.Vector3(0, 3.3, cz + 10),
+      look: new THREE.Vector3(0, 1.4, cz - 2),
+      duration: 2000,
+      caption: "The Holding Cells",
+      sub: "Sanemi & Obanai's Training Prison",
+      voice: null
+    }
+  ];
+
+  var order = ["yuki","tanjiro","zenitsu","genya"];
+  var speakerName = {yuki:"Yuki", tanjiro:"Tanjiro", zenitsu:"Zenitsu", genya:"Genya"};
+  for(var i=0; i<order.length; i++){
+    var key = order[i];
+    var cw = cellWorld(key);
+    beats.push({
+      cam: cw.clone().add(new THREE.Vector3(0,0.35,2.3)),
+      look: cw.clone(),
+      duration: 2500,
+      caption: "“" + CHAR_LINES[key].cell + "”",
+      sub: "— " + speakerName[key],
+      voice: {text: CHAR_LINES[key].cell, cfg: CHAR_VOICE[key]}
+    });
+  }
+
+  beats.push({
+    cam: new THREE.Vector3(-4, 1.55, cz + 4.6 - 2.5),
+    look: new THREE.Vector3(-4, 1.5, cz + 4.6),
+    duration: 2400,
+    caption: "“You think you can escape my training grounds?”",
+    sub: "— Sanemi",
+    voice: {text: WARDEN_LINES.sanemi.intro, cfg: WARDEN_VOICE.sanemi}
+  });
+  beats.push({
+    cam: new THREE.Vector3(4, 1.55, cz + 4.6 - 2.5),
+    look: new THREE.Vector3(4, 1.5, cz + 4.6),
+    duration: 2400,
+    caption: "“...No one has slipped past me. No one will.”",
+    sub: "— Obanai",
+    voice: {text: WARDEN_LINES.obanai.intro, cfg: WARDEN_VOICE.obanai}
+  });
+
+  beats.push({
+    cam: startWp.clone().add(new THREE.Vector3(0,4.6,-6.4)),
+    look: startWp.clone().add(new THREE.Vector3(0,1.3,2.2)),
+    duration: 1700,
+    caption: "Yuki slips her ropes loose. Tanjiro, Zenitsu, and Genya break free behind her.",
+    sub: "Find the keys. Reach the gate. Don't get caught.",
+    voice: null
+  });
+
+  return beats;
+}
+
+function buildWinCutscene(){
+  var forward = new THREE.Vector3(Math.sin(playerYaw),0,Math.cos(playerYaw));
+  var side = new THREE.Vector3(forward.z, 0, -forward.x);
+  var gatePos = gate.position.clone();
+  var safeZonePos = gatePos.clone().add(forward.clone().multiplyScalar(3.0));
+  safeZonePos.y = 0;
+
+  // a glowing safe-zone marker just beyond the gate -- the finish line the chase ends at
+  var safeZone = buildSafeZone();
+  safeZone.position.copy(safeZonePos);
+  levelGroup.add(safeZone);
+
+  // find sanemi/obanai among the current guards so their lines & positions match
+  var sanemiG = null, obanaiG = null;
+  for(var gi=0; gi<guards.length; gi++){
+    if(guards[gi].mesh.userData.paletteKey === "sanemi") sanemiG = guards[gi].mesh;
+    else obanaiG = guards[gi].mesh;
+  }
+
+  // stage the wardens hot on Yuki's heels, just behind the gate
+  var chaseBehind = gatePos.clone().sub(forward.clone().multiplyScalar(3.2));
+  if(sanemiG){ sanemiG.position.copy(chaseBehind.clone().add(side.clone().multiplyScalar(0.9))); sanemiG.rotation.y = playerYaw; }
+  if(obanaiG){ obanaiG.position.copy(chaseBehind.clone().sub(side.clone().multiplyScalar(0.9))); obanaiG.rotation.y = playerYaw; }
+
+  // bring the whole group along to celebrate at the safe zone
+  var compOffsets = [[-0.9,0.4],[0.9,0.4],[0,1.1]];
+  for(var ci=0; ci<companions.length; ci++){
+    var off = compOffsets[ci % compOffsets.length];
+    var cp = safeZonePos.clone().add(side.clone().multiplyScalar(off[0])).add(forward.clone().multiplyScalar(off[1]));
+    companions[ci].mesh.position.copy(cp);
+    companions[ci].mesh.rotation.y = playerYaw;
+  }
+
+  var camA = player.position.clone().add(new THREE.Vector3(0,3.3,0)).sub(forward.clone().multiplyScalar(3.4));
+  var lookA = player.position.clone().add(new THREE.Vector3(0,1.2,0)).add(forward.clone().multiplyScalar(2.0));
+
+  var camB = gatePos.clone().add(new THREE.Vector3(0,2.6,0)).sub(forward.clone().multiplyScalar(4.5));
+  var lookB = gatePos.clone().add(new THREE.Vector3(0,1.2,0));
+
+  var camC = safeZonePos.clone().add(new THREE.Vector3(0,2.4,0)).sub(forward.clone().multiplyScalar(3.6));
+  var lookC = safeZonePos.clone().add(new THREE.Vector3(0,1.1,0));
+
+  var camD = gatePos.clone().add(new THREE.Vector3(0,1.9,0)).add(forward.clone().multiplyScalar(2.6));
+  var lookD = gatePos.clone().add(new THREE.Vector3(0,1.4,0));
+
+  var tanjiroMesh = companions[0] && companions[0].mesh;
+  var zenitsuMesh = companions[1] && companions[1].mesh;
+  var genyaMesh = companions[2] && companions[2].mesh;
+
+  return [
+    {
+      cam: camA, look: lookA, duration: 1900,
+      caption: "Sanemi and Obanai burst around the corner!",
+      sub: "The wardens are closing in.",
+      voice: sanemiG ? {text: randLine(WARDEN_LINES.sanemi.chase), cfg: WARDEN_VOICE.sanemi} : null
+    },
+    {
+      cam: camB, look: lookB, duration: 1500,
+      caption: "“Go, go, GO!”",
+      sub: "— Yuki",
+      voice: {text: "Go, go, GO!", cfg: CHAR_VOICE.yuki}
+    },
+    {
+      cam: camC, look: lookC, duration: 2700,
+      caption: "“" + CHAR_LINES.yuki.win + "”",
+      sub: "— Yuki",
+      voice: {text: CHAR_LINES.yuki.win, cfg: CHAR_VOICE.yuki},
+      extraVoices: [
+        {delay:650,  text: CHAR_LINES.tanjiro.win, cfg: CHAR_VOICE.tanjiro, mesh: tanjiroMesh, color: CHAR_NAME_COLOR.tanjiro},
+        {delay:1350, text: CHAR_LINES.zenitsu.win, cfg: CHAR_VOICE.zenitsu, mesh: zenitsuMesh, color: CHAR_NAME_COLOR.zenitsu},
+        {delay:2050, text: CHAR_LINES.genya.win,   cfg: CHAR_VOICE.genya,   mesh: genyaMesh,   color: CHAR_NAME_COLOR.genya}
+      ]
+    },
+    {
+      cam: camD, look: lookD, duration: 2200,
+      caption: sanemiG ? "“" + randLine(WARDEN_LINES.sanemi.defeat) + "”" : "The wardens are left behind.",
+      sub: sanemiG ? "— Sanemi" : "",
+      voice: sanemiG ? {text: randLine(WARDEN_LINES.sanemi.defeat), cfg: WARDEN_VOICE.sanemi} : null,
+      extraVoices: obanaiG ? [
+        {delay:750, text: randLine(WARDEN_LINES.obanai.defeat), cfg: WARDEN_VOICE.obanai, mesh: obanaiG, color: WARDEN_PALETTES.obanai.nameColor}
+      ] : []
+    }
+  ];
+}
+
+function showCutsceneCaption(text, sub){
+  csText.textContent = text || "";
+  csSub.textContent = sub || "";
+}
+
+function enterCutsceneBeat(idx){
+  var beat = CUTSCENE_BEATS[idx];
+  if(!beat) return;
+  showCutsceneCaption(beat.caption, beat.sub);
+  if(beat.voice) VoiceMod.speak(beat.voice.text, beat.voice.cfg);
+  if(beat.extraVoices){
+    beat.extraVoices.forEach(function(ev){
+      setTimeout(function(){
+        if(!CUTSCENE_BEATS) return; // cutscene already ended (e.g. skipped)
+        VoiceMod.speak(ev.text, ev.cfg);
+        if(ev.mesh && ev.mesh.userData.bark){
+          drawBarkBubble(ev.mesh.userData.bark, ev.text, ev.color || "#ecdfc4");
+          ev.mesh.userData.bark.material.opacity = 1;
+        }
+      }, ev.delay);
+    });
+  }
+}
+
+function runCutscene(beats, onComplete){
+  document.body.classList.add("cutscene");
+  csCaption.classList.add("show");
+  CUTSCENE_BEATS = beats;
+  cutsceneIdx = 0;
+  cutsceneT = 0;
+  cutsceneFromPos.copy(camPos);
+  cutsceneFromLook.copy(camLook);
+  cutsceneOnComplete = onComplete;
+  enterCutsceneBeat(0);
+}
+
+function endCutscene(){
+  document.body.classList.remove("cutscene");
+  csCaption.classList.remove("show");
+  VoiceMod.stop();
+  var cb = cutsceneOnComplete;
+  CUTSCENE_BEATS = null;
+  cutsceneOnComplete = null;
+  if(cb) cb();
+}
+
+function updateCutscene(dtMs){
+  if(!CUTSCENE_BEATS){ return; }
+  var beat = CUTSCENE_BEATS[cutsceneIdx];
+  if(!beat){ endCutscene(); return; }
+  cutsceneT += dtMs;
+  var blend = Math.min(1, cutsceneT/380);
+  var ease = blend*blend*(3-2*blend);
+  camPos.copy(cutsceneFromPos).lerp(beat.cam, ease);
+  camLook.copy(cutsceneFromLook).lerp(beat.look, ease);
+  camera.position.copy(camPos);
+  camera.lookAt(camLook);
+  if(cutsceneT >= beat.duration){
+    cutsceneFromPos.copy(camPos);
+    cutsceneFromLook.copy(camLook);
+    cutsceneIdx++;
+    cutsceneT = 0;
+    if(cutsceneIdx >= CUTSCENE_BEATS.length){ endCutscene(); }
+    else { enterCutsceneBeat(cutsceneIdx); }
+  }
+}
+
+skipCutsceneBtn.addEventListener("click", function(){
+  if(state === "cutscene") endCutscene();
+});
+
+/* ==========================================================================
+   MINIMAP
+   ========================================================================== */
+var mmScale = 4.4;
+function drawMinimapBase(){
+  minimapCanvas.width = maze.w * mmScale;
+  minimapCanvas.height = maze.h * mmScale;
+}
+function drawMinimap(){
+  var w = minimapCanvas.width, h = minimapCanvas.height;
+  minimapCtx.clearRect(0,0,w,h);
+  minimapCtx.fillStyle = "#0a0705";
+  minimapCtx.fillRect(0,0,w,h);
+  for(var y=0;y<maze.h;y++){
+    for(var x=0;x<maze.w;x++){
+      if(!maze.grid[y][x]){
+        minimapCtx.fillStyle = "#3a3226";
+        minimapCtx.fillRect(x*mmScale, y*mmScale, mmScale, mmScale);
+      }
+    }
+  }
+  // exit
+  minimapCtx.fillStyle = "#d7ac52";
+  minimapCtx.fillRect(exitCell[0]*mmScale-1, exitCell[1]*mmScale-1, mmScale+2, mmScale+2);
+
+  // guards
+  for(var gi=0; gi<guards.length; gi++){
+    var gm = guards[gi].mesh;
+    var gg = worldToGrid(gm.position.x, gm.position.z);
+    minimapCtx.fillStyle = guards[gi].detection>0.05 ? "#ff5b3d" : "#8a94c9";
+    minimapCtx.beginPath();
+    minimapCtx.arc(gg.gx*mmScale, gg.gy*mmScale, mmScale*0.55, 0, Math.PI*2);
+    minimapCtx.fill();
+  }
+
+  // player
+  if(player){
+    var pg = worldToGrid(player.position.x, player.position.z);
+    minimapCtx.save();
+    minimapCtx.translate(pg.gx*mmScale, pg.gy*mmScale);
+    minimapCtx.rotate(playerYaw);
+    minimapCtx.fillStyle = "#ef9cb9";
+    minimapCtx.beginPath();
+    minimapCtx.moveTo(0,-mmScale*0.9);
+    minimapCtx.lineTo(mmScale*0.6, mmScale*0.7);
+    minimapCtx.lineTo(-mmScale*0.6, mmScale*0.7);
+    minimapCtx.closePath();
+    minimapCtx.fill();
+    minimapCtx.restore();
+  }
+}
+
+/* ==========================================================================
+   GAMEPLAY UPDATE
+   ========================================================================== */
+var lastBumpHint = 0;
+
+function animateWalk(parts, phase, moving, sneaking){
+  var amp = moving ? (sneaking?0.35:0.55) : 0;
+  var speedMul = sneaking ? 5.5 : 8;
+  var swing = Math.sin(phase*speedMul)*amp;
+  parts.legL.rotation.x = swing;
+  parts.legR.rotation.x = -swing;
+  parts.armL.rotation.x = -swing*0.8;
+  parts.armR.rotation.x = swing*0.8;
+  parts.hip.position.y = (moving ? Math.abs(Math.cos(phase*speedMul))*0.03 : 0) + parts.hip.position.y*0;
+}
+
+var playerWalkPhase = 0;
+var playerBaseHipY = null;
+
+function updatePlayer(dt){
+  var turnSpeed = 2.4;
+  if(moveState.left) playerYaw += turnSpeed*dt;
+  if(moveState.right) playerYaw -= turnSpeed*dt;
+
+  var sneaking = moveState.sneak;
+  var speed = sneaking ? 1.7 : 3.2;
+  if(performance.now() < snaredUntil) speed *= 0.16;
+  var moving = moveState.fwd || moveState.back;
+  var dir = 0;
+  if(moveState.fwd) dir += 1;
+  if(moveState.back) dir -= 1;
+
+  var forward = new THREE.Vector3(Math.sin(playerYaw),0,Math.cos(playerYaw));
+  var newPos = player.position.clone().add(forward.clone().multiplyScalar(dir*speed*dt));
+  resolveCollision(newPos, 0.34);
+  player.position.copy(newPos);
+  player.rotation.y = playerYaw;
+
+  if(moving){ playerWalkPhase += dt; } else { playerWalkPhase += dt*0.0; }
+  var parts = player.userData.parts;
+  if(playerBaseHipY===null) playerBaseHipY = parts.hip.position.y;
+  animateWalk(parts, playerWalkPhase, moving, sneaking);
+  parts.hip.position.y = playerBaseHipY + (moving ? Math.abs(Math.sin(playerWalkPhase*(sneaking?5.5:8)))*0.035 : 0);
+
+  // key pickups
+  for(var i=keyMeshes.length-1; i>=0; i--){
+    var km = keyMeshes[i];
+    var kdx = player.position.x - km.position.x, kdz = player.position.z - km.position.z;
+    if(km.parent && (kdx*kdx + kdz*kdz) < (0.85*0.85)){
+      levelGroup.remove(km);
+      keyMeshes.splice(i,1);
+      keysCollected++;
+      keysVal.textContent = keysCollected + "/3";
+      keysChip.classList.toggle("full", keysCollected>=3);
+      AudioMod.key();
+      showHint(keysCollected>=3
+        ? "All <b>3 keys</b> recovered &mdash; the gate at the marked cell will open."
+        : "Key recovered. <b>"+keysCollected+"/3</b> found.", 2600);
+      VoiceMod.speak(CHAR_LINES.yuki.keyFound, CHAR_VOICE.yuki);
+      drawBarkBubble(player.userData.bark, CHAR_LINES.yuki.keyFound, CHAR_NAME_COLOR.yuki);
+      player.userData.bark.userData.showUntil = performance.now() + 2400;
+    }
+  }
+
+  // booby traps
+  for(var ti=0; ti<traps.length; ti++){
+    var tr = traps[ti];
+    if(tr.armed && player.position.distanceTo(tr.pos) < 0.62){
+      tr.armed = false;
+      triggerTrap(tr);
+    }
+  }
+
+  // gate interaction
+  var gd = player.position.distanceTo(gate.position);
+  if(gd < 3.4){
+    if(keysCollected>=3){
+      if(gate.userData.portcullis.position.y < gate.userData.openY - 0.05){
+        gate.userData.portcullis.position.y = THREE.MathUtils.lerp(gate.userData.portcullis.position.y, gate.userData.openY, 0.06);
+      }
+      if(gd < 1.6 && state==="playing"){
+        triggerWin();
+      }
+    } else if(gd < 2.4 && performance.now()-lastBumpHint > 2200){
+      lastBumpHint = performance.now();
+      showHint("The gate is sealed. <b>"+(3-keysCollected)+" more key"+(3-keysCollected===1?"":"s")+"</b> needed.", 2200);
+    }
+  }
+
+  // record Yuki's path so the companions can trail behind her without their
+  // own pathfinding or collision checks -- her own path already avoided walls
+  trailSampleAccum += dt;
+  if(trailSampleAccum > 0.05){
+    trailSampleAccum = 0;
+    yukiTrail.push({x:player.position.x, z:player.position.z, yaw:playerYaw});
+    if(yukiTrail.length > TRAIL_MAX) yukiTrail.shift();
+  }
+
+  var pBark = player.userData.bark;
+  if(pBark){
+    var pBarkTarget = (performance.now() < (pBark.userData.showUntil||0)) ? 1 : 0;
+    pBark.material.opacity = THREE.MathUtils.lerp(pBark.material.opacity, pBarkTarget, 0.12);
+  }
+}
+
+function updateCompanions(dt){
+  var now = performance.now();
+  for(var i=0;i<companions.length;i++){
+    var C = companions[i];
+    var idx = Math.max(0, yukiTrail.length - 1 - C.followDelay);
+    var sample = yukiTrail[idx];
+    if(!sample) continue;
+    var dx = sample.x - C.mesh.position.x, dz = sample.z - C.mesh.position.z;
+    var d = Math.sqrt(dx*dx + dz*dz);
+    var moving = d > 0.02;
+    if(moving){
+      var pull = Math.min(1, dt*6);
+      C.mesh.position.x += dx*pull;
+      C.mesh.position.z += dz*pull;
+      var desiredYaw = Math.atan2(dx, dz);
+      var yawDiff = Math.atan2(Math.sin(desiredYaw-C.yaw), Math.cos(desiredYaw-C.yaw));
+      C.yaw += yawDiff * Math.min(1, dt*8);
+      C.mesh.rotation.y = C.yaw;
+      C.walkPhase += dt;
+    }
+    animateWalk(C.mesh.userData.parts, C.walkPhase, moving, moveState.sneak);
+
+    var cBark = C.mesh.userData.bark;
+    if(cBark){
+      var cBarkTarget = (now < (cBark.userData.showUntil||0)) ? 1 : 0;
+      cBark.material.opacity = THREE.MathUtils.lerp(cBark.material.opacity, cBarkTarget, 0.12);
+    }
+  }
+}
+
+function updateAllyChatter(now){
+  if(now < nextAllyChatterAt) return;
+  nextAllyChatterAt = now + 14000 + Math.random()*8000;
+  if(state !== "playing") return;
+  var speakers = [{key:"yuki", mesh:player}];
+  for(var i=0;i<companions.length;i++){ speakers.push({key:companions[i].key, mesh:companions[i].mesh}); }
+  var pick = speakers[Math.floor(Math.random()*speakers.length)];
+  var pool = CHAR_LINES[pick.key] && CHAR_LINES[pick.key].ambient;
+  if(!pool || !pool.length) return;
+  var line = pool[Math.floor(Math.random()*pool.length)];
+  VoiceMod.speak(line, CHAR_VOICE[pick.key]);
+  if(pick.mesh && pick.mesh.userData.bark){
+    drawBarkBubble(pick.mesh.userData.bark, line, CHAR_NAME_COLOR[pick.key]);
+    pick.mesh.userData.bark.userData.showUntil = now + 3200;
+  }
+}
+
+function triggerTrap(tr){
+  if(tr.type === "alarm"){
+    AudioMod.alarm();
+    alarmUntil = performance.now() + 6000;
+    for(var gi=0; gi<guards.length; gi++){ guards[gi].detection = Math.min(1, guards[gi].detection + 0.3); }
+    showHint("<b>Tripwire!</b> The wardens heard that &mdash; they're on alert.", 2800);
+    if(tr.mesh.userData.wireMat){
+      tr.mesh.userData.wireMat.color.setHex(0xff4433);
+      tr.mesh.userData.wireMat.opacity = 0.85;
+    }
+    var nearest = null, nd = Infinity;
+    for(var gj=0; gj<guards.length; gj++){
+      var dd = guards[gj].mesh.position.distanceTo(tr.pos);
+      if(dd < nd){ nd = dd; nearest = guards[gj]; }
+    }
+    if(nearest){
+      var pk = nearest.mesh.userData.paletteKey;
+      var aLines = WARDEN_LINES[pk].alarm;
+      var aLine = aLines[Math.floor(Math.random()*aLines.length)];
+      drawBarkBubble(nearest.mesh.userData.bark, aLine, WARDEN_PALETTES[pk].nameColor);
+      nearest.mesh.userData.bark.userData.showUntil = performance.now() + 2800;
+      VoiceMod.speak(aLine, WARDEN_VOICE[pk]);
+    }
+  } else if(tr.type === "snare"){
+    AudioMod.snare();
+    snaredUntil = performance.now() + 1700;
+    showHint("<b>Snared!</b> Your foot's caught &mdash; you'll move slowly for a moment.", 2200);
+    if(tr.mesh.userData.plateMat){
+      tr.mesh.userData.plateMat.color.setHex(0x5a4326);
+      tr.mesh.userData.plateMat.opacity = 0.95;
+    }
+  }
+}
+
+function updateGuards(dt, now){
+  var alarmActive = now < alarmUntil;
+  for(var gi=0; gi<guards.length; gi++){
+    var G = guards[gi];
+    var target = (G.chasing && G.lastSeenPos) ? G.lastSeenPos : gridToWorld(G.path[G.pathIdx][0], G.path[G.pathIdx][1]);
+    var toTarget = new THREE.Vector3(target.x-G.mesh.position.x, 0, target.z-G.mesh.position.z);
+    var dist = toTarget.length();
+    var atTarget = dist < 0.12;
+    if(atTarget && !G.chasing){
+      if(G.forward){
+        G.pathIdx++;
+        if(G.pathIdx >= G.path.length){ G.pathIdx = G.path.length-1; G.forward=false; }
+      } else {
+        G.pathIdx--;
+        if(G.pathIdx <= 0){ G.pathIdx = 0; G.forward=true; }
+      }
+    } else if(!atTarget){
+      toTarget.normalize();
+      var desiredYaw = Math.atan2(toTarget.x, toTarget.z);
+      var yawDiff = Math.atan2(Math.sin(desiredYaw-G.yaw), Math.cos(desiredYaw-G.yaw));
+      G.yaw += yawDiff * Math.min(1, dt*6);
+      var moveMul = (alarmActive ? 1.35 : 1) * (G.chasing ? 1.22 : 1);
+      var stepPos = new THREE.Vector3(
+        G.mesh.position.x + toTarget.x * G.speed * moveMul * dt,
+        0,
+        G.mesh.position.z + toTarget.z * G.speed * moveMul * dt
+      );
+      if(maze) resolveCollision(stepPos, 0.4); // chase targets aren't grid-aligned, so clamp against walls
+      G.mesh.position.x = stepPos.x;
+      G.mesh.position.z = stepPos.z;
+      G.walkPhase += dt * (alarmActive ? 1.35 : 1);
+    }
+    G.mesh.rotation.y = G.yaw;
+    animateWalk(G.mesh.userData.parts, G.walkPhase, !atTarget, false);
+
+    // detection
+    var toPlayer = new THREE.Vector3(player.position.x-G.mesh.position.x, 0, player.position.z-G.mesh.position.z);
+    var pdist = toPlayer.length();
+    var sneaking = moveState.sneak;
+    var range = sneaking ? 4.2 : 9.5;
+    if(alarmActive) range *= 1.3;
+    var visible = false;
+    if(pdist < 1.1){
+      visible = true; // point-blank
+    } else if(pdist < range){
+      var dirN = toPlayer.clone().normalize();
+      var fwd = new THREE.Vector3(Math.sin(G.yaw),0,Math.cos(G.yaw));
+      var angle = fwd.angleTo(dirN);
+      var fov = THREE.MathUtils.degToRad(52/2);
+      if(angle < fov){
+        raycaster.set(new THREE.Vector3(G.mesh.position.x, 1.1, G.mesh.position.z), dirN);
+        raycaster.far = pdist;
+        var hits = wallMesh ? raycaster.intersectObject(wallMesh) : [];
+        if(hits.length===0) visible = true;
+      }
+    }
+
+    if(now < invulnUntil) visible = false;
+
+    if(visible){
+      G.detection = Math.min(1, G.detection + dt/(sneaking?2.4:1.05));
+    } else {
+      G.detection = Math.max(0, G.detection - dt*0.7);
+    }
+
+    // chase: once a warden spots you, they break from patrol and beeline for
+    // your last-known position instead of walking their usual route
+    if(visible){
+      G.chasing = true;
+      G.lastSeenPos = player.position.clone();
+      G.lostTrailAt = 0;
+    } else if(G.chasing){
+      if(!G.lostTrailAt) G.lostTrailAt = now;
+      else if(now - G.lostTrailAt > 2600){
+        G.chasing = false;
+        G.lastSeenPos = null;
+        G.lostTrailAt = 0;
+        var bestIdx = 0, bestD = Infinity;
+        for(var pwi=0; pwi<G.path.length; pwi++){
+          var pw = gridToWorld(G.path[pwi][0], G.path[pwi][1]);
+          var dpw = (pw.x-G.mesh.position.x)*(pw.x-G.mesh.position.x) + (pw.z-G.mesh.position.z)*(pw.z-G.mesh.position.z);
+          if(dpw < bestD){ bestD = dpw; bestIdx = pwi; }
+        }
+        G.pathIdx = bestIdx;
+      }
+    }
+
+    var coneMat = G.mesh.userData.coneMat;
+    var cone = G.mesh.userData.cone;
+    cone.scale.set(range, 1, range);
+    var alertT = G.detection;
+    coneMat.color.setHex(alertT>0.05 ? 0xff5b3d : 0xffe08a);
+    coneMat.opacity = 0.1 + alertT*0.22 + (visible?0.06:0);
+    var mark = G.mesh.userData.mark;
+    mark.material.opacity = THREE.MathUtils.lerp(mark.material.opacity, alertT>0.08?1:0, 0.15);
+
+    // "searching" voice-line barks while actively hunting for the player
+    var pKey2 = G.mesh.userData.paletteKey;
+    var searchLines = WARDEN_LINES[pKey2].search;
+    var justAlerted = alertT > 0.08 && !G.wasAlerted;
+    var sustainedRebark = alertT > 0.08 && alertT < 0.97 && (now - G.lastBarkAt > 4200);
+    if(state==="playing" && (justAlerted || sustainedRebark)){
+      var sLine = searchLines[Math.floor(Math.random()*searchLines.length)];
+      drawBarkBubble(G.mesh.userData.bark, sLine, WARDEN_PALETTES[pKey2].nameColor);
+      G.mesh.userData.bark.userData.showUntil = now + 2400;
+      G.lastBarkAt = now;
+      VoiceMod.speak(sLine, WARDEN_VOICE[pKey2]);
+    }
+    G.wasAlerted = alertT > 0.08;
+    var barkSpr = G.mesh.userData.bark;
+    var barkTarget = (now < (barkSpr.userData.showUntil||0)) ? 1 : 0;
+    barkSpr.material.opacity = THREE.MathUtils.lerp(barkSpr.material.opacity, barkTarget, 0.12);
+  }
+
+  var maxDetect = 0, culprit = null;
+  for(var gj=0; gj<guards.length; gj++){
+    maxDetect = Math.max(maxDetect, guards[gj].detection);
+    if(guards[gj].detection >= 1 && !culprit) culprit = guards[gj];
+  }
+  if(maxDetect > 0.02){
+    detectWrap.classList.add("show");
+    detectFill.style.width = (maxDetect*100).toFixed(0)+"%";
+  } else {
+    detectWrap.classList.remove("show");
+  }
+  if(culprit && state==="playing" && now >= invulnUntil){
+    triggerCaught(culprit);
+  }
+}
+
+function triggerCaught(guard){
+  state = "caught-pause";
+  recaptures++;
+  recapVal.textContent = recaptures;
+  AudioMod.caught();
+  VoiceMod.stop();
+  vignette.classList.add("flash");
+  setTimeout(function(){ vignette.classList.remove("flash"); }, 90);
+
+  var pKey = (guard && guard.mesh.userData.paletteKey === "obanai") ? "obanai" : "sanemi";
+  var pInfo = WARDEN_PALETTES[pKey];
+  var linesSet = WARDEN_LINES[pKey];
+  var catchLine = linesSet.catch[Math.floor(Math.random()*linesSet.catch.length)];
+  var trainingLine = linesSet.training[Math.floor(Math.random()*linesSet.training.length)];
+  var speakerEl = $("caught-speaker");
+  var titleEl = $("caught-title");
+  titleEl.style.color = ""; // clear any leftover Mitsuri-pink from a previous catch
+  speakerEl.style.color = pInfo.nameColor;
+
+  titleEl.textContent = "Caught by " + pInfo.name + "!";
+  $("caught-line").textContent = "“" + catchLine + "”";
+  speakerEl.textContent = "— " + pInfo.name;
+  caughtBanner.classList.add("show");
+  VoiceMod.speak(catchLine, WARDEN_VOICE[pKey]);
+
+  // Yuki AND her fellow escapees get rounded back up together
+  setTiedPose(player, true);
+  for(var cti=0; cti<companions.length; cti++){ setTiedPose(companions[cti].mesh, true); }
+
+  // beat two: the warden drags Yuki off for a taunting round of "training"
+  var swapTimer = setTimeout(function(){
+    titleEl.textContent = "Back to Training.";
+    $("caught-line").textContent = "“" + trainingLine + "”";
+    VoiceMod.speak(trainingLine, WARDEN_VOICE[pKey]);
+  }, 1050);
+
+  // Mitsuri shows up for a beat of her own on every recapture now
+  var mitsuriBeat = true;
+  var mitsuriTimer = null;
+  if(mitsuriBeat){
+    mitsuriTimer = setTimeout(function(){
+      var mLine = MITSURI_LINES[Math.floor(Math.random()*MITSURI_LINES.length)];
+      titleEl.textContent = "Mitsuri Arrives!";
+      titleEl.style.color = CHAR_NAME_COLOR.mitsuri;
+      $("caught-line").textContent = "“" + mLine + "”";
+      speakerEl.style.color = CHAR_NAME_COLOR.mitsuri;
+      speakerEl.textContent = "— Mitsuri";
+      VoiceMod.speak(mLine, MITSURI_VOICE);
+
+      // step her actual 3D model into view right beside Yuki for this beat,
+      // facing back toward her, so the caught-pause camera catches her too
+      var mForward = new THREE.Vector3(Math.sin(playerYaw),0,Math.cos(playerYaw));
+      var mSide = new THREE.Vector3(mForward.z,0,-mForward.x);
+      var mPos = player.position.clone()
+        .add(mForward.clone().multiplyScalar(1.1))
+        .add(mSide.clone().multiplyScalar(-0.9));
+      mitsuriMesh.position.copy(mPos);
+      mitsuriMesh.rotation.y = playerYaw + Math.PI;
+      mitsuriMesh.visible = true;
+      drawBarkBubble(mitsuriMesh.userData.bark, mLine, CHAR_NAME_COLOR.mitsuri);
+      mitsuriMesh.userData.bark.userData.showUntil = performance.now() + 3200;
+      mitsuriMesh.userData.bark.material.opacity = 1;
+    }, 2150);
+  }
+
+  setTimeout(function(){
+    clearTimeout(swapTimer);
+    if(mitsuriTimer) clearTimeout(mitsuriTimer);
+    caughtBanner.classList.remove("show");
+    mitsuriMesh.visible = false;
+    mitsuriMesh.userData.bark.userData.showUntil = 0;
+    mitsuriMesh.userData.bark.material.opacity = 0;
+    setTiedPose(player, false);
+    var swp = gridToWorld(startCell[0], startCell[1]);
+    player.position.set(swp.x,0,swp.z);
+    playerYaw = 0;
+    for(var ri=0; ri<companions.length; ri++){
+      setTiedPose(companions[ri].mesh, false);
+      companions[ri].mesh.position.set(swp.x,0,swp.z);
+      companions[ri].yaw = 0;
+    }
+    yukiTrail = [];
+    for(var tfi2=0; tfi2<TRAIL_MAX; tfi2++){ yukiTrail.push({x:swp.x, z:swp.z, yaw:0}); }
+    for(var i=0;i<guards.length;i++){
+      guards[i].detection = 0;
+      guards[i].wasAlerted = false;
+      guards[i].barkUntil = 0;
+      guards[i].chasing = false;
+      guards[i].lastSeenPos = null;
+      guards[i].lostTrailAt = 0;
+      guards[i].mesh.userData.bark.userData.showUntil = 0;
+      guards[i].mesh.userData.bark.material.opacity = 0;
+    }
+    invulnUntil = performance.now() + 1300;
+    updateCamera(true);
+    state = "playing";
+  }, mitsuriBeat ? 3900 : 2700);
+}
+
+function triggerWin(){
+  state = "cutscene";
+  AudioMod.win();
+  hideHint();
+  runCutscene(buildWinCutscene(), function(){
+    state = "won";
+    $("win-time").textContent = formatTime(elapsed);
+    $("win-recap").textContent = recaptures;
+    var best = null;
+    try{
+      var raw = localStorage.getItem("yuki_best_time");
+      if(raw !== null) best = parseFloat(raw);
+      if(best===null || elapsed < best){
+        localStorage.setItem("yuki_best_time", String(elapsed));
+        $("best-line").textContent = best===null ? "First clear logged as your best time." : "New best time!";
+      } else {
+        $("best-line").textContent = "Best time: " + formatTime(best);
+      }
+    }catch(e){ $("best-line").textContent = ""; }
+    winScreen.classList.remove("hidden");
+  });
+}
+
+function formatTime(t){
+  var m = Math.floor(t/60);
+  var s = t - m*60;
+  return (m<10?"0":"")+m+":"+(s<10?"0":"")+s.toFixed(1);
+}
+
+/* ==========================================================================
+   MAIN LOOP
+   ========================================================================== */
+var torchFlickerT = 0;
+var clock = new THREE.Clock();
+var minimapCounter = 0;
+
+function tick(){
+  requestAnimationFrame(tick);
+  var dt = Math.min(clock.getDelta(), 0.05);
+  var now = performance.now();
+
+  if(state==="playing"){
+    elapsed += dt;
+    timerVal.textContent = formatTime(elapsed);
+    updatePlayer(dt);
+    updateGuards(dt, now);
+    updateCompanions(dt);
+    updateAllyChatter(now);
+  } else if(state==="caught-pause"){
+    updateGuards(0, now);
+  } else if(state==="cutscene"){
+    updateCutscene(dt*1000);
+  }
+
+  if(!REDUCED_MOTION){
+    torchFlickerT += dt;
+    for(var i=0;i<torches.length;i++){
+      var tr = torches[i];
+      var flick = Math.sin(torchFlickerT*9 + tr.phase) * 0.18 + Math.sin(torchFlickerT*23+tr.phase)*0.08;
+      tr.light.intensity = tr.base + flick;
+    }
+  }
+
+  if(player && state!=="cutscene"){
+    updateCamera(false);
+  }
+
+  minimapCounter++;
+  if(minimapCounter % 2 === 0 && player){ drawMinimap(); }
+
+  renderer.render(scene, camera);
+}
+
+/* ==========================================================================
+   BOOT
+   ========================================================================== */
+buildLevel();
+buildCellBlockScene();
+mitsuriMesh = buildCompanion("mitsuri");
+mitsuriMesh.visible = false;
+scene.add(mitsuriMesh);
+tick();
+
+$("begin-btn").addEventListener("click", function(){
+  AudioMod.unlock();
+  VoiceMod.unlock();
+  startScreen.classList.add("hidden");
+  state = "cutscene";
+  runCutscene(buildIntroCutscene(), function(){
+    state = "playing";
+    elapsed = 0;
+    invulnUntil = performance.now()+600;
+    showHint("Find the <b>3 keys</b> hidden in the prison, then reach the gate.", 4200);
+  });
+});
+
+$("again-btn").addEventListener("click", function(){
+  winScreen.classList.add("hidden");
+  recaptures = 0; recapVal.textContent = "0";
+  keysCollected = 0; keysVal.textContent = "0/3"; keysChip.classList.remove("full");
+  buildLevel();
+  elapsed = 0;
+  state = "playing";
+  invulnUntil = performance.now()+600;
+  showHint("A new wing of the prison. Find the <b>3 keys</b> and reach the gate.", 4200);
+});
+
+$("close-btn").addEventListener("click", function(){
+  winScreen.classList.add("hidden");
+});
+
+})();
+</script>

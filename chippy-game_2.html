@@ -1,0 +1,1087 @@
+<title>99 Nights at Aunt Chippy's</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rye&family=Oswald:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Deliberate single dark world: it is always 2 AM at the edge of the woods. Background and
+   every color are declared explicitly on :root so the page holds regardless of host theme. */
+:root{
+  --crust:#1c1210;
+  --crust-deep:#120b09;
+  --oven:#2b1c15;
+  --oven-line:#3d2a1e;
+  --dough:#f2e2c4;
+  --dough-dim:#c9b696;
+  --sugar:#d99a3f;
+  --sugar-bright:#f0b658;
+  --jam:#a3273a;
+  --jam-bright:#e0435a;
+  --mint:#7fae8e;
+  --mint-bright:#9fd0af;
+  --tape:#e0435a;
+  --shadow:rgba(0,0,0,.55);
+  --glass:rgba(18,11,9,.86);
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--crust-deep);
+  color:var(--dough);
+  font-family:'Oswald',system-ui,sans-serif;
+  overflow:hidden;
+}
+h1,h2,h3{text-wrap:balance;margin:0;}
+button{font-family:inherit;}
+::selection{background:var(--jam);color:var(--dough);}
+
+.mono{font-family:'Space Mono','Courier New',monospace;}
+.hidden{display:none !important;}
+
+#app{
+  position:fixed;inset:0;
+  display:flex;
+  align-items:center;justify-content:center;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(95,148,120,.13), transparent 60%),
+    var(--crust-deep);
+}
+
+.scene{
+  position:absolute;inset:0;
+  display:none;
+  align-items:center;justify-content:center;
+}
+.scene.active{display:flex;}
+
+/* ---------- grain / vignette overlay used everywhere ---------- */
+.grain{
+  pointer-events:none;position:absolute;inset:0;z-index:5;
+  background-image:radial-gradient(rgba(0,0,0,0) 1px, rgba(0,0,0,.09) 1px);
+  background-size:3px 3px;
+  mix-blend-mode:overlay;
+  opacity:.5;
+}
+.vignette{
+  pointer-events:none;position:absolute;inset:0;z-index:6;
+  box-shadow:inset 0 0 18vw 4vw rgba(0,0,0,.75);
+}
+
+/* =====================================================================
+   TITLE SCENE — weathered trailhead signboard nailed up at the edge of the woods
+   ===================================================================== */
+#scene-title{
+  flex-direction:column;
+  gap:0;
+  padding:4vh 4vw;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.65)),
+    repeating-linear-gradient(90deg, var(--crust) 0 38px, var(--crust-deep) 38px 40px);
+}
+
+.signboard{
+  position:relative;
+  width:min(760px,92vw);
+  background:
+    linear-gradient(160deg, var(--oven) 0%, var(--crust) 70%);
+  border:10px solid var(--crust-deep);
+  outline:3px solid var(--oven-line);
+  outline-offset:-16px;
+  padding:5.5vh 5vw 4vh;
+  box-shadow:0 30px 60px var(--shadow), inset 0 0 60px rgba(0,0,0,.5);
+  transform:rotate(-.6deg);
+}
+.signboard::before{
+  content:"";
+  position:absolute; left:-2px;right:-2px;top:-2px;bottom:-2px;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(0,0,0,.12) 0 2px, transparent 2px 14px);
+  opacity:.5; pointer-events:none;
+}
+.hook{
+  position:absolute;top:-22px;
+  width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #6a6a6a, #201d1c 70%);
+  box-shadow:0 3px 4px rgba(0,0,0,.6);
+}
+.hook.left{left:14%;} .hook.right{right:16%;}
+
+.eyebrow-row{
+  display:flex;align-items:center;justify-content:center;gap:.8em;
+  margin-bottom:1.2vh;
+}
+.eyebrow-row .rule{height:2px;flex:1;max-width:64px;background:var(--sugar);opacity:.55;}
+.eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:clamp(.6rem,1.4vw,.75rem);
+  letter-spacing:.32em;
+  color:var(--sugar-bright);
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.game-title{
+  font-family:'Rye',serif;
+  text-align:center;
+  line-height:1.05;
+  color:var(--dough);
+  text-shadow:0 3px 0 rgba(0,0,0,.5), 0 0 26px rgba(217,154,63,.25);
+}
+.game-title .num{
+  display:block;
+  font-size:clamp(2.6rem,9vw,4.6rem);
+  color:var(--sugar-bright);
+  letter-spacing:.02em;
+}
+.game-title .rest{
+  display:block;
+  font-size:clamp(1.6rem,5.4vw,2.7rem);
+  margin-top:.15em;
+}
+.game-title .rest span{color:var(--jam-bright);}
+
+.flicker{animation:signFlicker 5.2s infinite;}
+@keyframes signFlicker{
+  0%,3%,6%,100%{opacity:1;}
+  4%{opacity:.35;}
+  5%{opacity:.85;}
+  62%{opacity:1;}
+  63%{opacity:.4;}
+  64%{opacity:1;}
+}
+
+.tagline{
+  text-align:center;
+  margin-top:1.6vh;
+  color:var(--dough-dim);
+  font-size:clamp(.82rem,1.6vw,.98rem);
+  font-style:italic;
+}
+
+.menu-panel{
+  margin-top:3.2vh;
+  display:flex;flex-direction:column;align-items:center;gap:1.5vh;
+}
+
+.best-night{
+  font-family:'Space Mono',monospace;
+  font-size:.82rem;
+  color:var(--dough-dim);
+  letter-spacing:.04em;
+}
+.best-night b{color:var(--mint-bright);font-weight:700;}
+
+.night-select-label{
+  display:flex;align-items:center;gap:.8em;
+  font-size:.85rem;color:var(--dough-dim);
+  font-family:'Space Mono',monospace;
+}
+.night-select-label input[type="range"]{
+  accent-color:var(--jam-bright);
+  width:min(220px,42vw);
+}
+#nightSelectVal{color:var(--sugar-bright);font-weight:700;min-width:1.6em;text-align:center;}
+
+.btn{
+  font-family:'Oswald',sans-serif;
+  font-weight:700;
+  font-size:1rem;
+  letter-spacing:.03em;
+  padding:.85em 2.1em;
+  border-radius:3px;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn:focus-visible{outline:3px solid var(--sugar-bright);outline-offset:2px;}
+.btn-primary{
+  background:linear-gradient(180deg, var(--jam-bright), var(--jam));
+  color:var(--dough);
+  box-shadow:0 4px 0 #6c1522, 0 10px 18px rgba(0,0,0,.4);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 0 #6c1522,0 14px 22px rgba(0,0,0,.45);}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #6c1522;}
+.btn-ghost{
+  background:transparent;
+  color:var(--dough-dim);
+  border-color:var(--oven-line);
+  font-size:.82rem;
+  padding:.6em 1.4em;
+}
+.btn-ghost:hover{color:var(--sugar-bright);border-color:var(--sugar);}
+
+.how-panel{
+  margin-top:2.4vh;
+  max-width:52ch;
+  background:var(--crust-deep);
+  border:1px dashed var(--oven-line);
+  padding:1.6em 1.8em;
+  font-size:.86rem;
+  line-height:1.65;
+  color:var(--dough-dim);
+}
+.how-panel strong{color:var(--sugar-bright);}
+.how-panel .jam-word{color:var(--jam-bright);}
+.how-panel ul{margin:.6em 0 0;padding-left:1.2em;}
+.how-panel li{margin-bottom:.4em;}
+.how-panel .close-row{text-align:right;margin-top:1em;}
+
+/* =====================================================================
+   GAME SCENE
+   ===================================================================== */
+#scene-game{flex-direction:column;}
+#gameRoot{
+  position:relative;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  background:var(--crust-deep);
+}
+
+#hud{
+  z-index:4;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.4vh 3vw;
+  background:linear-gradient(180deg, rgba(0,0,0,.55), transparent);
+}
+.hud-left,.hud-right{display:flex;align-items:center;gap:1.2em;}
+.night-label{
+  font-family:'Rye',serif;color:var(--sugar-bright);
+  font-size:clamp(1rem,2.2vw,1.3rem);
+  text-shadow:0 2px 0 rgba(0,0,0,.5);
+}
+.clock{
+  font-family:'Space Mono',monospace;
+  font-size:clamp(1rem,2.4vw,1.4rem);
+  color:var(--dough);
+  letter-spacing:.05em;
+  min-width:4.2em;
+}
+.power-box{display:flex;align-items:center;gap:.6em;}
+.power-icon{font-size:1.1rem;}
+.power-bar-track{
+  width:min(30vw,160px);height:12px;
+  background:var(--oven);
+  border:1px solid var(--oven-line);
+  border-radius:2px;overflow:hidden;
+}
+.power-bar-fill{
+  height:100%;width:100%;
+  background:linear-gradient(90deg,var(--mint),var(--mint-bright));
+  transition:width .4s linear, background .4s linear;
+}
+.power-bar-fill.mid{background:linear-gradient(90deg,var(--sugar),var(--sugar-bright));}
+.power-bar-fill.low{background:linear-gradient(90deg,var(--jam),var(--jam-bright));}
+.power-pct{font-family:'Space Mono',monospace;font-size:.85rem;color:var(--dough-dim);min-width:3.4em;}
+.usage-icon{font-family:'Space Mono',monospace;letter-spacing:2px;color:var(--sugar-bright);font-size:.9rem;}
+
+#officeView{
+  flex:1;position:relative;
+  display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:stretch;
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(217,154,63,.08), transparent 60%),
+    linear-gradient(180deg, var(--oven) 0%, var(--crust) 100%);
+}
+.door-side{
+  position:relative;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-end;padding:2vh 3vw 3vh;gap:1.2vh;
+}
+.doorway{
+  position:relative;
+  width:min(22vw,180px);height:52vh;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.5) 0 2px, transparent 2px 26px),
+    var(--crust-deep);
+  border:3px solid var(--oven-line);
+  overflow:hidden;
+}
+.hall-static{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px);
+  opacity:.4;
+}
+.peek{
+  position:absolute;left:50%;top:38%;
+  transform:translate(-50%,-50%) scale(.7);
+  font-size:2.6rem;
+  opacity:0;
+  filter:drop-shadow(0 0 12px rgba(0,0,0,.7));
+  transition:opacity .08s;
+}
+.peek.show{opacity:1;}
+.door{
+  position:absolute;top:0;left:0;right:0;height:100%;
+  background:
+    repeating-linear-gradient(135deg, var(--tape) 0 18px, var(--crust-deep) 18px 36px);
+  transform:translateY(-100%);
+  transition:transform .35s cubic-bezier(.2,.8,.3,1);
+  border-bottom:6px solid var(--crust-deep);
+}
+.door.closed{transform:translateY(0%);}
+.door-controls{display:flex;gap:.6em;align-items:center;}
+.ctrl-btn{
+  width:56px;height:44px;
+  background:var(--crust);
+  border:2px solid var(--oven-line);
+  color:var(--dough-dim);
+  font-size:1.1rem;
+  cursor:pointer;
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s, color .12s, border-color .12s;
+}
+.ctrl-btn:hover{border-color:var(--sugar);}
+.ctrl-btn:focus-visible{outline:3px solid var(--sugar-bright);}
+.ctrl-btn.active{background:var(--jam);border-color:var(--jam-bright);color:var(--dough);}
+.ctrl-label{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.1em;color:var(--dough-dim);text-transform:uppercase;}
+.ctrl-col{display:flex;flex-direction:column;align-items:center;gap:.3em;}
+
+.office-center{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:3vh;gap:1vh;
+  border-left:1px solid var(--oven-line);
+  border-right:1px solid var(--oven-line);
+}
+.vent-indicator{
+  font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.2em;
+  color:var(--dough-dim);opacity:.7;
+}
+
+.desk-counter{
+  height:6vh;width:100%;
+  background:linear-gradient(180deg, var(--oven-line), var(--crust-deep));
+  border-top:4px solid var(--sugar);
+  display:flex;align-items:center;justify-content:center;
+}
+
+#camToggle{
+  position:absolute;left:50%;bottom:1.6vh;transform:translateX(-50%);
+  z-index:7;
+  font-family:'Oswald',sans-serif;font-weight:800;
+  padding:.9em 2.2em;
+  background:var(--sugar);
+  color:var(--crust-deep);
+  border:none;border-radius:3px;
+  cursor:pointer;
+  box-shadow:0 5px 0 #8a611f, 0 10px 20px rgba(0,0,0,.5);
+  letter-spacing:.05em;
+}
+#camToggle:hover{background:var(--sugar-bright);}
+#camToggle:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 #8a611f;}
+#camToggle:focus-visible{outline:3px solid var(--dough);}
+
+/* ---------- camera panel (CRT security monitor) ---------- */
+#camPanel{
+  position:absolute;inset:0;z-index:8;
+  background:radial-gradient(ellipse at center, #0d1410 0%, #060907 85%);
+  display:flex;flex-direction:column;
+  padding:2.4vh 2.4vw;
+}
+#camPanel.hidden{display:none;}
+.cam-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:1.4vh;
+  font-family:'Space Mono',monospace;color:var(--mint-bright);
+  font-size:.8rem;letter-spacing:.12em;
+}
+.cam-header .rec{color:var(--jam-bright);}
+.rec-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--jam-bright);margin-right:.4em;
+  animation:blink 1s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:.2;}}
+.cam-grid{
+  flex:1;display:grid;
+  grid-template-columns:repeat(4,1fr);
+  grid-template-rows:repeat(2,1fr);
+  gap:8px;
+}
+.cam-cell{
+  position:relative;
+  background:#0a0f0b;
+  border:2px solid #1e2a20;
+  cursor:pointer;
+  display:flex;align-items:flex-end;justify-content:flex-start;
+  overflow:hidden;
+  color:#7fae8e;
+  transition:border-color .12s;
+}
+.cam-cell.selected{border-color:var(--mint-bright);}
+.cam-cell::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg, rgba(127,174,142,.06) 0 1px, transparent 1px 3px);
+}
+.cam-cell .cam-tag{
+  position:relative;z-index:1;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.08em;
+  padding:.35em .5em;background:rgba(0,0,0,.4);
+}
+.cam-occupant{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);
+  font-size:2.2rem;z-index:1;filter:drop-shadow(0 0 10px rgba(0,0,0,.8));
+}
+.cam-empty-icon{opacity:.15;font-size:1.4rem;}
+#camPanel .grain{mix-blend-mode:normal;opacity:.12;background-size:2px 2px;}
+.cam-close{
+  margin-top:1.2vh;align-self:center;
+}
+
+/* ---------- vent flash button ---------- */
+#ventBtn{
+  font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.08em;
+  padding:.6em 1em;background:var(--crust);border:2px solid var(--oven-line);
+  color:var(--dough-dim);cursor:pointer;border-radius:3px;
+}
+#ventBtn:hover{border-color:var(--sugar);}
+#ventBtn.danger{border-color:var(--jam-bright);color:var(--jam-bright);animation:pulseDanger .5s infinite alternate;}
+@keyframes pulseDanger{from{box-shadow:0 0 0 rgba(224,67,90,0);}to{box-shadow:0 0 14px rgba(224,67,90,.7);}}
+
+/* ---------- blackout ---------- */
+.blackout-overlay{
+  position:absolute;inset:0;z-index:9;background:#000;opacity:0;pointer-events:none;
+  transition:opacity .15s;
+}
+.blackout-overlay.on{opacity:1;animation:blackoutFlicker 1.4s infinite;}
+@keyframes blackoutFlicker{0%,100%{opacity:1;}45%{opacity:.85;}50%{opacity:1;}70%{opacity:.9;}}
+
+/* =====================================================================
+   JUMPSCARE
+   ===================================================================== */
+#scene-jumpscare{
+  background:#000;flex-direction:column;
+}
+#jumpscareFace{
+  font-size:min(46vh,46vw);
+  animation:jumpBurst .28s ease-out;
+  filter:drop-shadow(0 0 40px rgba(163,39,58,.8));
+}
+@keyframes jumpBurst{
+  0%{transform:scale(.2);opacity:0;}
+  40%{transform:scale(1.3);opacity:1;}
+  60%{transform:scale(.95);}
+  100%{transform:scale(1.05);}
+}
+.shake{animation:shakeIt .4s;}
+@keyframes shakeIt{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-12px,6px);}
+  40%{transform:translate(10px,-8px);}
+  60%{transform:translate(-8px,-4px);}
+  80%{transform:translate(8px,6px);}
+}
+.gameover-box{
+  position:absolute;bottom:8vh;left:50%;transform:translateX(-50%);
+  text-align:center;
+  background:rgba(0,0,0,.7);
+  padding:2.4em 3em;
+  border-top:3px solid var(--jam-bright);
+}
+.gameover-box h2{
+  font-family:'Rye',serif;color:var(--jam-bright);
+  font-size:clamp(1.6rem,4vw,2.4rem);
+  letter-spacing:.06em;
+}
+.gameover-box p{color:var(--dough-dim);margin:.8em 0 1.4em;font-size:.92rem;}
+.gameover-box .row{display:flex;gap:1em;justify-content:center;}
+
+/* =====================================================================
+   NIGHT RESULT / WIN
+   ===================================================================== */
+#scene-nightresult, #scene-win{
+  flex-direction:column;text-align:center;gap:1em;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(217,154,63,.12), transparent 60%),
+    var(--crust-deep);
+}
+#resultTitle{
+  font-family:'Rye',serif;color:var(--sugar-bright);
+  font-size:clamp(2rem,6vw,3.2rem);
+}
+#resultSub{color:var(--dough-dim);font-size:1rem;margin-bottom:1em;}
+#scene-win h1{
+  font-family:'Rye',serif;color:var(--mint-bright);
+  font-size:clamp(2.2rem,7vw,3.6rem);
+  text-shadow:0 0 30px rgba(127,174,142,.4);
+}
+#scene-win p{color:var(--dough-dim);margin:1em 0 1.8em;max-width:44ch;}
+
+/* ---------- mute ---------- */
+#muteBtn{
+  position:absolute;top:1.4vh;right:1.6vw;z-index:20;
+  background:transparent;border:1px solid var(--oven-line);color:var(--dough-dim);
+  width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1rem;
+}
+#muteBtn:hover{border-color:var(--sugar);color:var(--sugar-bright);}
+
+@media (max-width:640px){
+  .doorway{width:26vw;height:44vh;}
+  .cam-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(4,1fr);}
+  .ctrl-btn{width:44px;height:38px;font-size:.9rem;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .flicker,.blackout-overlay.on,#ventBtn.danger,.shake,#jumpscareFace{animation:none !important;}
+}
+</style>
+
+<div id="app">
+
+  <!-- ============================= TITLE ============================= -->
+  <div id="scene-title" class="scene active">
+    <div class="signboard">
+      <div class="hook left"></div><div class="hook right"></div>
+      <div class="eyebrow-row"><span class="rule"></span><span class="eyebrow">Hollow Pine Camp · Overnight Watch</span><span class="rule"></span></div>
+      <h1 class="game-title flicker">
+        <span class="num">99 NIGHTS</span>
+        <span class="rest">at Aunt <span>Chippy's</span></span>
+      </h1>
+      <p class="tagline">Three kids went into these woods. Only their names came back.</p>
+
+      <div class="menu-panel">
+        <div class="best-night">Furthest survived: <b id="bestNightLabel">no nights yet</b></div>
+        <label class="night-select-label">Start at Night
+          <input type="range" id="nightSelect" min="1" max="1" value="1">
+          <span id="nightSelectVal">1</span>
+        </label>
+        <button id="btnPlay" class="btn btn-primary">CLOCK IN</button>
+        <button id="btnHow" class="btn btn-ghost">HOW TO SURVIVE</button>
+      </div>
+
+      <div id="howPanel" class="how-panel hidden">
+        <p><strong>The watch runs midnight to 6&nbsp;AM.</strong> Three campers went missing from this site last spring — Wesley, Birdie, and Otto. The search parties never found them. Something in these woods still wears their shapes to get close to the cabin.</p>
+        <ul>
+          <li><strong>Trail cams</strong> — cycle through the campground to see what's moving. Watching a trail slows down whatever's on it, but you're blind to your own door while the monitor's up.</li>
+          <li><strong>Cabin door / storm shutter</strong> — seal a trail off. Costs power the whole time it's shut, and a shut door doesn't open itself.</li>
+          <li><strong>Flashlight</strong> — check what's really standing outside before you open back up. <span class="jam-word">Shining it on whatever's already at an open door is the last thing you'll see.</span></li>
+          <li><strong>Cellar hatch light</strong> — the only thing that sends whatever's down there back underground. Timing matters.</li>
+          <li><strong>Power</strong> — hits zero and both the door and the shutter swing open on their own.</li>
+        </ul>
+        <p>Ninety-nine nights. Nobody's stayed that long and still remembered their own name.</p>
+        <div class="close-row"><button id="btnHowClose" class="btn btn-ghost">Got it</button></div>
+      </div>
+    </div>
+    <div class="grain"></div><div class="vignette"></div>
+  </div>
+
+  <!-- ============================= GAME ============================= -->
+  <div id="scene-game" class="scene">
+    <div id="gameRoot">
+      <button id="muteBtn" title="Mute">🔊</button>
+      <div id="hud">
+        <div class="hud-left">
+          <div class="night-label">NIGHT <span id="nightLabel">1</span></div>
+          <div class="clock mono"><span id="clockTime">12 AM</span></div>
+        </div>
+        <div class="hud-right">
+          <div class="power-box">
+            <span class="power-icon">⚡</span>
+            <div class="power-bar-track"><div id="powerBar" class="power-bar-fill"></div></div>
+            <span class="power-pct mono" id="powerPct">100%</span>
+          </div>
+          <span class="usage-icon" id="usageIcon">▮▯▯▯</span>
+        </div>
+      </div>
+
+      <div id="officeView">
+        <div class="door-side left">
+          <div class="doorway" id="doorwayL">
+            <div class="hall-static"></div>
+            <div class="peek" id="peekL"></div>
+            <div class="door" id="doorL"></div>
+          </div>
+          <div class="door-controls">
+            <div class="ctrl-col"><button class="ctrl-btn" id="lightBtnL">💡</button><span class="ctrl-label">Light</span></div>
+            <div class="ctrl-col"><button class="ctrl-btn" id="doorBtnL">▌▌</button><span class="ctrl-label">Door</span></div>
+          </div>
+        </div>
+
+        <div class="office-center">
+          <div class="vent-indicator mono">ROOT CELLAR HATCH</div>
+          <button id="ventBtn">🔦 CELLAR LIGHT</button>
+          <div class="desk-counter"></div>
+        </div>
+
+        <div class="door-side right">
+          <div class="doorway" id="doorwayR">
+            <div class="hall-static"></div>
+            <div class="peek" id="peekR"></div>
+            <div class="door" id="doorR"></div>
+          </div>
+          <div class="door-controls">
+            <div class="ctrl-col"><button class="ctrl-btn" id="doorBtnR">▌▌</button><span class="ctrl-label">Shutter</span></div>
+            <div class="ctrl-col"><button class="ctrl-btn" id="lightBtnR">💡</button><span class="ctrl-label">Light</span></div>
+          </div>
+        </div>
+
+        <div class="blackout-overlay" id="blackoutOverlay"></div>
+      </div>
+
+      <button id="camToggle">📷 TRAIL CAMS</button>
+
+      <div id="camPanel" class="hidden">
+        <div class="cam-header"><span><span class="rec-dot"></span>REC — HOLLOW PINE TRAIL CAMS</span><span id="camClock" class="rec">00:00</span></div>
+        <div class="cam-grid" id="camGrid"></div>
+        <button class="btn btn-ghost cam-close" id="camClose">CLOSE MONITOR</button>
+        <div class="grain"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= JUMPSCARE ============================= -->
+  <div id="scene-jumpscare" class="scene">
+    <div id="jumpscareFace"></div>
+    <div class="gameover-box">
+      <h2>GAME OVER</h2>
+      <p id="jumpscareMsg"></p>
+      <div class="row">
+        <button id="btnRetry" class="btn btn-primary">TRY AGAIN</button>
+        <button id="btnMenu1" class="btn btn-ghost">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= NIGHT RESULT ============================= -->
+  <div id="scene-nightresult" class="scene">
+    <div>
+      <h2 id="resultTitle">6:00 AM</h2>
+      <p id="resultSub">Night 1 survived.</p>
+      <div class="row" style="display:flex;gap:1em;justify-content:center;">
+        <button id="btnContinue" class="btn btn-primary">CONTINUE</button>
+        <button id="btnMenu2" class="btn btn-ghost">MAIN MENU</button>
+      </div>
+    </div>
+    <div class="grain"></div>
+  </div>
+
+  <!-- ============================= WIN ============================= -->
+  <div id="scene-win" class="scene">
+    <div>
+      <h1>SUNRISE, NIGHT 99.</h1>
+      <p>Ninety-nine mornings in a row, the woods have gone quiet by six. Wesley, Birdie, and Otto are still out there somewhere, wearing whatever face gets them close enough. You're not going looking.</p>
+      <button id="btnMenu3" class="btn btn-primary">MAIN MENU</button>
+    </div>
+    <div class="grain"></div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================ AUDIO ============================ */
+  var Audio_ = (function(){
+    var ctx=null, muted=false, ambientNodes=null, heartbeatId=null;
+    function ac(){ if(!ctx){ ctx = new (window.AudioContext||window.webkitAudioContext)(); } return ctx; }
+    function tone(freq,dur,type,vol,glideTo){
+      if(muted) return;
+      var c=ac(); var o=c.createOscillator(); var g=c.createGain();
+      o.type=type||'sine'; o.frequency.setValueAtTime(freq,c.currentTime);
+      if(glideTo) o.frequency.exponentialRampToValueAtTime(glideTo,c.currentTime+dur);
+      g.gain.setValueAtTime(vol||0.15,c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(); o.stop(c.currentTime+dur);
+    }
+    function noiseBurst(dur,vol){
+      if(muted) return;
+      var c=ac(); var bufSize=Math.floor(c.sampleRate*dur);
+      var buf=c.createBuffer(1,bufSize,c.sampleRate);
+      var data=buf.getChannelData(0);
+      for(var i=0;i<bufSize;i++){ data[i]=(Math.random()*2-1)*(1-i/bufSize); }
+      var src=c.createBufferSource(); src.buffer=buf;
+      var g=c.createGain(); g.gain.setValueAtTime(vol||0.3,c.currentTime);
+      var filt=c.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=2200;
+      src.connect(filt); filt.connect(g); g.connect(c.destination);
+      src.start();
+    }
+    return {
+      init:function(){ try{ ac(); }catch(e){} },
+      toggleMute:function(){ muted=!muted; return muted; },
+      isMuted:function(){ return muted; },
+      blip:function(){ tone(520,0.06,'square',0.06); },
+      clunk:function(){ tone(90,0.22,'square',0.18,55); noiseBurst(0.12,0.08); },
+      lightZap:function(){ tone(1400,0.05,'sine',0.05); },
+      ventFlash:function(){ tone(700,0.18,'sawtooth',0.12,240); },
+      retreat:function(){ tone(220,0.3,'triangle',0.08,120); },
+      bell:function(){ tone(880,0.5,'sine',0.12); setTimeout(function(){tone(1174,0.6,'sine',0.1);},220); },
+      jumpscare:function(){ noiseBurst(0.9,0.5); tone(140,0.7,'sawtooth',0.3,40); },
+      startAmbient:function(){
+        if(muted || ambientNodes) return;
+        try{
+          var c=ac();
+          var o=c.createOscillator(); var g=c.createGain();
+          o.type='sine'; o.frequency.value=55;
+          g.gain.value=0.02;
+          o.connect(g); g.connect(c.destination); o.start();
+          ambientNodes={o:o,g:g};
+        }catch(e){}
+      },
+      stopAmbient:function(){
+        if(ambientNodes){ try{ambientNodes.o.stop();}catch(e){} ambientNodes=null; }
+      },
+      heartbeatStart:function(){
+        if(heartbeatId) return;
+        heartbeatId=setInterval(function(){ tone(70,0.15,'sine',0.14); },700);
+      },
+      heartbeatStop:function(){ if(heartbeatId){ clearInterval(heartbeatId); heartbeatId=null; } }
+    };
+  })();
+
+  /* ============================ CONSTANTS ============================ */
+  var CAM_ROOMS = [
+    {key:'clearing',  label:'CAM 1 · CLEARING'},
+    {key:'creek',     label:'CAM 2 · CREEKBED'},
+    {key:'treeline',  label:'CAM 3 · TREE LINE'},
+    {key:'toolshed',  label:'CAM 4 · TOOL SHED'},
+    {key:'westtrail', label:'CAM 5 · WEST TRAIL'},
+    {key:'easttrail', label:'CAM 6 · EAST TRAIL'},
+    {key:'cellar',    label:'CAM 7 · ROOT CELLAR'},
+  ];
+
+  // Aunt Chippy is the only monster. On the trail cams she's wearing the shape of
+  // one of the three missing campers — icon is the guise, reveal is what actually
+  // gets you when a door or the hatch doesn't hold.
+  function makeChars(){
+    return [
+      { id:'chippy',   kid:'Wesley', icon:'🧍', reveal:'🦌', rooms:['clearing','creek','westtrail'], type:'door', side:'L', baseP:0.050, activeFrom:1, distance:0, banging:false },
+      { id:'crumbles', kid:'Birdie', icon:'🧎', reveal:'🦌', rooms:['treeline','easttrail'],          type:'door', side:'R', baseP:0.058, activeFrom:2, distance:0, banging:false },
+      { id:'butter',   kid:'Otto',   icon:'🧒', reveal:'🦌', rooms:['toolshed'],                       type:'vent',           baseP:0.052, activeFrom:3, distance:0, ventTimer:0 }
+    ];
+  }
+
+  var HOURS = ['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM'];
+  var TICKS_PER_NIGHT = 90;
+
+  /* ============================ STATE ============================ */
+  var state = null;
+  var loopId = null;
+  var bestCompleted = 0;
+
+  function loadBest(){
+    try{ bestCompleted = parseInt(localStorage.getItem('chippy_bestNight')||'0',10) || 0; }
+    catch(e){ bestCompleted = 0; }
+  }
+  function saveBest(){
+    try{ localStorage.setItem('chippy_bestNight', String(bestCompleted)); }catch(e){}
+  }
+
+  function nightScale(night){ return Math.min(1 + (night-1)*0.05, 3.5); }
+
+  function freshState(night){
+    return {
+      night:night, tick:0, power:100, running:false, blackout:false,
+      doorL:false, doorR:false, camOpen:false, currentCam:null,
+      chars: makeChars()
+    };
+  }
+
+  /* ============================ SCENES ============================ */
+  function showScene(id){
+    var scenes = document.querySelectorAll('.scene');
+    for(var i=0;i<scenes.length;i++){ scenes[i].classList.remove('active'); }
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* ============================ MENU ============================ */
+  var $ = function(id){ return document.getElementById(id); };
+
+  function refreshMenu(){
+    loadBest();
+    $('bestNightLabel').textContent = bestCompleted>0 ? ('Night ' + bestCompleted) : 'no nights yet';
+    var maxStart = Math.max(1, bestCompleted+1);
+    var sel = $('nightSelect');
+    sel.max = String(maxStart);
+    sel.value = String(maxStart);
+    $('nightSelectVal').textContent = sel.value;
+  }
+
+  $('nightSelect').addEventListener('input', function(){ $('nightSelectVal').textContent=this.value; });
+
+  $('btnHow').addEventListener('click', function(){ $('howPanel').classList.remove('hidden'); Audio_.blip(); });
+  $('btnHowClose').addEventListener('click', function(){ $('howPanel').classList.add('hidden'); Audio_.blip(); });
+
+  $('btnPlay').addEventListener('click', function(){
+    Audio_.init();
+    var n = parseInt($('nightSelect').value,10) || 1;
+    startNight(n);
+  });
+
+  $('muteBtn').addEventListener('click', function(){
+    var m = Audio_.toggleMute();
+    this.textContent = m ? '🔇' : '🔊';
+    if(m){ Audio_.stopAmbient(); } else if(state && state.running){ Audio_.startAmbient(); }
+  });
+
+  ['btnMenu1','btnMenu2','btnMenu3'].forEach(function(id){
+    $(id).addEventListener('click', function(){ goToMenu(); });
+  });
+
+  function goToMenu(){
+    stopLoop();
+    Audio_.stopAmbient(); Audio_.heartbeatStop();
+    refreshMenu();
+    showScene('scene-title');
+  }
+
+  /* ============================ NIGHT FLOW ============================ */
+  function startNight(night){
+    state = freshState(night);
+    renderStatic();
+    render();
+    showScene('scene-game');
+    state.running = true;
+    Audio_.startAmbient();
+    loopId = setInterval(tick, 1000);
+  }
+
+  function stopLoop(){
+    if(loopId){ clearInterval(loopId); loopId=null; }
+    if(state){ state.running=false; }
+  }
+
+  $('btnRetry').addEventListener('click', function(){ startNight(state.night); });
+  $('btnContinue').addEventListener('click', function(){ startNight(state.night+1); });
+
+  /* ============================ RENDER (static bits built once per night) ============================ */
+  function renderStatic(){
+    var grid = $('camGrid');
+    grid.innerHTML = '';
+    CAM_ROOMS.forEach(function(r){
+      var cell = document.createElement('div');
+      cell.className='cam-cell';
+      cell.dataset.room = r.key;
+      cell.innerHTML = '<span class="cam-occupant" style="display:none"></span><span class="cam-empty-icon">·</span><span class="cam-tag mono">'+r.label+'</span>';
+      cell.addEventListener('click', function(){ selectCam(r.key); });
+      grid.appendChild(cell);
+    });
+    $('doorL').classList.remove('closed');
+    $('doorR').classList.remove('closed');
+    $('camPanel').classList.add('hidden');
+    $('blackoutOverlay').classList.remove('on');
+    $('nightLabel').textContent = state.night;
+  }
+
+  function selectCam(key){
+    state.currentCam = key;
+    Audio_.blip();
+    render();
+  }
+
+  function render(){
+    // clock
+    var hourIdx = Math.min(6, Math.floor(state.tick / (TICKS_PER_NIGHT/6)));
+    $('clockTime').textContent = HOURS[hourIdx];
+    $('camClock').textContent = HOURS[hourIdx];
+
+    // power
+    var pw = Math.max(0,Math.round(state.power));
+    $('powerPct').textContent = pw+'%';
+    var bar = $('powerBar');
+    bar.style.width = pw+'%';
+    bar.className = 'power-bar-fill' + (pw<20?' low':(pw<50?' mid':''));
+
+    var usageCount = 1 + (state.doorL?1:0) + (state.doorR?1:0) + (state.camOpen?1:0);
+    var bars=''; for(var u=0;u<4;u++){ bars += (u<usageCount?'▮':'▯'); }
+    $('usageIcon').textContent = bars;
+
+    // doors
+    $('doorL').classList.toggle('closed', state.doorL);
+    $('doorR').classList.toggle('closed', state.doorR);
+    $('doorBtnL').classList.toggle('active', state.doorL);
+    $('doorBtnR').classList.toggle('active', state.doorR);
+
+    // blackout
+    $('blackoutOverlay').classList.toggle('on', state.blackout);
+
+    // vent button danger state
+    var butter = state.chars.filter(function(c){return c.id==='butter';})[0];
+    $('ventBtn').classList.toggle('danger', !!(butter && butter.distance>=1));
+
+    // camera panel
+    $('camPanel').classList.toggle('hidden', !state.camOpen);
+
+    // cam occupants
+    var cells = document.querySelectorAll('.cam-cell');
+    var occ = {};
+    state.chars.forEach(function(c){
+      if(state.night < c.activeFrom) return;
+      var roomKey = null;
+      if(c.type==='door'){
+        if(c.distance < c.rooms.length) roomKey = c.rooms[c.distance];
+      } else {
+        roomKey = c.distance===0 ? c.rooms[0] : 'cellar';
+      }
+      if(roomKey) occ[roomKey] = c;
+    });
+    cells.forEach(function(cell){
+      var key = cell.dataset.room;
+      cell.classList.toggle('selected', state.currentCam===key);
+      var occChar = occ[key];
+      var occSpan = cell.querySelector('.cam-occupant');
+      var emptySpan = cell.querySelector('.cam-empty-icon');
+      if(occChar){ occSpan.style.display='block'; occSpan.textContent=occChar.icon; emptySpan.style.display='none'; }
+      else { occSpan.style.display='none'; emptySpan.style.display='block'; }
+    });
+  }
+
+  /* ============================ CONTROLS ============================ */
+  $('doorBtnL').addEventListener('click', function(){ toggleDoor('L'); });
+  $('doorBtnR').addEventListener('click', function(){ toggleDoor('R'); });
+  $('lightBtnL').addEventListener('click', function(){ flashLight('L'); });
+  $('lightBtnR').addEventListener('click', function(){ flashLight('R'); });
+  $('ventBtn').addEventListener('click', flashVent);
+  $('camToggle').addEventListener('click', function(){ toggleCam(true); });
+  $('camClose').addEventListener('click', function(){ toggleCam(false); });
+
+  function toggleDoor(side){
+    if(!state || !state.running) return;
+    if(state.blackout) return; // forced open, can't be closed
+    if(side==='L') state.doorL = !state.doorL; else state.doorR = !state.doorR;
+    Audio_.clunk();
+    render();
+  }
+
+  function toggleCam(open){
+    if(!state || !state.running) return;
+    state.camOpen = open;
+    if(open && !state.currentCam) state.currentCam = CAM_ROOMS[0].key;
+    Audio_.blip();
+    render();
+  }
+
+  function flashLight(side){
+    if(!state || !state.running || state.camOpen) return;
+    var doorChar = state.chars.filter(function(c){ return c.type==='door' && c.side===side; })[0];
+    var doorOpen = side==='L' ? !state.doorL : !state.doorR;
+    var peekEl = side==='L' ? $('peekL') : $('peekR');
+    Audio_.lightZap();
+    state.power = Math.max(0, state.power - 1.5);
+
+    var visible = doorChar && state.night>=doorChar.activeFrom && doorChar.distance >= doorChar.rooms.length-1;
+    if(visible){
+      var atDoor = doorChar.distance >= doorChar.rooms.length;
+      if(atDoor && doorOpen){
+        render();
+        triggerJumpscare(doorChar);
+        return;
+      }
+      peekEl.textContent = doorChar.icon;
+      peekEl.classList.add('show');
+      setTimeout(function(){ peekEl.classList.remove('show'); }, 550);
+    } else {
+      peekEl.classList.remove('show');
+    }
+    render();
+  }
+
+  function flashVent(){
+    if(!state || !state.running || state.camOpen) return;
+    var butter = state.chars.filter(function(c){return c.id==='butter';})[0];
+    Audio_.ventFlash();
+    if(butter && state.night>=butter.activeFrom && butter.distance>=1){
+      butter.distance = 0;
+      butter.ventTimer = 0;
+      state.power = Math.max(0, state.power - 3);
+    } else {
+      state.power = Math.max(0, state.power - 1);
+    }
+    render();
+  }
+
+  /* ============================ TICK / SIMULATION ============================ */
+  function tick(){
+    if(!state || !state.running) return;
+    state.tick++;
+
+    var night = state.night;
+    var drain = 0.16 * (1 + (night-1)*0.01);
+    if(state.doorL) drain += 0.22;
+    if(state.doorR) drain += 0.22;
+    if(state.camOpen) drain += 0.12;
+    state.power = Math.max(0, state.power - drain);
+    state.blackout = state.power<=0;
+
+    if(state.blackout) Audio_.heartbeatStart(); else Audio_.heartbeatStop();
+    if(state.blackout){ state.doorL=false; state.doorR=false; }
+
+    for(var i=0;i<state.chars.length;i++){
+      processChar(state.chars[i], night);
+      if(!state.running) return; // a jumpscare stopped the night mid-loop
+    }
+
+    render();
+
+    if(state.tick >= TICKS_PER_NIGHT){
+      nightSurvived();
+    }
+  }
+
+  function processChar(c, night){
+    if(night < c.activeFrom) return;
+
+    if(c.type==='door'){
+      if(c.distance >= c.rooms.length){
+        // banging at the door
+        var retreatChance = Math.max(0.05, 0.24 - night*0.002);
+        if(Math.random() < retreatChance){
+          c.distance = 0;
+          Audio_.retreat();
+          return;
+        }
+        var doorOpen = c.side==='L' ? !state.doorL : !state.doorR;
+        if(doorOpen){ triggerJumpscare(c); return; }
+        state.power = Math.max(0, state.power - 0.35);
+      } else {
+        var watched = state.camOpen && state.currentCam === c.rooms[c.distance];
+        var p = c.baseP * nightScale(night) * (watched?0.12:1) * (state.blackout?3:1);
+        p = Math.min(p, 0.9);
+        if(Math.random() < p){
+          c.distance++;
+          if(c.distance >= c.rooms.length){
+            var nowOpen = c.side==='L' ? !state.doorL : !state.doorR;
+            if(nowOpen){ triggerJumpscare(c); return; }
+          }
+        }
+      }
+    } else { // vent
+      if(c.distance === 0){
+        var watchedV = state.camOpen && state.currentCam === c.rooms[0];
+        var pv = c.baseP * nightScale(night) * (watchedV?0.12:1) * (state.blackout?3:1);
+        pv = Math.min(pv, 0.9);
+        if(Math.random() < pv){ c.distance = 1; c.ventTimer = 2; }
+      } else {
+        c.ventTimer--;
+        if(c.ventTimer <= 0){ triggerJumpscare(c); return; }
+      }
+    }
+  }
+
+  /* ============================ OUTCOMES ============================ */
+  function triggerJumpscare(c){
+    stopLoop();
+    Audio_.stopAmbient(); Audio_.heartbeatStop();
+    Audio_.jumpscare();
+    $('jumpscareFace').textContent = c.reveal;
+    $('jumpscareFace').className='shake';
+    $('jumpscareMsg').textContent = 'The shape wearing ' + c.kid + "'s face was never " + c.kid + '. You made it to Night ' + state.night + '.';
+    showScene('scene-jumpscare');
+  }
+
+  function nightSurvived(){
+    stopLoop();
+    Audio_.stopAmbient(); Audio_.heartbeatStop();
+    Audio_.bell();
+    if(state.night > bestCompleted){ bestCompleted = state.night; saveBest(); }
+    if(state.night >= 99){
+      showScene('scene-win');
+    } else {
+      $('resultTitle').textContent = '6:00 AM';
+      $('resultSub').textContent = 'Night ' + state.night + ' survived.';
+      showScene('scene-nightresult');
+    }
+  }
+
+  /* ============================ INIT ============================ */
+  refreshMenu();
+})();
+</script>

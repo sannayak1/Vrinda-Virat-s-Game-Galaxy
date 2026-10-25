@@ -1,0 +1,926 @@
+<title>Potty Panic Maze</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  :root{
+    --bg:#FBF6EC;
+    --shell:#FFFFFF;
+    --floor:#FDFBF4;
+    --floor-alt:#F2E9D6;
+    --wall:#173A3F;
+    --ink:#173A3F;
+    --ink-soft:#5B7A7C;
+    --accent:#2A9D8F;
+    --accent-ink:#0B3B36;
+    --player:#FF6B5E;
+    --player-dark:#C6493F;
+    --safe:#5FBE72;
+    --warn:#FFC94D;
+    --danger:#EF476F;
+    --chip-bg:#EFF6EC;
+    --shadow:rgba(23,58,63,.16);
+    --grout:#E8DFC7;
+    --overlay-scrim:rgba(15,35,38,.55);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0D1B1D;
+      --shell:#132A2C;
+      --floor:#132A2C;
+      --floor-alt:#1B383B;
+      --wall:#BFE9E1;
+      --ink:#EAF4F1;
+      --ink-soft:#8FB3AE;
+      --accent:#57D6BE;
+      --accent-ink:#083430;
+      --player:#FF9186;
+      --player-dark:#FFB4AB;
+      --safe:#6FD98A;
+      --warn:#FFD166;
+      --danger:#FF6B8B;
+      --chip-bg:#173432;
+      --shadow:rgba(0,0,0,.45);
+      --grout:#1E3A3D;
+      --overlay-scrim:rgba(3,12,13,.7);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D1B1D;
+    --shell:#132A2C;
+    --floor:#132A2C;
+    --floor-alt:#1B383B;
+    --wall:#BFE9E1;
+    --ink:#EAF4F1;
+    --ink-soft:#8FB3AE;
+    --accent:#57D6BE;
+    --accent-ink:#083430;
+    --player:#FF9186;
+    --player-dark:#FFB4AB;
+    --safe:#6FD98A;
+    --warn:#FFD166;
+    --danger:#FF6B8B;
+    --chip-bg:#173432;
+    --shadow:rgba(0,0,0,.45);
+    --grout:#1E3A3D;
+    --overlay-scrim:rgba(3,12,13,.7);
+    color-scheme: dark;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(0deg, var(--grout) 0 2px, transparent 2px 46px),
+      repeating-linear-gradient(90deg, var(--grout) 0 2px, transparent 2px 46px),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Nunito', system-ui, sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+  h1,h2,h3{ font-family:'Baloo 2', system-ui, sans-serif; margin:0; text-wrap:balance; }
+
+  .app{
+    width:100%;
+    max-width:640px;
+    background:var(--shell);
+    border-radius:26px;
+    box-shadow:0 18px 40px var(--shadow);
+    padding:22px 22px 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  .app.shake{ animation: shake .5s ease; }
+  @keyframes shake{
+    10%,90%{ transform:translateX(-1px); }
+    20%,80%{ transform:translateX(3px); }
+    30%,50%,70%{ transform:translateX(-7px) rotate(-0.4deg); }
+    40%,60%{ transform:translateX(7px) rotate(0.4deg); }
+  }
+
+  .wordmark{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:4px;
+  }
+  .wordmark .icon{ font-size:1.5rem; }
+  .wordmark h1{
+    font-size: clamp(1.5rem, 5vw, 2.1rem);
+    font-weight:800;
+    letter-spacing:.2px;
+    color:var(--accent-ink);
+    background: linear-gradient(180deg, var(--ink) 0%, var(--ink) 60%, var(--accent) 60%, var(--accent) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .tagline{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:.85rem;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:18px;
+  }
+
+  .hud{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    background:var(--chip-bg);
+    border-radius:14px;
+    padding:8px 14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-width:64px;
+  }
+  .chip .label{
+    font-size:.62rem;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .chip .value{
+    font-family:'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight:700;
+    font-size:1.05rem;
+    color:var(--ink);
+  }
+  .lives{
+    display:flex;
+    gap:4px;
+    font-size:1.15rem;
+    line-height:1;
+  }
+  .lives span.spent{ opacity:.22; filter:grayscale(1); }
+
+  .stage{
+    display:flex;
+    gap:16px;
+    align-items:stretch;
+    justify-content:center;
+    flex-wrap:wrap;
+    position:relative;
+  }
+  .maze-wrap{
+    position:relative;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow: inset 0 0 0 3px var(--wall);
+    line-height:0;
+  }
+  canvas#maze{ display:block; }
+
+  .vignette{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background: radial-gradient(ellipse at center, transparent 55%, var(--danger) 150%);
+    opacity:0;
+    transition: opacity .2s ease;
+    border-radius:16px;
+  }
+
+  .gauge{
+    width:54px;
+    background:var(--chip-bg);
+    border-radius:16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:10px 0;
+    gap:6px;
+  }
+  .gauge .glabel{
+    font-size:.6rem;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    text-align:center;
+  }
+  .gauge-track{
+    position:relative;
+    width:20px;
+    flex:1;
+    min-height:140px;
+    background: linear-gradient(180deg, var(--danger), var(--warn) 55%, var(--safe));
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow: inset 0 0 0 2px var(--shell);
+  }
+  .gauge-mask{
+    position:absolute;
+    left:0; right:0; top:0;
+    height: var(--covered, 100%);
+    background:var(--chip-bg);
+    transition: height .18s ease;
+  }
+  .gauge .greading{
+    font-family:'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight:700;
+    font-size:.85rem;
+  }
+  .gauge .gface{ font-size:1.3rem; }
+
+  .controls{
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    flex-wrap:wrap;
+  }
+  .dpad{
+    display:grid;
+    grid-template-columns: repeat(3, 42px);
+    grid-template-rows: repeat(3, 42px);
+    gap:4px;
+  }
+  .dpad button{
+    border:none;
+    background:var(--chip-bg);
+    color:var(--ink);
+    border-radius:10px;
+    font-size:1.1rem;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    touch-action:manipulation;
+  }
+  .dpad button:active{ background:var(--accent); color:var(--accent-ink); }
+  .dpad .up{ grid-column:2; grid-row:1; }
+  .dpad .left{ grid-column:1; grid-row:2; }
+  .dpad .right{ grid-column:3; grid-row:2; }
+  .dpad .down{ grid-column:2; grid-row:3; }
+  .kbhint{
+    color:var(--ink-soft);
+    font-size:.8rem;
+    font-weight:600;
+    max-width:180px;
+    line-height:1.4;
+  }
+  .kbhint kbd{
+    font-family:'JetBrains Mono', monospace;
+    background:var(--chip-bg);
+    border-radius:4px;
+    padding:1px 5px;
+    font-size:.72rem;
+  }
+
+  .toast{
+    position:absolute;
+    left:50%;
+    top:18px;
+    transform:translate(-50%,-14px);
+    background:var(--ink);
+    color:var(--bg);
+    padding:9px 18px;
+    border-radius:999px;
+    font-weight:800;
+    font-family:'Baloo 2', sans-serif;
+    font-size:.95rem;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .25s ease, transform .25s ease;
+    white-space:nowrap;
+    z-index:5;
+    box-shadow:0 8px 18px var(--shadow);
+  }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+  .toast.bad{ background:var(--danger); color:#fff; }
+  .toast.good{ background:var(--safe); color:#0B3B36; }
+
+  .particle{
+    position:absolute;
+    font-size:1.4rem;
+    pointer-events:none;
+    z-index:6;
+    animation: pop-fly 900ms ease-out forwards;
+  }
+  @keyframes pop-fly{
+    0%{ transform:translate(0,0) scale(.6) rotate(0deg); opacity:1; }
+    100%{ transform:translate(var(--dx), var(--dy)) scale(1.15) rotate(var(--rot)); opacity:0; }
+  }
+
+  .overlay{
+    position:absolute;
+    inset:0;
+    background:var(--overlay-scrim);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:20;
+    padding:20px;
+  }
+  .overlay[hidden]{ display:none; }
+  .card{
+    background:var(--shell);
+    border-radius:22px;
+    padding:30px 26px 26px;
+    max-width:380px;
+    width:100%;
+    text-align:center;
+    position:relative;
+    box-shadow:0 20px 50px var(--shadow);
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:-14px; left:0; right:0;
+    height:28px;
+    background:
+      radial-gradient(circle at 10px 14px, var(--shell) 12px, transparent 13px) 0 0/28px 28px repeat-x;
+  }
+  .card h2{ font-size:1.5rem; color:var(--accent); margin-bottom:8px; }
+  .card p{ color:var(--ink-soft); font-size:.92rem; line-height:1.55; margin:0 0 18px; }
+  .card .score-big{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:2.1rem;
+    color:var(--ink);
+    margin-bottom:2px;
+  }
+  .card .best{ font-size:.8rem; color:var(--ink-soft); font-weight:700; margin-bottom:18px; }
+  .card .best.new{ color:var(--safe); }
+  .btn{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:1.05rem;
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:none;
+    border-radius:14px;
+    padding:12px 26px;
+    cursor:pointer;
+    box-shadow:0 6px 0 color-mix(in srgb, var(--accent) 65%, black);
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:0 3px 0 color-mix(in srgb, var(--accent) 65%, black); }
+
+  .instructions{
+    text-align:left;
+    background:var(--chip-bg);
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:.82rem;
+    color:var(--ink-soft);
+    margin-bottom:18px;
+    line-height:1.6;
+  }
+  .instructions b{ color:var(--ink); }
+
+  footer.credit{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:.7rem;
+    margin-top:16px;
+    letter-spacing:.03em;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .app.shake, .particle{ animation:none !important; }
+  }
+
+  @media (max-width:480px){
+    .stage{ flex-direction:column; align-items:center; }
+    .gauge{ width:100%; flex-direction:row; height:40px; }
+    .gauge-track{ min-height:unset; height:16px; width:auto; flex:1; background: linear-gradient(90deg, var(--safe), var(--warn) 45%, var(--danger)); }
+    .gauge-mask{ left:auto; right:0; top:0; bottom:0; height:auto; width: var(--covered, 100%); transition: width .18s ease; }
+  }
+</style>
+
+<div class="app" id="app">
+  <div class="wordmark"><span class="icon">🚽</span><h1>Potty Panic Maze</h1></div>
+  <p class="tagline">Find the bathroom before it's too late</p>
+
+  <div class="hud">
+    <div class="chip"><span class="label">Level</span><span class="value" id="hudLevel">1</span></div>
+    <div class="chip"><span class="label">Score</span><span class="value" id="hudScore">0</span></div>
+    <div class="chip"><span class="label">Lives</span><span class="value lives" id="hudLives">🧻🧻🧻</span></div>
+  </div>
+
+  <div class="stage">
+    <div class="maze-wrap">
+      <canvas id="maze"></canvas>
+      <div class="vignette" id="vignette"></div>
+      <div class="toast" id="toast"></div>
+    </div>
+    <div class="gauge">
+      <span class="glabel">Gotta Go</span>
+      <span class="gface" id="gaugeFace">😌</span>
+      <div class="gauge-track"><div class="gauge-mask" id="gaugeMask"></div></div>
+      <span class="greading" id="gaugeReading">0%</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="kbhint">Move with <kbd>WASD</kbd> or <kbd>arrow keys</kbd>, or tap the pad.</div>
+    <div class="dpad">
+      <button class="up" data-dir="up" aria-label="Up">▲</button>
+      <button class="left" data-dir="left" aria-label="Left">◀</button>
+      <button class="right" data-dir="right" aria-label="Right">▶</button>
+      <button class="down" data-dir="down" aria-label="Down">▼</button>
+    </div>
+  </div>
+
+  <footer class="credit">Every hallway leads somewhere. Choose fast.</footer>
+
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h2>🚽 Potty Panic Maze</h2>
+      <p>Race through a shifting maze to reach the toilet before your bladder wins the argument.</p>
+      <div class="instructions">
+        <b>How to play:</b> Move through the maze toward the 🚽. Watch the <b>Gotta Go</b> gauge on the right — the fuller it gets, the less time you have. Arrive early for a big bonus. Arrive too late, and... it won't be pretty. You get 3 rolls of toilet paper. Lose them all and it's game over.
+      </div>
+      <button class="btn" id="startBtn">Hold It &amp; Start</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overOverlay" hidden>
+    <div class="card">
+      <h2 id="overTitle">Game Over</h2>
+      <p id="overMsg">Better luck — and a change of pants — next time.</p>
+      <div class="score-big" id="overScore">0</div>
+      <div class="best" id="overBest">Best: 0</div>
+      <button class="btn" id="restartBtn">Try Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- persistent high score ----------
+  function getHigh(){
+    try{ return parseInt(localStorage.getItem('pottyPanicHigh')||'0',10) || 0; }catch(e){ return 0; }
+  }
+  function setHigh(v){
+    try{ localStorage.setItem('pottyPanicHigh', String(v)); }catch(e){}
+  }
+
+  // ---------- dom ----------
+  const canvas = document.getElementById('maze');
+  const ctx = canvas.getContext('2d');
+  const hudLevel = document.getElementById('hudLevel');
+  const hudScore = document.getElementById('hudScore');
+  const hudLives = document.getElementById('hudLives');
+  const gaugeMask = document.getElementById('gaugeMask');
+  const gaugeReading = document.getElementById('gaugeReading');
+  const gaugeFace = document.getElementById('gaugeFace');
+  const vignette = document.getElementById('vignette');
+  const toastEl = document.getElementById('toast');
+  const appEl = document.getElementById('app');
+  const startOverlay = document.getElementById('startOverlay');
+  const overOverlay = document.getElementById('overOverlay');
+  const overTitle = document.getElementById('overTitle');
+  const overMsg = document.getElementById('overMsg');
+  const overScore = document.getElementById('overScore');
+  const overBest = document.getElementById('overBest');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const mazeWrap = document.querySelector('.maze-wrap');
+
+  // ---------- game state ----------
+  let level, score, lives, meter, meterRate, meterResetVal, cols, rows, cellSize;
+  let grid, player, goal, moving, dpr;
+  let lastTime = 0, running = false, gameOver = false;
+
+  const DIRS = {
+    up:    {dx:0, dy:-1, wall:'N', opp:'S'},
+    down:  {dx:0, dy:1,  wall:'S', opp:'N'},
+    left:  {dx:-1,dy:0,  wall:'W', opp:'E'},
+    right: {dx:1, dy:0,  wall:'E', opp:'W'}
+  };
+
+  function css(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // ---------- maze generation (iterative recursive backtracker) ----------
+  function buildGrid(c,r){
+    const g = [];
+    for(let y=0;y<r;y++){
+      const row=[];
+      for(let x=0;x<c;x++){
+        row.push({N:true,S:true,E:true,W:true,visited:false});
+      }
+      g.push(row);
+    }
+    return g;
+  }
+
+  function generateMaze(c,r){
+    const g = buildGrid(c,r);
+    const stack = [{x:0,y:0}];
+    g[0][0].visited = true;
+    let visitedCount = 1;
+    const total = c*r;
+    while(visitedCount < total){
+      const cur = stack[stack.length-1];
+      const neighbors = [];
+      for(const key in DIRS){
+        const d = DIRS[key];
+        const nx = cur.x+d.dx, ny = cur.y+d.dy;
+        if(nx>=0 && nx<c && ny>=0 && ny<r && !g[ny][nx].visited){
+          neighbors.push({x:nx,y:ny,dir:key,d});
+        }
+      }
+      if(neighbors.length===0){
+        stack.pop();
+        continue;
+      }
+      const pick = neighbors[Math.floor(Math.random()*neighbors.length)];
+      g[cur.y][cur.x][pick.d.wall] = false;
+      g[pick.y][pick.x][pick.d.opp] = false;
+      g[pick.y][pick.x].visited = true;
+      visitedCount++;
+      stack.push({x:pick.x,y:pick.y});
+    }
+    return g;
+  }
+
+  function farthestCell(g,c,r){
+    const dist = Array.from({length:r},()=>new Array(c).fill(-1));
+    dist[0][0]=0;
+    const q=[{x:0,y:0}];
+    let qi=0;
+    let far={x:0,y:0,d:0};
+    while(qi<q.length){
+      const cur = q[qi++];
+      const cell = g[cur.y][cur.x];
+      for(const key in DIRS){
+        const d = DIRS[key];
+        if(!cell[d.wall]){
+          const nx=cur.x+d.dx, ny=cur.y+d.dy;
+          if(nx>=0&&nx<c&&ny>=0&&ny<r&&dist[ny][nx]===-1){
+            dist[ny][nx]=dist[cur.y][cur.x]+1;
+            if(dist[ny][nx]>far.d) far={x:nx,y:ny,d:dist[ny][nx]};
+            q.push({x:nx,y:ny});
+          }
+        }
+      }
+    }
+    return far;
+  }
+
+  // ---------- level config ----------
+  function levelConfig(lv){
+    const c = Math.min(9 + (lv-1)*2, 17);
+    const r = Math.min(7 + (lv-1)*1, 11);
+    const rate = Math.min(2.0 + (lv-1)*0.32, 4.6);
+    const resetVal = Math.min(14 + (lv-1)*2, 42);
+    return {c,r,rate,resetVal};
+  }
+
+  function computeCellSize(c,r){
+    const maxW = Math.min(window.innerWidth - 140, 480);
+    const maxH = 420;
+    return Math.max(22, Math.min(44, Math.floor(maxW/c), Math.floor(maxH/r)));
+  }
+
+  function sizeCanvas(){
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    canvas.width = cols*cellSize*dpr;
+    canvas.height = rows*cellSize*dpr;
+    canvas.style.width = (cols*cellSize)+'px';
+    canvas.style.height = (rows*cellSize)+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function newLevel(resetMeterOverride){
+    const cfg = levelConfig(level);
+    cols=cfg.c; rows=cfg.r; meterRate=cfg.rate; meterResetVal=cfg.resetVal;
+    cellSize = computeCellSize(cols,rows);
+    sizeCanvas();
+    grid = generateMaze(cols,rows);
+    goal = farthestCell(grid,cols,rows);
+    player = {x:0,y:0,px:0,py:0,tx:0,ty:0,animT:1,animDur:130};
+    moving = false;
+    meter = (typeof resetMeterOverride==='number') ? resetMeterOverride : meterResetVal;
+    updateHud();
+  }
+
+  // ---------- drawing ----------
+  function draw(){
+    ctx.clearRect(0,0,cols*cellSize,rows*cellSize);
+    const floor = css('--floor'), floorAlt = css('--floor-alt'), wall = css('--wall');
+
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        ctx.fillStyle = ((x+y)%2===0) ? floor : floorAlt;
+        ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+      }
+    }
+
+    // goal
+    ctx.font = (cellSize*0.62)+'px serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🚽', (goal.x+0.5)*cellSize, (goal.y+0.52)*cellSize);
+
+    // walls
+    ctx.strokeStyle = wall;
+    ctx.lineCap='round';
+    ctx.lineWidth = Math.max(2, cellSize*0.09);
+    ctx.beginPath();
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        const c = grid[y][x];
+        const x0=x*cellSize, y0=y*cellSize, x1=x0+cellSize, y1=y0+cellSize;
+        if(c.N){ ctx.moveTo(x0,y0); ctx.lineTo(x1,y0); }
+        if(c.W){ ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); }
+        if(y===rows-1 && c.S){ ctx.moveTo(x0,y1); ctx.lineTo(x1,y1); }
+        if(x===cols-1 && c.E){ ctx.moveTo(x1,y0); ctx.lineTo(x1,y1); }
+      }
+    }
+    ctx.stroke();
+
+    drawPlayer();
+  }
+
+  function drawPlayer(){
+    let px, py;
+    if(moving){
+      const t = Math.min(1, player.animT);
+      const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+      px = player.px + (player.tx-player.px)*ease;
+      py = player.py + (player.ty-player.py)*ease;
+    } else {
+      px = player.x; py = player.y;
+    }
+    let cx=(px+0.5)*cellSize, cy=(py+0.5)*cellSize;
+
+    if(meter>78){
+      cx += (Math.random()-0.5)*cellSize*0.09;
+      cy += (Math.random()-0.5)*cellSize*0.09;
+    }
+
+    const r = cellSize*0.34;
+    ctx.fillStyle = css('--player');
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = css('--player-dark');
+    ctx.lineWidth = Math.max(1.5, cellSize*0.045);
+    ctx.stroke();
+
+    // face
+    ctx.fillStyle = '#173A3F';
+    const eyeR = r*0.13;
+    const eyeOffX = r*0.34, eyeOffY = r*0.12;
+    ctx.beginPath();
+    ctx.arc(cx-eyeOffX, cy-eyeOffY, eyeR, 0, Math.PI*2);
+    ctx.arc(cx+eyeOffX, cy-eyeOffY, eyeR, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#173A3F';
+    ctx.lineWidth = Math.max(1.2, r*0.09);
+    ctx.beginPath();
+    if(meter>78){
+      ctx.arc(cx, cy+r*0.32, r*0.28, Math.PI*1.15, Math.PI*1.85, true);
+    } else if(meter>48){
+      ctx.moveTo(cx-r*0.22, cy+r*0.32);
+      ctx.lineTo(cx+r*0.22, cy+r*0.32);
+    } else {
+      ctx.arc(cx, cy+r*0.14, r*0.26, Math.PI*0.15, Math.PI*0.85);
+    }
+    ctx.stroke();
+  }
+
+  // ---------- gauge / hud ----------
+  function updateGauge(){
+    gaugeMask.style.setProperty('--covered', (100-meter)+'%');
+    gaugeReading.textContent = Math.round(meter)+'%';
+    gaugeFace.textContent = meter>82 ? '😱' : meter>55 ? '😬' : meter>28 ? '😅' : '😌';
+    const vig = Math.max(0, (meter-58)/42);
+    vignette.style.opacity = (vig*0.4).toFixed(2);
+  }
+
+  function updateHud(){
+    hudLevel.textContent = level;
+    hudScore.textContent = score;
+    let lifeStr='';
+    for(let i=0;i<3;i++){
+      lifeStr += (i<lives) ? '🧻' : '<span class="spent">🧻</span>';
+    }
+    hudLives.innerHTML = lifeStr;
+    updateGauge();
+  }
+
+  // ---------- toast + particles ----------
+  let toastTimer=null;
+  function showToast(text, kind){
+    toastEl.textContent = text;
+    toastEl.className = 'toast show' + (kind ? ' '+kind : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{ toastEl.className='toast'; }, 1600);
+  }
+
+  function burstParticles(emoji, count){
+    const rect = mazeWrap.getBoundingClientRect();
+    const originX = (player.x+0.5)*cellSize;
+    const originY = (player.y+0.5)*cellSize;
+    for(let i=0;i<count;i++){
+      const span = document.createElement('span');
+      span.className='particle';
+      span.textContent = emoji;
+      const angle = Math.random()*Math.PI*2;
+      const dist = 40+Math.random()*70;
+      span.style.setProperty('--dx', Math.cos(angle)*dist+'px');
+      span.style.setProperty('--dy', (Math.sin(angle)*dist-30)+'px');
+      span.style.setProperty('--rot', (Math.random()*360-180)+'deg');
+      span.style.left = originX+'px';
+      span.style.top = originY+'px';
+      mazeWrap.appendChild(span);
+      span.addEventListener('animationend', ()=>span.remove());
+    }
+  }
+
+  // ---------- messages ----------
+  const PEE_MSGS = [
+    "Uh oh... didn't quite make it. Wet-pants alert! 💦",
+    "Splish, splash — that was NOT the toilet.",
+    "Somebody skipped one too many bathroom breaks!",
+    "Warm, wet, and wildly embarrassing. Go change!",
+    "The dam has broken. Send dry pants."
+  ];
+  const POOP_MSGS = [
+    "BIG. BOOM. BOOM. 💩",
+    "Uh oh — that was a full-on blowout!",
+    "Code Brown! Abort mission!",
+    "Nobody puts pants in the corner... except now.",
+    "That maze detour just became a laundry emergency."
+  ];
+
+  // ---------- movement ----------
+  function attemptMove(dir){
+    if(gameOver || !running || moving) return;
+    const d = DIRS[dir];
+    const cell = grid[player.y][player.x];
+    if(cell[d.wall]) return; // wall in the way
+    const nx = player.x+d.dx, ny = player.y+d.dy;
+    if(nx<0||nx>=cols||ny<0||ny>=rows) return;
+
+    player.px = player.x; player.py = player.y;
+    player.tx = nx; player.ty = ny;
+    player.animT = 0;
+    moving = true;
+    player._nextX = nx; player._nextY = ny;
+  }
+
+  function finishMove(){
+    player.x = player._nextX; player.y = player._nextY;
+    moving = false;
+    if(player.x===goal.x && player.y===goal.y){
+      onReachedGoal();
+    }
+  }
+
+  // ---------- outcomes ----------
+  function onReachedGoal(){
+    const headroom = Math.max(0, 100-meter);
+    const bonus = Math.round(headroom*2.2);
+    const base = 100*level;
+    score += base+bonus;
+    showToast('Made it! +'+(base+bonus)+' 🎉', 'good');
+    burstParticles('✨', 8);
+    level += 1;
+    running=false;
+    setTimeout(()=>{
+      newLevel();
+      running=true;
+    }, 700);
+    updateHud();
+  }
+
+  function onAccident(){
+    running=false;
+    const isPoop = Math.random()<0.5;
+    const pool = isPoop ? POOP_MSGS : PEE_MSGS;
+    const msg = pool[Math.floor(Math.random()*pool.length)];
+    burstParticles(isPoop ? '💩' : '💦', 10);
+    appEl.classList.remove('shake'); void appEl.offsetWidth; appEl.classList.add('shake');
+    showToast(msg, 'bad');
+    lives -= 1;
+    updateHud();
+    setTimeout(()=>{
+      if(lives<=0){
+        endGame();
+      } else {
+        newLevel(Math.min(meterResetVal+10, 45));
+        running=true;
+      }
+    }, 900);
+  }
+
+  function endGame(){
+    gameOver = true;
+    running = false;
+    const high = getHigh();
+    const isNew = score>high;
+    if(isNew) setHigh(score);
+    overTitle.textContent = 'Game Over';
+    overMsg.textContent = "You held it together for "+(level-1)+" trip"+((level-1)===1?'':'s')+" to the bathroom. Not bad!";
+    overScore.textContent = score;
+    overBest.textContent = 'Best: '+ (isNew ? score : high);
+    overBest.className = 'best' + (isNew ? ' new' : '');
+    if(isNew) overBest.textContent = 'New Best! ' + score;
+    overOverlay.hidden = false;
+  }
+
+  // ---------- main loop ----------
+  function loop(t){
+    if(!lastTime) lastTime=t;
+    const dt = Math.min(0.05, (t-lastTime)/1000);
+    lastTime = t;
+
+    if(running && !gameOver){
+      meter = Math.min(100, meter + meterRate*dt);
+      updateGauge();
+      if(meter>=100){
+        onAccident();
+      }
+    }
+
+    if(moving){
+      player.animT += dt*1000/player.animDur;
+      if(player.animT>=1){
+        player.animT=1;
+        finishMove();
+      }
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden) lastTime=0;
+  });
+
+  // ---------- input ----------
+  const KEY_MAP = {
+    ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right',
+    w:'up', s:'down', a:'left', d:'right',
+    W:'up', S:'down', A:'left', D:'right'
+  };
+  window.addEventListener('keydown', (e)=>{
+    const dir = KEY_MAP[e.key];
+    if(dir){
+      e.preventDefault();
+      attemptMove(dir);
+    }
+  });
+  document.querySelectorAll('.dpad button').forEach(btn=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      attemptMove(btn.dataset.dir);
+    });
+  });
+
+  // ---------- start / restart ----------
+  function startGame(){
+    level=1; score=0; lives=3; gameOver=false;
+    newLevel();
+    startOverlay.hidden = true;
+    overOverlay.hidden = true;
+    running = true;
+    lastTime = 0;
+  }
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', startGame);
+
+  window.addEventListener('resize', ()=>{
+    if(!cols||!rows) return;
+    const newSize = computeCellSize(cols,rows);
+    if(newSize!==cellSize){
+      cellSize = newSize;
+      sizeCanvas();
+    }
+  });
+
+  // initial idle render behind the start overlay
+  level=1; score=0; lives=3;
+  newLevel();
+  requestAnimationFrame(loop);
+})();
+</script>

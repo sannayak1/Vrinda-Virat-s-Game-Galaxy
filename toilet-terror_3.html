@@ -1,0 +1,839 @@
+<title>Toilet Terror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --porcelain:#eef9ff;
+    --tile:#20c9c2;
+    --tile-dark:#0fa6a0;
+    --grout:#0b7d79;
+    --danger:#ff4d6d;
+    --danger-dark:#c72c49;
+    --poop:#8a5a2b;
+    --poop-dark:#5c3a17;
+    --gold:#ffd23f;
+    --gold-dark:#e0a900;
+    --ink:#0b1533;
+    --paper:#fff8ec;
+    --shadow: rgba(11,21,51,.35);
+    font-family:'Nunito',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--ink);}
+  #app{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% -10%, #1a3560 0%, transparent 60%),
+      linear-gradient(180deg,#0b1533 0%, #081029 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    overflow:hidden;
+  }
+  #stage{
+    position:relative;
+    width:min(94vw, 900px);
+    aspect-ratio: 3 / 2;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 20px 60px var(--shadow), 0 0 0 6px #0b1533, 0 0 0 10px var(--tile-dark);
+    background:var(--porcelain);
+  }
+  canvas{
+    display:block;
+    width:100%;
+    height:100%;
+    touch-action:none;
+    cursor:crosshair;
+  }
+
+  /* ---------- HUD ---------- */
+  #hud{
+    position:absolute; inset:0 0 auto 0;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    padding:12px 14px;
+    pointer-events:none;
+    font-family:'Fredoka',system-ui,sans-serif;
+    z-index:5;
+  }
+  #hud .pill{
+    pointer-events:auto;
+    display:flex; align-items:center; gap:8px;
+    background:rgba(11,21,51,.55);
+    backdrop-filter: blur(6px);
+    color:var(--paper);
+    padding:7px 13px;
+    border-radius:999px;
+    font-weight:600;
+    font-size:clamp(12px, 2.4vw, 16px);
+    box-shadow:0 3px 0 rgba(0,0,0,.25);
+    border:1.5px solid rgba(255,255,255,.15);
+  }
+  #lives{display:flex; gap:4px;}
+  .life-icon{width:16px; height:16px; filter: drop-shadow(0 1px 0 rgba(0,0,0,.3));}
+  .life-icon.lost{opacity:.25;}
+  #muteBtn{
+    pointer-events:auto;
+    border:1.5px solid rgba(255,255,255,.2);
+    background:rgba(11,21,51,.55);
+    color:var(--paper);
+    width:38px; height:38px;
+    border-radius:999px;
+    font-size:17px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+  #muteBtn:focus-visible, button:focus-visible{
+    outline:3px solid var(--gold);
+    outline-offset:2px;
+  }
+
+  /* ---------- Overlays ---------- */
+  .overlay{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    gap:14px;
+    padding:28px;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(32,201,194,.35), transparent 60%),
+      rgba(6,12,28,.86);
+    color:var(--paper);
+    font-family:'Fredoka',system-ui,sans-serif;
+    z-index:10;
+  }
+  .overlay[hidden]{display:none;}
+  .title{
+    font-size:clamp(34px, 8vw, 62px);
+    font-weight:700;
+    letter-spacing:.5px;
+    text-wrap:balance;
+    color:var(--paper);
+    text-shadow: 0 3px 0 var(--danger-dark), 0 8px 22px rgba(0,0,0,.45);
+    line-height:1.02;
+  }
+  .title .drip{color:var(--gold); }
+  .subtitle{
+    max-width:46ch;
+    font-family:'Nunito',system-ui,sans-serif;
+    font-weight:700;
+    font-size:clamp(13px,2.6vw,16px);
+    color:#d9ecff;
+    line-height:1.5;
+  }
+  .subtitle b{color:var(--gold);}
+  .bigscore{
+    font-size:clamp(20px,5vw,30px);
+    font-weight:700;
+    color:var(--gold);
+  }
+  .smallnote{
+    font-family:'Nunito',system-ui,sans-serif;
+    font-size:13px;
+    font-weight:700;
+    color:#a9c1e8;
+  }
+  .btn{
+    font-family:'Fredoka',system-ui,sans-serif;
+    font-weight:600;
+    font-size:clamp(16px,3.4vw,20px);
+    letter-spacing:.5px;
+    color:var(--ink);
+    background:var(--gold);
+    border:none;
+    padding:14px 34px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 6px 0 var(--gold-dark), 0 14px 26px rgba(0,0,0,.35);
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:translateY(4px); box-shadow:0 2px 0 var(--gold-dark);}
+  .btn.alt{
+    background:var(--danger);
+    box-shadow:0 6px 0 var(--danger-dark), 0 14px 26px rgba(0,0,0,.35);
+  }
+  .emoji-row{font-size:clamp(26px,6vw,40px); letter-spacing:6px;}
+
+  #hint{
+    position:absolute; bottom:10px; left:0; right:0;
+    text-align:center;
+    color:rgba(255,255,255,.65);
+    font-family:'Nunito',system-ui,sans-serif;
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.4px;
+    pointer-events:none;
+    z-index:5;
+    text-shadow:0 1px 3px rgba(0,0,0,.6);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .btn{transition:none;}
+  }
+</style>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="game" width="900" height="600" aria-label="Toilet Terror game canvas"></canvas>
+
+    <div id="hud">
+      <div class="pill">⏱ <span id="scoreVal">0</span></div>
+      <div class="pill" id="lives"></div>
+      <button id="muteBtn" type="button" aria-pressed="false" aria-label="Mute voice lines">🔊</button>
+    </div>
+
+    <div id="hint">WASD / ARROWS TO MOVE &nbsp;•&nbsp; DRAG ON MOBILE &nbsp;•&nbsp; GRAB 🧻 FOR A SHIELD</div>
+
+    <div class="overlay" id="startScreen">
+      <div class="title">TOILET<br><span class="drip">TERROR</span></div>
+      <div class="emoji-row">🚽💩🧻</div>
+      <div class="subtitle">The porcelain throne has come to life and it is <b>furious</b>. Dodge the Toilet Monster, weave past flying poops, and grab toilet paper for a shield. Survive as long as you can!</div>
+      <button class="btn" id="startBtn" type="button">START</button>
+      <div class="smallnote" id="highNote"></div>
+    </div>
+
+    <div class="overlay" id="overScreen" hidden>
+      <div class="title" style="font-size:clamp(28px,7vw,46px)">FLUSHED!</div>
+      <div class="bigscore">Score: <span id="finalScore">0</span></div>
+      <div class="smallnote" id="highScoreNote"></div>
+      <button class="btn alt" id="retryBtn" type="button">TRY AGAIN</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  ctx.scale(DPR, DPR);
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var startScreen = document.getElementById('startScreen');
+  var overScreen = document.getElementById('overScreen');
+  var startBtn = document.getElementById('startBtn');
+  var retryBtn = document.getElementById('retryBtn');
+  var scoreVal = document.getElementById('scoreVal');
+  var finalScore = document.getElementById('finalScore');
+  var livesEl = document.getElementById('lives');
+  var muteBtn = document.getElementById('muteBtn');
+  var highNote = document.getElementById('highNote');
+  var highScoreNote = document.getElementById('highScoreNote');
+
+  /* ---------------- High score (per-viewer, local only) ---------------- */
+  var HIGH_KEY = 'toiletTerrorHighScore';
+  var highScore = 0;
+  try {
+    var stored = localStorage.getItem(HIGH_KEY);
+    if (stored) highScore = parseInt(stored, 10) || 0;
+  } catch(e) {}
+  if (highScore > 0) highNote.textContent = 'Best survival score: ' + highScore;
+
+  function saveHighScore(v){
+    try { localStorage.setItem(HIGH_KEY, String(v)); } catch(e) {}
+  }
+
+  /* ---------------- Voice lines ---------------- */
+  var muted = false;
+  var speechReady = 'speechSynthesis' in window;
+  var lastSpeakAt = 0;
+  var voices = [];
+  if (speechReady) {
+    function loadVoices(){ voices = window.speechSynthesis.getVoices() || []; }
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  function pickVoice(pattern){
+    for (var i=0;i<voices.length;i++){
+      if (pattern.test(voices[i].name)) return voices[i];
+    }
+    return null;
+  }
+
+  function speak(text, opts){
+    if (!speechReady || muted) return;
+    opts = opts || {};
+    var now = performance.now();
+    if (now - lastSpeakAt < (opts.minGap || 2600)) return;
+    lastSpeakAt = now;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.pitch = opts.pitch != null ? opts.pitch : 1;
+      u.rate = opts.rate != null ? opts.rate : 1;
+      u.volume = 1;
+      var v = opts.voice === 'monster' ? pickVoice(/male|fred|daniel|google uk english male/i)
+             : opts.voice === 'hero' ? pickVoice(/female|samantha|zira|google us english/i)
+             : null;
+      if (v) u.voice = v;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
+  var MONSTER_LINES = [
+    "Nobody flushes ME!",
+    "I've been waiting for this crap!",
+    "You can't wipe away your problems!",
+    "Come here, I don't bite... much!",
+    "This throne is MINE!",
+    "Smells like victory!",
+    "Number two is coming for YOU!"
+  ];
+  var HERO_LINES = [
+    "Whoa, that was close!",
+    "Gotta keep moving!",
+    "Fresh roll, let's go!",
+    "Ahh, minty clean!",
+    "Not today, toilet breath!"
+  ];
+  var HIT_LINES = [
+    "Ugh, gross!",
+    "That's gonna stain!",
+    "Ewww, contaminated!"
+  ];
+  var START_LINES = ["Uh oh! The toilet monster is loose, RUN!"];
+  var OVER_LINES = ["Game over! You've been flushed!", "Straight down the drain with you!", "Better luck next flush!"];
+  var MILESTONE_LINES = ["Still going, not bad!", "You're really scrubbing now!", "Impressive dodging!"];
+
+  function rand(arr){ return arr[(Math.random()*arr.length)|0]; }
+
+  muteBtn.addEventListener('click', function(){
+    muted = !muted;
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+    muteBtn.setAttribute('aria-pressed', String(muted));
+    if (muted && speechReady) window.speechSynthesis.cancel();
+  });
+
+  /* ---------------- Input ---------------- */
+  var keys = {};
+  window.addEventListener('keydown', function(e){
+    keys[e.key.toLowerCase()] = true;
+    if (['arrowup','arrowdown','arrowleft','arrowright',' '].indexOf(e.key.toLowerCase()) > -1) e.preventDefault();
+  }, {passive:false});
+  window.addEventListener('keyup', function(e){ keys[e.key.toLowerCase()] = false; });
+
+  var pointerTarget = null;
+  function getCanvasPos(clientX, clientY){
+    var r = canvas.getBoundingClientRect();
+    return { x: (clientX - r.left) / r.width * W, y: (clientY - r.top) / r.height * H };
+  }
+  canvas.addEventListener('pointerdown', function(e){
+    pointerTarget = getCanvasPos(e.clientX, e.clientY);
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e){
+    if (pointerTarget) pointerTarget = getCanvasPos(e.clientX, e.clientY);
+  });
+  window.addEventListener('pointerup', function(){ pointerTarget = null; });
+
+  /* ---------------- Game state ---------------- */
+  var STATE_START = 0, STATE_PLAY = 1, STATE_OVER = 2;
+  var state = STATE_START;
+
+  var player, monster, poops, powerups, particles, t, score, lives, invuln, shakeT, spawnPoopAt, spawnPowerAt, nextTaunt, nextMilestone;
+
+  function resetGame(){
+    player = { x: W*0.5, y: H*0.72, r: 20, vx:0, vy:0, speed: 250, shielded:0, face:1 };
+    monster = { x: W*0.5, y: H*0.16, r: 34, speed: 95, wob:0, lunge:0, angry:0 };
+    poops = [];
+    powerups = [];
+    particles = [];
+    t = 0;
+    score = 0;
+    lives = 3;
+    invuln = 0;
+    shakeT = 0;
+    spawnPoopAt = 1.4;
+    spawnPowerAt = 5;
+    nextTaunt = 3;
+    nextMilestone = 15;
+    renderLives();
+  }
+
+  function renderLives(){
+    livesEl.innerHTML = '';
+    for (var i=0;i<3;i++){
+      var span = document.createElement('span');
+      span.textContent = '🧻';
+      span.className = 'life-icon' + (i < lives ? '' : ' lost');
+      span.style.fontSize = '16px';
+      livesEl.appendChild(span);
+    }
+  }
+
+  function difficulty(){
+    var d = Math.min(t / 75, 1); // 0..1 over 75s
+    return d;
+  }
+
+  /* ---------------- Spawning ---------------- */
+  function spawnPoop(){
+    var edge = (Math.random()*4)|0;
+    var x,y;
+    if (edge===0){ x=-20; y=Math.random()*H; }
+    else if (edge===1){ x=W+20; y=Math.random()*H; }
+    else if (edge===2){ x=Math.random()*W; y=-20; }
+    else { x=Math.random()*W; y=H+20; }
+    var leadX = player.x + player.vx*0.3;
+    var leadY = player.y + player.vy*0.3;
+    var dx = leadX-x, dy = leadY-y;
+    var len = Math.hypot(dx,dy) || 1;
+    var d = difficulty();
+    var spd = 95 + d*110;
+    poops.push({x:x,y:y, vx:dx/len*spd, vy:dy/len*spd, r:13, spin:Math.random()*Math.PI*2, spinV:(Math.random()-.5)*6});
+  }
+
+  function spawnPowerup(){
+    var margin = 60;
+    powerups.push({
+      x: margin + Math.random()*(W-margin*2),
+      y: margin + Math.random()*(H-margin*2)*0.75 + H*0.05,
+      r: 15, bob: Math.random()*Math.PI*2, life: 9
+    });
+  }
+
+  function spawnParticles(x,y,color,n,spread){
+    for (var i=0;i<n;i++){
+      var a = Math.random()*Math.PI*2;
+      var s = (Math.random()*0.5+0.3) * (spread||140);
+      particles.push({x:x,y:y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:0.5+Math.random()*0.4, maxLife:0.9, color:color, size:3+Math.random()*4});
+    }
+  }
+
+  /* ---------------- Update ---------------- */
+  function update(dt){
+    t += dt;
+    score += dt * 12;
+
+    // milestones
+    if (t >= nextMilestone){
+      nextMilestone += 15;
+      speak(rand(MILESTONE_LINES), {voice:'hero', pitch:1.25, rate:1.05, minGap:2000});
+    }
+
+    var d = difficulty();
+
+    // --- player movement ---
+    var ax=0, ay=0;
+    if (keys['a']||keys['arrowleft']) ax -= 1;
+    if (keys['d']||keys['arrowright']) ax += 1;
+    if (keys['w']||keys['arrowup']) ay -= 1;
+    if (keys['s']||keys['arrowdown']) ay += 1;
+
+    var spd = player.speed * (player.shielded>0 ? 1.45 : 1);
+
+    if (pointerTarget){
+      var dx = pointerTarget.x - player.x, dy = pointerTarget.y - player.y;
+      var len = Math.hypot(dx,dy);
+      if (len > 4){ ax = dx/len; ay = dy/len; } else { ax=0; ay=0; }
+    } else {
+      var mlen = Math.hypot(ax,ay);
+      if (mlen>0){ ax/=mlen; ay/=mlen; }
+    }
+
+    player.vx = ax*spd;
+    player.vy = ay*spd;
+    if (ax !== 0) player.face = ax > 0 ? 1 : -1;
+    player.x += player.vx*dt;
+    player.y += player.vy*dt;
+    player.x = Math.max(player.r, Math.min(W-player.r, player.x));
+    player.y = Math.max(player.r+40, Math.min(H-player.r, player.y));
+
+    if (player.shielded > 0) player.shielded -= dt;
+    if (invuln > 0) invuln -= dt;
+    if (shakeT > 0) shakeT -= dt;
+
+    // --- monster chase ---
+    monster.wob += dt;
+    var mdx = player.x - monster.x, mdy = player.y - monster.y;
+    var mlen2 = Math.hypot(mdx,mdy) || 1;
+    var baseSpeed = 85 + d*140;
+    if (monster.lunge > 0){
+      monster.lunge -= dt;
+      baseSpeed *= 2.1;
+    } else if (Math.random() < 0.0028 + d*0.003){
+      monster.lunge = 0.5;
+      monster.angry = 0.6;
+      speak(rand(MONSTER_LINES), {voice:'monster', pitch:0.55, rate:0.92});
+    }
+    monster.speed += (baseSpeed - monster.speed) * Math.min(1, dt*2);
+    monster.x += (mdx/mlen2) * monster.speed * dt;
+    monster.y += (mdy/mlen2) * monster.speed * dt;
+    if (monster.angry > 0) monster.angry -= dt;
+    monster.x = Math.max(monster.r, Math.min(W-monster.r, monster.x));
+    monster.y = Math.max(monster.r, Math.min(H-monster.r, monster.y));
+
+    // random ambient taunts
+    if (t >= nextTaunt){
+      nextTaunt = t + 7 + Math.random()*5;
+      speak(rand(MONSTER_LINES), {voice:'monster', pitch:0.55, rate:0.92, minGap:4000});
+    }
+
+    // --- poop spawn/update ---
+    spawnPoopAt -= dt;
+    if (spawnPoopAt <= 0){
+      spawnPoopAt = Math.max(0.55, 1.5 - d*1.0) + Math.random()*0.5;
+      spawnPoop();
+    }
+    for (var i=poops.length-1;i>=0;i--){
+      var p = poops[i];
+      p.x += p.vx*dt; p.y += p.vy*dt; p.spin += p.spinV*dt;
+      if (p.x<-40||p.x>W+40||p.y<-40||p.y>H+40){ poops.splice(i,1); continue; }
+      var dist = Math.hypot(p.x-player.x, p.y-player.y);
+      if (dist < p.r+player.r-6 && invuln<=0 && player.shielded<=0){
+        poops.splice(i,1);
+        hitPlayer();
+      }
+    }
+
+    // --- powerup spawn/update ---
+    spawnPowerAt -= dt;
+    if (spawnPowerAt <= 0){
+      spawnPowerAt = 7 + Math.random()*4;
+      spawnPowerup();
+    }
+    for (var j=powerups.length-1;j>=0;j--){
+      var pu = powerups[j];
+      pu.bob += dt*3; pu.life -= dt;
+      if (pu.life<=0){ powerups.splice(j,1); continue; }
+      var d2 = Math.hypot(pu.x-player.x, pu.y-player.y);
+      if (d2 < pu.r+player.r){
+        powerups.splice(j,1);
+        player.shielded = 4.5;
+        score += 40;
+        spawnParticles(pu.x,pu.y,'#fff',18,160);
+        speak(rand(HERO_LINES), {voice:'hero', pitch:1.25, rate:1.1, minGap:1500});
+      }
+    }
+
+    // --- monster contact ---
+    var mdist = Math.hypot(monster.x-player.x, monster.y-player.y);
+    if (mdist < monster.r*0.72 + player.r - 8 && invuln<=0){
+      if (player.shielded > 0){
+        // bounce monster back, no damage
+        var kx = (monster.x-player.x)/ (mdist||1), ky=(monster.y-player.y)/(mdist||1);
+        monster.x += kx*40; monster.y += ky*40;
+        spawnParticles(player.x,player.y,'#ffd23f',10,120);
+      } else {
+        hitPlayer();
+        var kx2 = (player.x-monster.x)/(mdist||1), ky2=(player.y-monster.y)/(mdist||1);
+        player.x += kx2*36; player.y += ky2*36;
+      }
+    }
+
+    // --- particles ---
+    for (var k=particles.length-1;k>=0;k--){
+      var pt = particles[k];
+      pt.life -= dt;
+      if (pt.life<=0){ particles.splice(k,1); continue; }
+      pt.x += pt.vx*dt; pt.y += pt.vy*dt;
+      pt.vx *= 0.9; pt.vy = pt.vy*0.9 + 40*dt;
+    }
+
+    scoreVal.textContent = Math.floor(score);
+  }
+
+  function hitPlayer(){
+    lives -= 1;
+    invuln = 1.6;
+    shakeT = reduceMotion ? 0 : 0.35;
+    renderLives();
+    spawnParticles(player.x, player.y, '#8a5a2b', 14, 150);
+    if (lives <= 0){
+      speak(rand(HIT_LINES), {voice:'hero', pitch:1.2, minGap:0});
+      endGame();
+    } else {
+      speak(rand(HIT_LINES), {voice:'hero', pitch:1.2, rate:1.1, minGap:900});
+    }
+  }
+
+  function endGame(){
+    state = STATE_OVER;
+    var finalS = Math.floor(score);
+    finalScore.textContent = finalS;
+    var isHigh = finalS > highScore;
+    if (isHigh){ highScore = finalS; saveHighScore(highScore); }
+    highScoreNote.textContent = isHigh ? '🎉 New high score!' : ('Best: ' + highScore);
+    overScreen.hidden = false;
+    setTimeout(function(){
+      speak(isHigh ? "New high score! You're number one!" : rand(OVER_LINES), {voice:'monster', pitch:0.6, rate:0.9, minGap:0});
+    }, 250);
+  }
+
+  /* ---------------- Draw ---------------- */
+  var tilePattern = null;
+  function buildTilePattern(){
+    var pc = document.createElement('canvas');
+    pc.width = 60; pc.height = 60;
+    var pctx = pc.getContext('2d');
+    pctx.fillStyle = '#e9fbff';
+    pctx.fillRect(0,0,60,60);
+    pctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--tile') || '#20c9c2';
+    pctx.fillStyle = '#20c9c2';
+    pctx.fillRect(2,2,56,56);
+    pctx.fillStyle = 'rgba(255,255,255,.18)';
+    pctx.fillRect(2,2,56,10);
+    pctx.strokeStyle = 'rgba(11,21,51,.18)';
+    pctx.lineWidth = 3;
+    pctx.strokeRect(0,0,60,60);
+    tilePattern = ctx.createPattern(pc, 'repeat');
+  }
+
+  function drawBackground(){
+    if (!tilePattern) buildTilePattern();
+    ctx.fillStyle = tilePattern;
+    ctx.fillRect(0,0,W,H);
+    // floor strip
+    var grad = ctx.createLinearGradient(0,H-90,0,H);
+    grad.addColorStop(0,'rgba(11,21,51,0)');
+    grad.addColorStop(1,'rgba(11,21,51,.18)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,H-90,W,90);
+  }
+
+  function drawPlayer(){
+    ctx.save();
+    var flick = (invuln>0 && Math.floor(invuln*18)%2===0);
+    if (flick){ ctx.globalAlpha = 0.35; }
+    ctx.translate(player.x, player.y);
+    var bob = Math.sin(t*10)*2;
+    ctx.translate(0, bob);
+
+    if (player.shielded > 0){
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,210,63,.85)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0,0, player.r+10 + Math.sin(t*14)*2, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // legs
+    ctx.fillStyle = '#0b1533';
+    var legSwing = Math.sin(t*16) * 6 * (Math.hypot(player.vx,player.vy)>10?1:0);
+    ctx.fillRect(-9, 10+Math.abs(legSwing)*0.2, 7, 12);
+    ctx.fillRect(2, 10+Math.abs(legSwing)*0.2, 7, 12);
+
+    // body: TP roll
+    ctx.fillStyle = '#fffaf0';
+    ctx.strokeStyle = '#0b1533';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(-16,-20,32,34,10) : ctx.rect(-16,-20,32,34);
+    ctx.fill(); ctx.stroke();
+
+    // spiral core
+    ctx.strokeStyle = '#ffd8a8';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0,-3,7,10,0,0,Math.PI*2);
+    ctx.stroke();
+
+    // eyes
+    ctx.fillStyle = '#0b1533';
+    ctx.beginPath();
+    ctx.arc(player.face*5, -8, 3.2, 0, Math.PI*2);
+    ctx.arc(player.face*-4, -8, 3.2, 0, Math.PI*2);
+    ctx.fill();
+
+    // little arms
+    ctx.strokeStyle = '#0b1533';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-15,-2); ctx.lineTo(-24, -2 + Math.sin(t*16)*5);
+    ctx.moveTo(15,-2); ctx.lineTo(24, -2 - Math.sin(t*16)*5);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawMonster(){
+    ctx.save();
+    ctx.translate(monster.x, monster.y);
+    var squish = 1 + Math.sin(monster.wob*8) * (monster.lunge>0 ? 0.12 : 0.05);
+    ctx.scale(squish, 2-squish);
+
+    var angry = monster.angry > 0;
+
+    // shadow
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(0, monster.r*0.9, monster.r*0.9, monster.r*0.28, 0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // bowl body
+    ctx.fillStyle = angry ? '#ffe3e3' : '#ffffff';
+    ctx.strokeStyle = '#0b1533';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0,4, monster.r, monster.r*0.82, 0, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+
+    // lid mouth (open, angry)
+    ctx.fillStyle = angry ? '#ff4d6d' : '#c9385a';
+    ctx.beginPath();
+    ctx.ellipse(0, 10, monster.r*0.62, monster.r*0.36 + (monster.lunge>0?6:0), 0,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#0b1533'; ctx.lineWidth=2.5; ctx.stroke();
+
+    // teeth
+    ctx.fillStyle = '#fff';
+    for (var i=-2;i<=2;i++){
+      ctx.beginPath();
+      ctx.moveTo(i*9, 0);
+      ctx.lineTo(i*9-4, 8);
+      ctx.lineTo(i*9+4, 8);
+      ctx.fill();
+    }
+
+    // eyes on stalks
+    ctx.strokeStyle = '#0b1533'; ctx.lineWidth=3;
+    [[-18,-6],[18,-6]].forEach(function(pos){
+      ctx.beginPath();
+      ctx.moveTo(pos[0]*0.6, -14);
+      ctx.lineTo(pos[0], -26);
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(pos[0], -26, 7, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#0b1533'; ctx.lineWidth=2; ctx.stroke();
+      ctx.fillStyle = angry ? '#ff4d6d' : '#0b1533';
+      ctx.beginPath(); ctx.arc(pos[0] + (angry?1.5:0), -26, 3.4, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#0b1533'; ctx.lineWidth=3;
+    });
+
+    // angry brows
+    if (angry){
+      ctx.strokeStyle = '#0b1533'; ctx.lineWidth=3; ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(-26,-34); ctx.lineTo(-12,-30);
+      ctx.moveTo(26,-34); ctx.lineTo(12,-30);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawPoops(){
+    poops.forEach(function(p){
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.spin*0.15);
+      var g = ctx.createRadialGradient(-3,-4,1,0,0,p.r+3);
+      g.addColorStop(0,'#a97a45');
+      g.addColorStop(1,'#5c3a17');
+      ctx.fillStyle = g;
+      ctx.strokeStyle = '#3c2610';
+      ctx.lineWidth = 1.5;
+      // stacked swirl blobs
+      var sizes = [p.r*0.95, p.r*0.72, p.r*0.46];
+      var offs = [8,4,0];
+      for (var i=0;i<3;i++){
+        ctx.beginPath();
+        ctx.arc(0, offs[i]-6, sizes[i], 0, Math.PI*2);
+        ctx.fill(); ctx.stroke();
+      }
+      // eyes for personality
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(-4,-9,2.6,0,Math.PI*2); ctx.arc(4,-9,2.6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#2a1a0a';
+      ctx.beginPath(); ctx.arc(-4,-9,1.2,0,Math.PI*2); ctx.arc(4,-9,1.2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawPowerups(){
+    powerups.forEach(function(pu){
+      ctx.save();
+      var by = Math.sin(pu.bob)*4;
+      ctx.translate(pu.x, pu.y+by);
+      if (pu.life < 2.5 && Math.floor(pu.life*8)%2===0){ ctx.globalAlpha = 0.35; }
+      ctx.fillStyle = 'rgba(255,210,63,.28)';
+      ctx.beginPath(); ctx.arc(0,0,pu.r+9,0,Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = '#fffaf0';
+      ctx.strokeStyle = '#0b1533';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-10,-15,20,30,6) : ctx.rect(-10,-15,20,30);
+      ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#ffd8a8'; ctx.lineWidth=2;
+      for (var i=-10;i<12;i+=5){
+        ctx.beginPath(); ctx.moveTo(-10,i); ctx.lineTo(10,i+4); ctx.stroke();
+      }
+      ctx.restore();
+    });
+  }
+
+  function drawParticles(){
+    particles.forEach(function(p){
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function draw(){
+    ctx.save();
+    if (shakeT > 0 && !reduceMotion){
+      var mag = shakeT*22;
+      ctx.translate((Math.random()-.5)*mag, (Math.random()-.5)*mag);
+    }
+    drawBackground();
+    drawPowerups();
+    drawPoops();
+    drawMonster();
+    drawPlayer();
+    drawParticles();
+    ctx.restore();
+  }
+
+  /* ---------------- Loop ---------------- */
+  var lastTime = null;
+  function loop(now){
+    if (lastTime==null) lastTime = now;
+    var dt = Math.min((now-lastTime)/1000, 0.05);
+    lastTime = now;
+
+    if (state === STATE_PLAY){
+      update(dt);
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------------- Start / Restart ---------------- */
+  function startGame(){
+    resetGame();
+    state = STATE_PLAY;
+    startScreen.hidden = true;
+    overScreen.hidden = true;
+    speak(START_LINES[0], {voice:'monster', pitch:0.55, rate:0.95, minGap:0});
+  }
+
+  startBtn.addEventListener('click', startGame);
+  retryBtn.addEventListener('click', startGame);
+
+  resetGame();
+  draw();
+  requestAnimationFrame(loop);
+})();
+</script>
