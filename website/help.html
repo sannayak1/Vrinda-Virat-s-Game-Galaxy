@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>How to Play · Vrinda &amp; Virat's Arcade</title>
 <meta name="description" content="How to play every game in Vrinda and Virat's Arcade on a laptop or a phone.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#bfe2ff">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="V&amp;V Arcade">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
@@ -72,6 +79,19 @@ kbd.wide{min-width:96px}
 .row span.what{color:var(--muted);font-size:15px}
 .tip{margin-top:18px;padding:14px 16px;border-radius:16px;background:#f3efff;border:2px dashed #c9bdf2;font-size:15px}
 .tip b{color:var(--ink)}
+
+/* app */
+.os{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.os>div{background:#f7f4ff;border:2px solid var(--line);border-radius:18px;padding:14px 16px}
+.os h3{font-family:var(--display);font-weight:400;font-size:21px;line-height:1.1;margin:0 0 8px}
+.os ol{margin:0;padding-left:22px;color:var(--muted);font-size:15.5px}
+.os li{margin:5px 0}
+.os b{color:var(--ink)}
+.ic{width:18px;height:18px;vertical-align:-3px;color:var(--ink)}
+.installbtn{display:inline-flex;align-items:center;gap:9px;font-family:var(--display);font-size:21px;color:var(--ink);text-decoration:none;background:var(--mint);border:3px solid var(--ink);border-radius:999px;padding:10px 22px 10px 16px;box-shadow:0 5px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+.installbtn:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--ink)}
+.installbtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.installbtn svg{width:22px;height:22px}
 
 /* game list */
 .tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
@@ -151,9 +171,37 @@ footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
     </div>
   </section>
 
-  <!-- 2. cheat sheet -->
+  <!-- 2. the app -->
+  <section aria-labelledby="h-app" id="install">
+    <h2 id="h-app"><span class="num" style="--c:var(--mint)">2</span>Get the app</h2>
+    <div class="panel" style="--a:var(--mint)">
+      <p style="margin:0 0 16px">Put the Arcade on your home screen. It opens full screen like a real app, <b>plays offline</b>, and updates itself when new games are added. It's free, and you don't need an app store.</p>
+      <p style="margin:0 0 16px"><a class="installbtn" href="#install" data-install hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3" fill="#fff" stroke="currentColor" stroke-width="2.4"/><path d="M12 7v7.5M8.8 11.5 12 14.7l3.2-3.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Install now</a></p>
+      <div class="os" data-for="phone">
+        <div><h3>Android phone or tablet</h3><ol>
+          <li>Open the Arcade in <b>Chrome</b>.</li>
+          <li>Tap <b>Get the app</b> at the top of the Arcade, or tap <b>⋮</b> then <b>Install app</b> (some phones say <b>Add to Home screen</b>).</li>
+          <li>Tap <b>Install</b>. The Arcade icon appears with your other apps.</li></ol></div>
+        <div><h3>iPhone or iPad</h3><ol>
+          <li>Open the Arcade in <b>Safari</b>.</li>
+          <li>Tap the <b>Share</b> button <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Share icon"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></svg> at the bottom (or top on iPad).</li>
+          <li>Scroll down, tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol></div>
+      </div>
+      <div class="os" data-for="laptop" hidden>
+        <div><h3>Chrome or Edge</h3><ol>
+          <li>Click <b>Get the app</b> at the top of the Arcade, or the install icon <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Install icon"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 8v6M9 11l3 3 3-3M8 21h8"/></svg> at the right of the address bar.</li>
+          <li>Click <b>Install</b>. The Arcade opens in its own window and gets a Dock or Start menu icon.</li></ol></div>
+        <div><h3>Safari on a Mac</h3><ol>
+          <li>Open the Arcade in Safari.</li>
+          <li>Choose <b>File</b>, then <b>Add to Dock</b>.</li></ol></div>
+      </div>
+      <p class="tip">Inside the app, tap <b>‹ Arcade</b> at the top-left of a game to come back. Open the app once with internet so it can save every game for offline play.</p>
+    </div>
+  </section>
+
+  <!-- 3. cheat sheet -->
   <section aria-labelledby="h-sheet">
-    <h2 id="h-sheet"><span class="num" style="--c:var(--sky)">2</span><span data-for="laptop">Keys most games use</span><span data-for="phone" hidden>Moves most games use</span></h2>
+    <h2 id="h-sheet"><span class="num" style="--c:var(--sky)">3</span><span data-for="laptop">Keys most games use</span><span data-for="phone" hidden>Moves most games use</span></h2>
     <div class="panel" style="--a:var(--sky)">
       <div class="sheet" data-for="laptop">
         <div class="row"><span class="keys"><kbd>←</kbd><kbd>→</kbd></span><span><b>Move</b> <span class="what">· or A and D</span></span></div>
@@ -172,13 +220,13 @@ footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
         <div class="row"><span class="keys"><span class="gest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg>Hold</span></span><span><b>Keep pressing</b> <span class="what">· to keep moving</span></span></div>
       </div>
       <p class="tip" data-for="laptop"><b>Bigger screen:</b> press <b>Ctrl + ⌘ + F</b> on a Mac or <b>F11</b> on Windows for full screen. Press it again to go back.</p>
-      <p class="tip" data-for="phone" hidden><b>Make it an app:</b> on iPhone or iPad, tap <b>Share</b> then <b>Add to Home Screen</b>. On Android, tap <b>⋮</b> then <b>Add to Home screen</b>. The Arcade then opens like an app.</p>
+      <p class="tip" data-for="phone" hidden><b>Make it an app:</b> see <a href="#install"><b>Get the app</b></a> above to put the Arcade on your home screen.</p>
     </div>
   </section>
 
-  <!-- 3. every game -->
+  <!-- 4. every game -->
   <section aria-labelledby="h-games">
-    <h2 id="h-games"><span class="num" style="--c:var(--mint)">3</span>Controls for every game</h2>
+    <h2 id="h-games"><span class="num" style="--c:var(--sun)">4</span>Controls for every game</h2>
     <div class="tools">
       <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
         <input id="q" type="search" placeholder="Find a game…" aria-label="Find a game"></label>
@@ -187,9 +235,9 @@ footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
     <div class="games" id="games"></div>
   </section>
 
-  <!-- 4. laptop only -->
+  <!-- 5. laptop only -->
   <section aria-labelledby="h-laptop" id="laptop-only">
-    <h2 id="h-laptop"><span class="num" style="--c:var(--grape)">4</span>Laptop-only games</h2>
+    <h2 id="h-laptop"><span class="num" style="--c:var(--grape)">5</span>Laptop-only games</h2>
     <div class="panel" style="--a:var(--grape)">
       <p style="margin:0 0 10px">These games need a real keyboard, so they won't work on a phone or tablet:</p>
       <p style="margin:0;font-family:var(--display);font-size:20px" id="laptopList"></p>
@@ -197,9 +245,9 @@ footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
     </div>
   </section>
 
-  <!-- 5. fixes -->
+  <!-- 6. fixes -->
   <section aria-labelledby="h-fix">
-    <h2 id="h-fix"><span class="num" style="--c:var(--orange)">5</span>Something not working?</h2>
+    <h2 id="h-fix"><span class="num" style="--c:var(--orange)">6</span>Something not working?</h2>
     <details class="q"><summary>There's no sound</summary><div class="a"><ul>
       <li>Click or tap the game once. Browsers keep games quiet until you touch them.</li>
       <li>Look for a 🔊 or <b>Sounds</b> button in the corner of the game and make sure it's on.</li>
@@ -224,7 +272,12 @@ footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
       <li>We'd love to hear it! <a href="#" target="_blank" rel="noopener" data-feedback-link><b>Send us feedback</b></a>. Tell us which game, what happened and what you were doing.</li>
       <li>You don't need to give your name. A nickname is enough.</li></ul></div></details>
     <details class="q"><summary>I can't see a new game</summary><div class="a"><ul>
-      <li>Your browser may be showing an old copy. Do a hard refresh: <b>⌘ + Shift + R</b> on a Mac or <b>Ctrl + Shift + R</b> on Windows.</li></ul></div></details>
+      <li>Your browser may be showing an old copy. Do a hard refresh: <b>⌘ + Shift + R</b> on a Mac or <b>Ctrl + Shift + R</b> on Windows.</li>
+      <li>In the app, close it fully and open it again while you have internet.</li></ul></div></details>
+    <details class="q"><summary>How do I remove the app?</summary><div class="a"><ul>
+      <li><b>iPhone or iPad:</b> press and hold the icon, tap <b>Remove App</b>, then <b>Delete</b>.</li>
+      <li><b>Android:</b> press and hold the icon, then tap <b>Uninstall</b> (or drag it to Uninstall).</li>
+      <li><b>Laptop:</b> open the app, click <b>⋮</b> at the top of its window, then <b>Uninstall</b>.</li></ul></div></details>
   </section>
 
   <footer>
@@ -234,6 +287,7 @@ footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
 </div>
 
 <script src="games.js"></script>
+<script src="app.js"></script>
 <script>
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ACCENTS=['var(--pink)','var(--sky)','var(--mint)','var(--sun)','var(--grape)','var(--orange)'];
