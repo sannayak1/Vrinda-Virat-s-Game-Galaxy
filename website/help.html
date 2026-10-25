@@ -220,13 +220,16 @@ footer p{color:var(--muted);font-weight:800;margin:14px 0 0}
     <details class="q"><summary>The game is too big or too small</summary><div class="a"><ul>
       <li>On a laptop, zoom with <b>⌘ +</b> / <b>⌘ −</b> (Mac) or <b>Ctrl +</b> / <b>Ctrl −</b> (Windows). <b>⌘ 0</b> or <b>Ctrl 0</b> resets it.</li>
       <li>On a phone, turn it sideways and try again.</li></ul></div></details>
+    <details class="q" data-feedback hidden><summary>Found a bug, or have an idea?</summary><div class="a"><ul>
+      <li>We'd love to hear it! <a href="#" target="_blank" rel="noopener" data-feedback-link><b>Send us feedback</b></a>. Tell us which game, what happened and what you were doing.</li>
+      <li>You don't need to give your name. A nickname is enough.</li></ul></div></details>
     <details class="q"><summary>I can't see a new game</summary><div class="a"><ul>
       <li>Your browser may be showing an old copy. Do a hard refresh: <b>⌘ + Shift + R</b> on a Mac or <b>Ctrl + Shift + R</b> on Windows.</li></ul></div></details>
   </section>
 
   <footer>
     <a class="back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back to the Arcade</a>
-    <p>Made with lots of ideas by Vrinda and Virat</p>
+    <p>Made with lots of ideas by Vrinda and Virat<span data-feedback hidden> · <a href="#" target="_blank" rel="noopener" data-feedback-link>Give feedback</a></span></p>
   </footer>
 </div>
 
@@ -279,6 +282,10 @@ function drawGames(){
 document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();drawGames();});
 document.getElementById('laptopList').innerHTML=GAMES.filter(g=>g.phone===false).map(g=>`<a href="${esc(g.file)}">${esc(g.title)}</a>`).join(' · ');
 setDev(dev);
+if(feedbackURL()){
+  document.querySelectorAll('[data-feedback]').forEach(el=>el.hidden=false);
+  document.querySelectorAll('[data-feedback-link]').forEach(a=>a.href=feedbackURL());
+}
 </script>
 </body>
 </html>

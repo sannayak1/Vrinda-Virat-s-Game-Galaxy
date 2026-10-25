@@ -3,6 +3,22 @@
    Each game has:  title, file, thumb, blurb, tags, by ("Vrinda", "Virat" or "Vrinda & Virat"), updated (YYYY-MM-DD), older (earlier versions),
    phone (false if it needs a keyboard), laptopControls, phoneControls, needsInternet (true for 3D games that load from the internet)
    To add a game: put its .html in the games folder, a picture in thumbs, and copy one entry below. */
+/* ───────────── FEEDBACK ─────────────
+   Paste your Google Form's pre-filled link between the quotes (made with TEST typed in the "Which game?" box).
+   While it's empty, all the feedback buttons stay hidden. */
+const FEEDBACK_LINK = '';
+
+/* The form link, with the "Which game?" box filled in when a game is given. */
+function feedbackURL(game){
+  if(!FEEDBACK_LINK) return '';
+  try{
+    const u=new URL(FEEDBACK_LINK);
+    const keys=[...u.searchParams].filter(([k,v])=>v==='TEST').map(([k])=>k);
+    keys.forEach(k=>game?u.searchParams.set(k,game):u.searchParams.delete(k));
+    return u.toString();
+  }catch(e){return '';}
+}
+
 const GAMES = [
  {
   "title": "Galactic Run",
