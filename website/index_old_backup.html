@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vrinda &amp; Virat's Arcade</title>
+<meta name="description" content="Games made by Vrinda and Virat. Pick one and press Play.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+/* Layout: arcade marquee header → featured "newest game" cabinet → filter bar → grid of game cards. One committed night-arcade look. */
+:root{
+  --night:#17153a; --deep:#221f52; --card:#2b2763; --line:#3d3889;
+  --ink:#fff7fb; --muted:#bdb6ec;
+  --pink:#ff5fa2; --sun:#ffd25e; --mint:#5fe3c4; --sky:#7ab8ff;
+  --display:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;
+  --body:'Nunito','Avenir Next','Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--night)}
+body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);font-weight:600;line-height:1.5;
+  background-image:radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,.5) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 70% 12%,rgba(255,255,255,.45) 50%,transparent 51%),radial-gradient(1px 1px at 85% 60%,rgba(255,255,255,.4) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 35% 80%,rgba(255,255,255,.35) 50%,transparent 51%),radial-gradient(900px 500px at 10% -10%,#3a2a86 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#5a1f6e 0,transparent 55%);
+  background-size:240px 240px,320px 320px,280px 280px,360px 360px,auto,auto;background-attachment:fixed}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:28px 64px}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px;border-radius:12px}
+
+/* marquee */
+.marquee{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:58px;height:58px;flex:none;border-radius:18px;background:var(--pink);display:grid;place-items:center;box-shadow:0 5px 0 #b8306f,inset 0 -6px 0 rgba(0,0,0,.12)}
+.logo svg{width:36px;height:36px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,5vw,48px);line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance;
+  color:var(--ink);text-shadow:0 3px 0 #b8306f,0 6px 18px rgba(255,95,162,.35)}
+h1 .amp{color:var(--sun)}
+.tagline{margin:6px 0 0;color:var(--muted);font-size:15px}
+.count{display:flex;gap:10px;flex-wrap:wrap}
+.pill{font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:var(--deep);border:2px solid var(--line);font-variant-numeric:tabular-nums}
+.pill b{color:var(--sun)}
+
+/* featured */
+.featured{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0;border-radius:28px;overflow:hidden;background:var(--deep);border:3px solid var(--line);box-shadow:0 10px 0 #120f30;margin-bottom:34px}
+.featured .shot{position:relative;display:block;aspect-ratio:16/10;max-width:100%;background:#0d0b26}
+.featured .shot img{width:100%;height:100%;object-fit:cover;display:block}
+.featured .info{padding:28px;display:flex;flex-direction:column;gap:12px;justify-content:center;min-width:0}
+.eyebrow{font-weight:900;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint)}
+.featured h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.4vw,40px);line-height:1.05;margin:0;text-wrap:balance}
+.featured p{margin:0;color:var(--muted);font-size:16px;max-width:42ch}
+@media (max-width:760px){.featured{grid-template-columns:1fr}.featured .info{padding:20px}}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:20px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-weight:800;font-size:14px;color:var(--ink);background:var(--deep);border:2px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.chip:hover{border-color:var(--sky)}
+.chip[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:#2a1d00}
+.search{position:relative;flex:1 1 220px;max-width:320px}
+.search input{width:100%;font:inherit;font-weight:700;color:var(--ink);background:var(--deep);border:2px solid var(--line);border-radius:999px;padding:9px 16px 9px 40px}
+.search input::placeholder{color:var(--muted)}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:.7}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.card{display:flex;flex-direction:column;background:var(--card);border:3px solid var(--line);border-radius:22px;overflow:hidden;min-width:0;transition:transform .15s ease,border-color .15s ease}
+.card:hover{transform:translateY(-4px);border-color:var(--pink)}
+.card .shot{display:block;aspect-ratio:16/10;max-width:100%;background:#0d0b26;overflow:hidden}
+.card .shot img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease}
+.card:hover .shot img{transform:scale(1.04)}
+.card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.card h3{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.1;margin:0;text-wrap:balance}
+.card p{margin:0;color:var(--muted);font-size:14px;flex:1}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--muted)}
+.tag.by{background:rgba(95,227,196,.16);color:var(--mint)}
+.tag.new{background:var(--pink);color:#fff}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:6px}
+.play{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-size:20px;letter-spacing:.02em;text-decoration:none;color:#2a1d00;background:var(--sun);border-radius:999px;padding:8px 22px 8px 18px;box-shadow:0 4px 0 #c99a1e}
+.play:hover{filter:brightness(1.06)}
+.play:active{transform:translateY(2px);box-shadow:0 2px 0 #c99a1e}
+.play svg{width:16px;height:16px}
+.featured .play{align-self:flex-start;font-size:24px;padding:10px 28px 10px 22px;background:var(--pink);color:#fff;box-shadow:0 5px 0 #b8306f}
+.date{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+details.versions{font-size:13px;color:var(--muted)}
+details.versions summary{cursor:pointer;font-weight:800;list-style:none;display:inline-flex;align-items:center;gap:6px}
+details.versions summary::-webkit-details-marker{display:none}
+details.versions summary::before{content:"";width:0;height:0;border-left:6px solid currentColor;border-top:5px solid transparent;border-bottom:5px solid transparent;transition:transform .15s}
+details.versions[open] summary::before{transform:rotate(90deg)}
+.vlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vlist a{text-decoration:none;font-weight:800;font-size:12px;padding:4px 10px;border-radius:999px;border:2px solid var(--line)}
+.vlist a:hover{border-color:var(--sky)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0;font-size:17px}
+footer{margin-top:48px;color:var(--muted);font-size:14px;text-align:center}
+@media (prefers-reduced-motion:reduce){.card,.card .shot img{transition:none}.card:hover{transform:none}.card:hover .shot img{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="marquee">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 36 36"><rect x="3" y="9" width="30" height="18" rx="9" fill="#fff"/><rect x="9" y="16" width="8" height="3" rx="1.5" fill="#ff5fa2"/><rect x="11.5" y="13.5" width="3" height="8" rx="1.5" fill="#ff5fa2"/><circle cx="24" cy="15.5" r="2.2" fill="#ffd25e"/><circle cx="27.5" cy="19.5" r="2.2" fill="#5fe3c4"/></svg></div>
+      <div>
+        <h1>Vrinda <span class="amp">&amp;</span> Virat's Arcade</h1>
+        <p class="tagline">Games we made ourselves. Pick one and press Play!</p>
+      </div>
+    </div>
+    <div class="count"><span class="pill"><b id="nGames">0</b> games</span></div>
+  </header>
+
+  <section class="featured" id="featured" aria-label="Newest game"></section>
+
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Filter games"></div>
+    <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input id="q" type="search" placeholder="Find a game" aria-label="Find a game"></label>
+  </div>
+  <main class="grid" id="grid"></main>
+  <footer>Made with lots of ideas by Vrinda and Virat.</footer>
+</div>
+
+<script>
+/* ───────────── EDIT ME ─────────────
+   Each game has:  title, file, thumb, blurb, tags, by ("Vrinda", "Virat" or "Vrinda & Virat"), updated (YYYY-MM-DD), older (earlier versions)
+   To add a game: put its .html in the games folder, a picture in thumbs, and copy one entry below. */
+const GAMES = [
+ {
+  "title": "Wooble Monster Run",
+  "file": "games/wooble-monster-run.html",
+  "thumb": "thumbs/wooble-monster-run.jpg",
+  "blurb": "Design your own wooble and race through 9 candy universes to rescue Queen Celeste from Chunky.",
+  "tags": [
+   "Adventure"
+  ],
+  "by": "",
+  "updated": "2026-10-22",
+  "older": []
+ },
+ {
+  "title": "Super Roblox Story 2",
+  "file": "games/super-roblox-story-2.html",
+  "thumb": "thumbs/super-roblox-story-2.jpg",
+  "blurb": "King Null is back! Build your avatar, meet the squad and rescue Queen Tech across five universes.",
+  "tags": [
+   "Adventure"
+  ],
+  "by": "",
+  "updated": "2026-10-02",
+  "older": []
+ },
+ {
+  "title": "Super Roblox Story",
+  "file": "games/super-roblox-story.html",
+  "thumb": "thumbs/super-roblox-story.jpg",
+  "blurb": "A villain is on the loose and Queen Tech is missing. Make your avatar and save the day.",
+  "tags": [
+   "Adventure"
+  ],
+  "by": "",
+  "updated": "2026-09-26",
+  "older": []
+ },
+ {
+  "title": "Candy Run Kingdom 3D",
+  "file": "games/candy-run-kingdom-3d.html",
+  "thumb": "thumbs/candy-run-kingdom-3d.jpg",
+  "blurb": "A 3D candy run starring Celeste. Dash, jump and grab the sweets.",
+  "tags": [
+   "Adventure",
+   "3D"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": []
+ },
+ {
+  "title": "Candy Run Kingdom Quest",
+  "file": "games/candy-run-kingdom-quest.html",
+  "thumb": "thumbs/candy-run-kingdom-quest.jpg",
+  "blurb": "Ride, dash and duel the darkness to rescue Princess Peppermint from Hester.",
+  "tags": [
+   "Adventure",
+   "3D"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": [
+   "games/candy-run-kingdom-quest-v1.html",
+   "games/candy-run-kingdom-quest-v2.html",
+   "games/candy-run-kingdom-quest-v3.html",
+   "games/candy-run-kingdom-quest-v4.html"
+  ]
+ },
+ {
+  "title": "Glitch Circus",
+  "file": "games/glitch-circus.html",
+  "thumb": "thumbs/glitch-circus.jpg",
+  "blurb": "Build your own performer and step into a very strange big top.",
+  "tags": [
+   "Spooky",
+   "3D"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": [
+   "games/glitch-circus-v1.html"
+  ]
+ },
+ {
+  "title": "Stickmen Fist Fight",
+  "file": "games/stickmen-fist-fight.html",
+  "thumb": "thumbs/stickmen-fist-fight.jpg",
+  "blurb": "Pick a stickman, throw hands and send bodies flying around the ring.",
+  "tags": [
+   "Fighting",
+   "2 players"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": []
+ },
+ {
+  "title": "99 Nights at Aunt Chippy's",
+  "file": "games/99-nights-at-aunt-chippys.html",
+  "thumb": "thumbs/99-nights-at-aunt-chippys.jpg",
+  "blurb": "Three kids went into the woods. Can you survive 99 nights at the camp?",
+  "tags": [
+   "Spooky",
+   "3D"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": [
+   "games/99-nights-at-aunt-chippys-v1.html",
+   "games/99-nights-at-aunt-chippys-v2.html",
+   "games/99-nights-at-aunt-chippys-v3.html"
+  ]
+ },
+ {
+  "title": "Prank the Upper Moons",
+  "file": "games/prank-the-upper-moons.html",
+  "thumb": "thumbs/prank-the-upper-moons.jpg",
+  "blurb": "Sneak through Infinity Castle and pull off pranks without getting caught.",
+  "tags": [
+   "Sneaky"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": [
+   "games/prank-the-upper-moons-v1.html"
+  ]
+ },
+ {
+  "title": "Super Roblox Bux Squad",
+  "file": "games/super-roblox-bux-squad.html",
+  "thumb": "thumbs/super-roblox-bux-squad.jpg",
+  "blurb": "Pick your hero, clear the corrupted waves and take down King Null.",
+  "tags": [
+   "Fighting"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": [
+   "games/super-roblox-bux-squad-v1.html"
+  ]
+ },
+ {
+  "title": "Hollowframe",
+  "file": "games/hollowframe.html",
+  "thumb": "thumbs/hollowframe.jpg",
+  "blurb": "Wake up, build a body from scrap and battle the drones.",
+  "tags": [
+   "Fighting",
+   "3D"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": []
+ },
+ {
+  "title": "Escape Meemeows",
+  "file": "games/escape-meemeows.html",
+  "thumb": "thumbs/escape-meemeows.jpg",
+  "blurb": "Slip through the Meemeow maze, dodge them in the dark and reach the door.",
+  "tags": [
+   "Sneaky",
+   "Maze"
+  ],
+  "by": "",
+  "updated": "2026-09-02",
+  "older": []
+ },
+ {
+  "title": "Yuki's Prison Escape",
+  "file": "games/yukis-prison-escape.html",
+  "thumb": "thumbs/yukis-prison-escape.jpg",
+  "blurb": "Sneak past the wardens, find the keys and help Yuki break out.",
+  "tags": [
+   "Sneaky"
+  ],
+  "by": "",
+  "updated": "2026-09-01",
+  "older": [
+   "games/yukis-prison-escape-v1.html",
+   "games/yukis-prison-escape-v2.html",
+   "games/yukis-prison-escape-v3.html",
+   "games/yukis-prison-escape-v4.html",
+   "games/yukis-prison-escape-v5.html",
+   "games/yukis-prison-escape-v6.html",
+   "games/yukis-prison-escape-v7.html",
+   "games/yukis-prison-escape-v8.html",
+   "games/yukis-prison-escape-v9.html"
+  ]
+ },
+ {
+  "title": "Entertainment District",
+  "file": "games/entertainment-district.html",
+  "thumb": "thumbs/entertainment-district.jpg",
+  "blurb": "Build your slayer, join the squad and bring down the demon of the district.",
+  "tags": [
+   "Adventure"
+  ],
+  "by": "",
+  "updated": "2026-09-01",
+  "older": [
+   "games/entertainment-district-v1.html"
+  ]
+ },
+ {
+  "title": "Potty Panic Maze",
+  "file": "games/potty-panic-maze.html",
+  "thumb": "thumbs/potty-panic-maze.jpg",
+  "blurb": "Find the bathroom before it's too late! A race through a shifting maze.",
+  "tags": [
+   "Maze",
+   "Funny"
+  ],
+  "by": "",
+  "updated": "2026-09-01",
+  "older": []
+ },
+ {
+  "title": "Stickfight Arena",
+  "file": "games/stickfight-arena.html",
+  "thumb": "thumbs/stickfight-arena.jpg",
+  "blurb": "Pick an elemental stickman and battle a friend in the arena.",
+  "tags": [
+   "Fighting",
+   "2 players"
+  ],
+  "by": "",
+  "updated": "2026-09-01",
+  "older": []
+ },
+ {
+  "title": "Toilet Terror",
+  "file": "games/toilet-terror.html",
+  "thumb": "thumbs/toilet-terror.jpg",
+  "blurb": "The toilet monster is angry! Dodge it and grab toilet paper for a shield.",
+  "tags": [
+   "Funny"
+  ],
+  "by": "",
+  "updated": "2026-08-31",
+  "older": []
+ },
+ {
+  "title": "The Last Player",
+  "file": "games/the-last-player.html",
+  "thumb": "thumbs/the-last-player.jpg",
+  "blurb": "A card arrived with no return address. The only rule: survive.",
+  "tags": [
+   "Spooky"
+  ],
+  "by": "",
+  "updated": "2026-08-31",
+  "older": []
+ },
+ {
+  "title": "Bux Squad",
+  "file": "games/bux-squad.html",
+  "thumb": "thumbs/bux-squad.jpg",
+  "blurb": "The very first Bux Squad. Pick a hero and stop King Null.",
+  "tags": [
+   "Fighting"
+  ],
+  "by": "",
+  "updated": "2026-08-30",
+  "older": []
+ }
+];
+
+const ICON_PLAY='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate=d=>new Date(d+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+const isNew=d=>(Date.now()-new Date(d+'T12:00:00'))/864e5<21;
+const sorted=[...GAMES].sort((a,b)=>b.updated.localeCompare(a.updated));
+document.getElementById('nGames').textContent=GAMES.length;
+
+const newest=sorted[0];
+document.getElementById('featured').innerHTML=`
+  <a class="shot" href="${esc(newest.file)}" aria-label="Play ${esc(newest.title)}"><img src="${esc(newest.thumb)}" alt="${esc(newest.title)} start screen"></a>
+  <div class="info">
+    <span class="eyebrow">Newest game</span>
+    <h2>${esc(newest.title)}</h2>
+    <p>${esc(newest.blurb)}</p>
+    <div class="meta">${newest.by?`<span class="tag by">By ${esc(newest.by)}</span>`:''}${newest.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+    <a class="play" href="${esc(newest.file)}">${ICON_PLAY} Play</a>
+  </div>`;
+
+const makers=[...new Set(GAMES.flatMap(g=>(g.by||'').split(/\s*&\s*/).filter(Boolean)))];
+const tags=[...new Set(GAMES.flatMap(g=>g.tags))].sort();
+const filters=['All',...(makers.length>1?makers.map(m=>'By '+m):[]),...tags];
+let active='All',q='';
+try{const s=localStorage.getItem('arcade-filter');if(s&&filters.includes(s))active=s;}catch(e){}
+const chips=document.getElementById('chips');
+function drawChips(){chips.innerHTML=filters.map(f=>`<button class="chip" type="button" aria-pressed="${f===active}" data-f="${esc(f)}">${esc(f)}</button>`).join('');}
+chips.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;active=b.dataset.f;try{localStorage.setItem('arcade-filter',active);}catch(e){}drawChips();drawGrid();});
+document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();drawGrid();});
+
+function card(g){
+  const older=g.older||[];
+  return `<article class="card">
+    <a class="shot" href="${esc(g.file)}" tabindex="-1" aria-hidden="true"><img src="${esc(g.thumb)}" alt="" loading="lazy"></a>
+    <div class="body">
+      <div class="meta">${isNew(g.updated)?'<span class="tag new">New</span>':''}${g.by?`<span class="tag by">By ${esc(g.by)}</span>`:''}${g.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+      <h3>${esc(g.title)}</h3>
+      <p>${esc(g.blurb)}</p>
+      <div class="row"><a class="play" href="${esc(g.file)}">${ICON_PLAY} Play</a><span class="date">Updated ${fmtDate(g.updated)}</span></div>
+      ${older.length?`<details class="versions"><summary>${older.length} earlier version${older.length>1?'s':''}</summary><div class="vlist">${older.map((f,i)=>`<a href="${esc(f)}">Version ${i+1}</a>`).join('')}</div></details>`:''}
+    </div></article>`;
+}
+function drawGrid(){
+  const list=sorted.filter(g=>{
+    if(active!=='All'){if(active.startsWith('By ')){if(!(g.by||'').includes(active.slice(3)))return false;}else if(!g.tags.includes(active))return false;}
+    if(q&&!(g.title+' '+g.blurb+' '+g.tags.join(' ')).toLowerCase().includes(q))return false;return true;});
+  document.getElementById('grid').innerHTML=list.length?list.map(card).join(''):'<p class="empty">No games match that. Try another word!</p>';
+}
+drawChips();drawGrid();
+</script>
+</body>
+</html>

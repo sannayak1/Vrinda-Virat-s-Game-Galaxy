@@ -1,0 +1,1485 @@
+<title>Entertainment District</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#150f17;
+  --ink-2:#1f1621;
+  --ink-3:#2a1e2c;
+  --paper:#ece0c8;
+  --paper-dim:#c9bb9c;
+  --lantern:#d1502f;
+  --lantern-deep:#8f2e1c;
+  --gold:#d3a440;
+  --gold-soft:#e8c876;
+  --sakura:#e58aa0;
+  --plum:#8a3560;
+  --teal:#3f8f86;
+  --line:#100b12;
+  --danger:#c2394a;
+  --good:#5a9b6b;
+  --font-display:'Yuji Syuku', 'Hiragino Mincho ProN', serif;
+  --font-body:'Zen Kaku Gothic New','Hiragino Sans','Noto Sans JP',system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--ink); color:var(--paper);
+  font-family:var(--font-body); font-variant-numeric:tabular-nums;
+  display:flex; justify-content:center; align-items:flex-start;
+  padding:18px; min-height:100vh;
+}
+h1,h2,h3,.display{ font-family:var(--font-display); font-weight:400; text-wrap:balance; letter-spacing:.02em; }
+button{ font-family:var(--font-body); }
+::selection{ background:var(--lantern); color:var(--paper); }
+
+#stage{
+  position:relative; width:100%; max-width:1040px;
+  min-height:min(760px, 88vh);
+  background:
+    radial-gradient(120% 90% at 18% -10%, rgba(209,80,47,.16), transparent 55%),
+    radial-gradient(90% 70% at 100% 110%, rgba(211,164,64,.12), transparent 60%),
+    var(--ink);
+  border:1px solid #3a2a34;
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.7), 0 0 0 6px #0d090e inset;
+  overflow:hidden;
+  display:flex; flex-direction:column;
+}
+#bgfx{ position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.55; }
+.frame-rule{ height:3px; background:linear-gradient(90deg,transparent, var(--gold) 20%, var(--gold-soft) 50%, var(--gold) 80%, transparent); flex:none; position:relative; z-index:2; }
+
+/* ============ TOPBAR ============ */
+#topbar{
+  position:relative; z-index:3; display:flex; align-items:center; justify-content:space-between;
+  padding:10px 20px; flex:none; background:rgba(21,15,23,.55); backdrop-filter:blur(2px);
+  border-bottom:1px solid #3a2a34;
+}
+#topbar .brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-size:1.05rem; color:var(--gold-soft); }
+#topbar .brand .kanji{ font-size:1.3rem; color:var(--lantern); }
+#topbar .controls{ display:flex; gap:8px; align-items:center; }
+.iconbtn{
+  border:1px solid #4a3a44; background:var(--ink-2); color:var(--paper-dim);
+  border-radius:7px; padding:7px 11px; font-size:.78rem; cursor:pointer; letter-spacing:.03em;
+  display:flex; align-items:center; gap:6px; transition:border-color .15s, color .15s;
+}
+.iconbtn:hover{ border-color:var(--gold); color:var(--gold-soft); }
+.iconbtn[aria-pressed="false"] .dot{ background:#6a5a64; }
+.iconbtn .dot{ width:7px; height:7px; border-radius:50%; background:var(--good); flex:none; }
+
+/* ============ SCREENS ============ */
+.screen{ display:none; position:relative; z-index:2; flex:1; min-height:0; flex-direction:column; }
+.screen.active{ display:flex; }
+.screen-pad{ padding:26px 34px; flex:1; min-height:0; display:flex; flex-direction:column; }
+
+/* ============ TITLE ============ */
+#screen-title .title-wrap{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  gap:6px; position:relative;
+}
+#screen-title .kanji-watermark{
+  position:absolute; font-family:var(--font-display); font-size:min(38vw,320px); color:rgba(209,80,47,.08);
+  line-height:1; user-select:none; top:50%; left:50%; transform:translate(-50%,-54%);
+}
+#screen-title h1{ font-size:clamp(2.1rem,5.6vw,3.6rem); color:var(--paper); margin:0; position:relative; }
+#screen-title h1 em{ font-style:normal; color:var(--lantern); }
+#screen-title .sub{ color:var(--paper-dim); max-width:520px; font-size:.95rem; line-height:1.6; position:relative; margin-top:4px;}
+#screen-title .cast-strip{ display:flex; gap:10px; margin:22px 0 10px; position:relative; }
+#screen-title .cast-strip .mini{ width:52px; height:52px; border-radius:50%; overflow:hidden; border:2px solid #4a3a44; background:var(--ink-2); }
+.title-actions{ display:flex; gap:12px; margin-top:14px; position:relative; }
+.footnote{ margin-top:20px; font-size:.72rem; color:#786a72; max-width:560px; line-height:1.6; position:relative; }
+
+/* ============ BUTTONS ============ */
+.btn{
+  font-family:var(--font-body); font-weight:700; font-size:.86rem; letter-spacing:.03em;
+  padding:12px 22px; border-radius:3px; cursor:pointer; border:1px solid transparent;
+  transition:transform .12s ease, box-shadow .12s ease, background .15s;
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:var(--lantern); color:#fff2ea; box-shadow:0 6px 18px -8px rgba(209,80,47,.7); }
+.btn-primary:hover{ background:#e15e3a; }
+.btn-ghost{ background:transparent; color:var(--paper-dim); border-color:#4a3a44; }
+.btn-ghost:hover{ color:var(--paper); border-color:var(--gold); }
+.btn-gold{ background:var(--gold); color:#241a0c; box-shadow:0 6px 18px -8px rgba(211,164,64,.6); }
+.btn:disabled{ opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
+
+/* ============ CREATOR ============ */
+#screen-creator .creator-grid{ flex:1; min-height:0; display:grid; grid-template-columns:280px 1fr; gap:24px; }
+.preview-col{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+.preview-frame{
+  width:240px; height:auto; background:linear-gradient(180deg,var(--ink-3),var(--ink-2));
+  border:1px solid #4a3a44; border-radius:4px; padding:10px; position:relative;
+}
+.preview-frame::before{ content:""; position:absolute; inset:6px; border:1px solid rgba(211,164,64,.25); pointer-events:none; }
+.name-field{ width:240px; }
+.name-field input{
+  width:100%; background:var(--ink-2); border:1px solid #4a3a44; color:var(--paper);
+  padding:10px 12px; border-radius:3px; font-family:var(--font-display); font-size:1.05rem; text-align:center;
+}
+.name-field input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+.style-readout{ font-size:.78rem; color:var(--paper-dim); text-align:center; line-height:1.5; }
+.style-readout b{ color:var(--gold-soft); font-weight:700; }
+
+.controls-col{ overflow-y:auto; padding-right:6px; }
+.opt-group{ margin-bottom:20px; }
+.opt-group h3{ font-size:.72rem; text-transform:uppercase; letter-spacing:.14em; color:var(--gold-soft); margin:0 0 10px; font-family:var(--font-body); font-weight:700; }
+.swatch-row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.swatch{
+  width:30px; height:30px; border-radius:50%; border:2px solid transparent; cursor:pointer; position:relative;
+  box-shadow:0 0 0 1px #0006 inset;
+}
+.swatch.selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--ink), 0 0 0 3px var(--gold); }
+.swatch:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.colorwell{ width:30px; height:30px; border-radius:50%; border:1px dashed #6a5a64; padding:0; background:none; cursor:pointer; overflow:hidden; }
+.pillrow{ display:flex; flex-wrap:wrap; gap:8px; }
+.pill{
+  padding:8px 14px; border-radius:16px; border:1px solid #4a3a44; background:var(--ink-2); color:var(--paper-dim);
+  font-size:.78rem; cursor:pointer; letter-spacing:.02em;
+}
+.pill.selected{ border-color:var(--gold); color:var(--gold-soft); background:rgba(211,164,64,.1); }
+.pill:focus-visible{ outline:2px solid var(--gold); }
+.togglecard{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  border:1px solid #4a3a44; background:var(--ink-2); border-radius:5px; padding:9px 12px; margin-bottom:8px; font-size:.8rem;
+}
+.switch{ width:36px; height:20px; border-radius:12px; background:#4a3a44; position:relative; cursor:pointer; flex:none; border:none; }
+.switch[aria-checked="true"]{ background:var(--lantern); }
+.switch::after{ content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#f3ede2; transition:transform .15s; }
+.switch[aria-checked="true"]::after{ transform:translateX(16px); }
+.breathe-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.breathe-card{
+  border:1px solid #4a3a44; background:var(--ink-2); border-radius:5px; padding:9px 10px; cursor:pointer; text-align:left;
+}
+.breathe-card.selected{ border-color:var(--gold); background:rgba(211,164,64,.08); }
+.breathe-card .bname{ font-size:.78rem; font-weight:700; display:flex; align-items:center; gap:6px; }
+.breathe-card .bchip{ width:9px; height:9px; border-radius:50%; flex:none; }
+.breathe-card .bdesc{ font-size:.68rem; color:var(--paper-dim); margin-top:3px; line-height:1.4; }
+.creator-actions{ display:flex; justify-content:flex-end; gap:10px; padding-top:14px; border-top:1px solid #3a2a34; margin-top:6px; }
+
+/* ============ CUTSCENE ============ */
+#screen-cutscene{ }
+.scene-visual{
+  flex:1; min-height:0; position:relative; display:flex; align-items:flex-end; justify-content:center;
+  padding:24px; overflow:hidden;
+}
+.scene-visual .scenetag{
+  position:absolute; top:16px; left:20px; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--gold-soft); background:rgba(21,15,23,.6); border:1px solid #4a3a44; padding:5px 10px; border-radius:3px;
+}
+.speaker-portrait{ width:150px; filter:drop-shadow(0 10px 18px rgba(0,0,0,.5)); transition:transform .25s ease; }
+.speaker-portrait.system{ display:none; }
+.dialogue-box{
+  flex:none; background:var(--ink-2); border-top:2px solid var(--gold); padding:18px 26px 20px;
+  display:flex; flex-direction:column; gap:8px; min-height:128px;
+}
+.dialogue-box .speaker-row{ display:flex; align-items:center; gap:10px; }
+.dialogue-box .speaker-name{ font-family:var(--font-display); font-size:1.15rem; color:var(--gold-soft); }
+.dialogue-box .speaker-name.narrator{ color:var(--paper-dim); font-family:var(--font-body); font-style:italic; font-size:.85rem; letter-spacing:.04em; }
+.dialogue-box .speaker-swatch{ width:10px; height:10px; border-radius:50%; }
+.dialogue-text{ font-size:1rem; line-height:1.65; color:var(--paper); min-height:3.3em; }
+.dialogue-text .cursor{ opacity:.6; }
+.dialogue-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
+.dialogue-hint{ font-size:.72rem; color:#8a7a84; }
+
+/* ============ MAP ============ */
+.map-wrap{ flex:1; display:flex; flex-direction:column; padding:24px 34px; }
+.map-wrap h2{ margin:0 0 4px; font-size:1.5rem; }
+.map-wrap .lede{ color:var(--paper-dim); font-size:.85rem; margin-bottom:8px; }
+.map-road{ position:relative; flex:1; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:30px 6px; }
+.map-road::before{
+  content:""; position:absolute; left:6%; right:6%; top:50%; height:2px; background:repeating-linear-gradient(90deg,var(--gold) 0 10px, transparent 10px 20px); opacity:.5;
+}
+.node{
+  position:relative; z-index:1; width:150px; min-height:150px; background:var(--ink-2); border:1px solid #4a3a44;
+  border-radius:6px; padding:14px 12px; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
+  cursor:pointer; transition:border-color .15s, transform .15s;
+}
+.node:hover{ border-color:var(--gold); transform:translateY(-3px); }
+.node .node-icon{ width:44px; height:44px; }
+.node .node-title{ font-size:.82rem; font-weight:700; color:var(--paper); }
+.node .node-desc{ font-size:.68rem; color:var(--paper-dim); line-height:1.4; }
+.node.visited{ opacity:.55; }
+.node.visited::after{ content:"✓ done"; font-size:.65rem; color:var(--good); }
+.node.main{ border-color:var(--lantern); background:linear-gradient(180deg,rgba(209,80,47,.14),var(--ink-2)); }
+.node.main .node-title{ color:var(--lantern); }
+.map-footer{ display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #3a2a34; font-size:.78rem; color:var(--paper-dim); }
+
+/* ============ BATTLE ============ */
+.battle-wrap{ flex:1; display:flex; flex-direction:column; padding:18px 26px; gap:12px; min-height:0; }
+.boss-zone{ display:flex; gap:18px; align-items:center; background:var(--ink-2); border:1px solid #4a3a44; border-radius:6px; padding:14px 18px; }
+.boss-zone .boss-portrait{ width:96px; flex:none; filter:drop-shadow(0 8px 14px rgba(0,0,0,.5)); }
+.boss-zone .boss-info{ flex:1; min-width:0; }
+.boss-zone .boss-name{ font-family:var(--font-display); font-size:1.3rem; color:var(--sakura); display:flex; align-items:center; gap:10px; }
+.boss-zone .boss-title{ font-size:.7rem; color:var(--paper-dim); letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px; }
+.hp-bar{ height:11px; background:#0d090e; border:1px solid #4a3a44; border-radius:6px; overflow:hidden; position:relative; }
+.hp-bar .fill{ height:100%; background:linear-gradient(90deg,var(--danger),#e2687a); transition:width .35s ease; }
+.hp-bar.ally .fill{ background:linear-gradient(90deg,var(--good),#7cc48c); }
+.hp-bar .fill.low{ background:linear-gradient(90deg,#7a1e2b,var(--danger)); }
+.hp-label{ display:flex; justify-content:space-between; font-size:.68rem; color:var(--paper-dim); margin-top:3px; }
+.boss-bars{ display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+
+.party-row{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+.party-card{ background:var(--ink-2); border:1px solid #4a3a44; border-radius:6px; padding:9px; display:flex; flex-direction:column; align-items:center; gap:5px; position:relative; }
+.party-card.active{ border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset; }
+.party-card.down{ opacity:.4; }
+.party-card .mini-portrait{ width:52px; }
+.party-card .pname{ font-size:.68rem; font-weight:700; text-align:center; line-height:1.2; }
+.party-card .status{ position:absolute; top:5px; right:5px; font-size:.6rem; color:var(--plum); }
+.party-card .hp-bar{ width:100%; height:7px; }
+
+.battle-lower{ flex:1; min-height:0; display:grid; grid-template-columns:1fr 260px; gap:14px; }
+.battle-log{
+  background:var(--ink-2); border:1px solid #4a3a44; border-radius:6px; padding:12px 14px; overflow-y:auto;
+  font-size:.82rem; line-height:1.6; display:flex; flex-direction:column-reverse;
+}
+.battle-log .log-line{ margin-bottom:6px; color:var(--paper-dim); }
+.battle-log .log-line b{ color:var(--gold-soft); }
+.battle-log .log-line.you b{ color:var(--lantern); }
+.battle-log .log-line.boss b{ color:var(--sakura); }
+.action-panel{ background:var(--ink-2); border:1px solid #4a3a44; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px; }
+.action-panel h4{ margin:0 0 2px; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--gold-soft); }
+.action-btn{ text-align:left; background:var(--ink-3); border:1px solid #4a3a44; color:var(--paper); border-radius:4px; padding:10px 12px; cursor:pointer; font-size:.82rem; display:flex; justify-content:space-between; gap:8px; }
+.action-btn:hover:not(:disabled){ border-color:var(--gold); }
+.action-btn small{ color:var(--paper-dim); font-weight:400; }
+.gauge-wrap{ margin-top:auto; }
+.gauge-bar{ height:9px; background:#0d090e; border:1px solid #4a3a44; border-radius:5px; overflow:hidden; }
+.gauge-bar .fill{ height:100%; background:linear-gradient(90deg,var(--gold),var(--lantern)); }
+.allout-btn{ margin-top:8px; width:100%; }
+
+.overlay{
+  position:absolute; inset:0; z-index:5; background:rgba(10,7,11,.86); display:none;
+  align-items:center; justify-content:center; flex-direction:column; gap:14px; text-align:center; padding:30px;
+}
+.overlay.active{ display:flex; }
+.overlay h2{ font-size:2rem; color:var(--gold-soft); margin:0; }
+.overlay p{ color:var(--paper-dim); max-width:420px; font-size:.9rem; line-height:1.6; }
+
+/* ============ ENDING ============ */
+.ending-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; gap:14px; }
+.credits-row{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin:16px 0; }
+.credit-card{ display:flex; flex-direction:column; align-items:center; gap:6px; width:96px; }
+.credit-card .mini-portrait{ width:66px; }
+.credit-card span{ font-size:.72rem; color:var(--paper-dim); }
+
+/* ============ MISC ============ */
+.scrollhide::-webkit-scrollbar{ width:8px; }
+.scrollhide::-webkit-scrollbar-thumb{ background:#4a3a44; border-radius:4px; }
+@media (prefers-reduced-motion: reduce){ *{ animation-duration:.001s !important; transition-duration:.001s !important; } }
+@media (max-width:720px){
+  #screen-creator .creator-grid{ grid-template-columns:1fr; }
+  .battle-lower{ grid-template-columns:1fr; }
+  .party-row{ grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .map-road{ flex-wrap:wrap; }
+}
+</style>
+
+<div id="stage">
+  <canvas id="bgfx"></canvas>
+
+  <div id="topbar">
+    <div class="brand"><span class="kanji">灯</span><span>Entertainment District</span></div>
+    <div class="controls">
+      <button class="iconbtn" id="ttsToggle" aria-pressed="true" title="Toggle voice lines"><span class="dot"></span><span id="ttsLabel">Voice Lines On</span></button>
+      <button class="iconbtn" id="restartBtn" title="Return to title">Restart</button>
+    </div>
+  </div>
+  <div class="frame-rule"></div>
+
+  <!-- TITLE -->
+  <section class="screen active" id="screen-title">
+    <div class="title-wrap">
+      <div class="kanji-watermark">歓楽街</div>
+      <h1>THE <em>ENTERTAINMENT</em> DISTRICT</h1>
+      <p class="sub">A demon has been feeding in Yoshiwara's grandest house. Build your slayer, join Tengen Uzui's squad, and help Tanjiro, Zenitsu, and Inosuke bring down Upper Rank Six before the lanterns go dark.</p>
+      <div class="cast-strip" id="titleCast"></div>
+      <div class="title-actions">
+        <button class="btn btn-primary" id="btnNewGame">Begin the Mission</button>
+      </div>
+      <p class="footnote">Unofficial fan tribute inspired by Kimetsu no Yaiba: Entertainment District Arc. All art here is original, stylized in the spirit of Edo-period woodblock actor prints — not the show's actual artwork. Voice lines are synthesized captions read aloud by your browser, not the official cast, and can be muted at any time.</p>
+    </div>
+  </section>
+
+  <!-- CREATOR -->
+  <section class="screen" id="screen-creator">
+    <div class="screen-pad">
+      <h2 style="margin:0 0 2px;">Prepare for Deployment</h2>
+      <p class="lede" style="color:var(--paper-dim); font-size:.85rem; margin:0 0 16px;">Customize your slayer. Uzui-san is waiting.</p>
+      <div class="creator-grid">
+        <div class="preview-col">
+          <div class="preview-frame" id="previewFrame"></div>
+          <div class="name-field"><input type="text" id="nameInput" maxlength="18" placeholder="Your name" value="Kanata"></div>
+          <div class="style-readout" id="styleReadout"></div>
+        </div>
+        <div class="controls-col scrollhide" id="controlsCol"></div>
+      </div>
+      <div class="creator-actions">
+        <button class="btn btn-ghost" id="btnRandomize">🎲 Randomize</button>
+        <button class="btn btn-primary" id="btnConfirmChar">Report for Duty</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUTSCENE -->
+  <section class="screen" id="screen-cutscene">
+    <div class="scene-visual" id="sceneVisual">
+      <div class="scenetag" id="sceneTag">Scene</div>
+      <img class="speaker-portrait" id="speakerPortraitImg" alt="">
+    </div>
+    <div class="dialogue-box">
+      <div class="speaker-row">
+        <span class="speaker-swatch" id="speakerSwatch"></span>
+        <span class="speaker-name" id="speakerName">—</span>
+      </div>
+      <div class="dialogue-text" id="dialogueText"></div>
+      <div class="dialogue-footer">
+        <span class="dialogue-hint">Click anywhere or press Space to continue</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost" id="btnSkipScene">Skip Scene</button>
+          <button class="btn btn-gold" id="btnNextLine">Next ▸</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section class="screen" id="screen-map">
+    <div class="map-wrap">
+      <h2 id="mapTitle">Yoshiwara, After Dark</h2>
+      <p class="lede">Explore before you climb toward the grand house — or head straight in, if you're feeling brave.</p>
+      <div class="map-road" id="mapRoad"></div>
+      <div class="map-footer">
+        <span id="mapProgress">0 / 3 locations explored</span>
+        <span>Party HP is restored while exploring the district.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- BATTLE -->
+  <section class="screen" id="screen-battle">
+    <div class="battle-wrap">
+      <div class="boss-zone">
+        <img class="boss-portrait" id="bossPortraitImg" alt="">
+        <div class="boss-info">
+          <div class="boss-title" id="bossTitle">Upper Rank Six</div>
+          <div class="boss-name" id="bossName">—</div>
+          <div class="boss-bars" id="bossBars"></div>
+        </div>
+      </div>
+      <div class="party-row" id="partyRow"></div>
+      <div class="battle-lower">
+        <div class="battle-log scrollhide" id="battleLog"></div>
+        <div class="action-panel" id="actionPanel">
+          <h4>Your Turn</h4>
+          <div id="actionButtons"></div>
+          <div class="gauge-wrap">
+            <h4 style="margin-bottom:5px;">Team Gauge</h4>
+            <div class="gauge-bar"><div class="fill" id="gaugeFill" style="width:0%"></div></div>
+            <button class="btn btn-gold allout-btn" id="btnAllOut" disabled>⚔ All-Out Attack</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay" id="battleOverlay">
+      <h2 id="overlayTitle">—</h2>
+      <p id="overlayText"></p>
+      <button class="btn btn-primary" id="overlayBtn">Continue</button>
+    </div>
+  </section>
+
+  <!-- ENDING -->
+  <section class="screen" id="screen-ending">
+    <div class="ending-wrap">
+      <h2 class="display" style="font-size:2.2rem; color:var(--gold-soft);">Mission Complete</h2>
+      <p class="lede" id="endingText" style="max-width:560px; color:var(--paper-dim); font-size:.9rem; line-height:1.7;"></p>
+      <div class="credits-row" id="creditsRow"></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" id="btnNewCharacter">New Character</button>
+        <button class="btn btn-primary" id="btnPlayAgain">Return to Title</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =====================================================================
+   COLOR HELPERS — derive highlight/shadow tones for gradient shading
+   ===================================================================== */
+function hexToRgb(hex){
+  const h = hex.replace('#','');
+  const v = h.length===3 ? h.split('').map(c=>c+c).join('') : h;
+  const n = parseInt(v,16) || 0;
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function clamp255(n){ return Math.max(0,Math.min(255,Math.round(n))); }
+function shade(hex, amt){ // amt -1..1 : negative darkens toward black, positive lightens toward white
+  const {r,g,b} = hexToRgb(hex);
+  const t = amt<0 ? 0 : 255;
+  const p = Math.abs(amt);
+  return `rgb(${clamp255(r+(t-r)*p)},${clamp255(g+(t-g)*p)},${clamp255(b+(t-b)*p)})`;
+}
+
+/* =====================================================================
+   GEOMETRY HELPERS — procedural flat-ink (ukiyo-e style) portrait parts
+   ===================================================================== */
+function domeTop(topY, sideY){
+  return `M66,${sideY} C66,${topY} 90,${topY-6} 120,${topY-6} C150,${topY-6} 174,${topY} 174,${sideY} `+
+         `C174,${sideY-16} 150,${sideY-26} 120,${sideY-26} C90,${sideY-26} 66,${sideY-16} 66,${sideY} Z`;
+}
+function jaggedDome(sideY, peaks){
+  let d = `M64,${sideY} C64,80 72,64 84,68 `;
+  peaks.forEach(p=> d += `L${p.x},${p.y} `);
+  d += `C168,64 176,80 176,${sideY} C176,${sideY-16} 150,${sideY-26} 120,${sideY-26} C90,${sideY-26} 64,${sideY-16} 64,${sideY} Z`;
+  return d;
+}
+function panel(side,x,y,len,width,bow){
+  const dir = side==='left'?-1:1;
+  const ex = x+dir*(bow*0.9);
+  return `M${x},${y} C${x+dir*bow},${y+len*0.4} ${x+dir*(bow*1.3)},${y+len*0.75} ${ex},${y+len} `+
+         `L${ex-dir*width},${y+len} C${ex-dir*width},${y+len*0.7} ${x-dir*2},${y+len*0.4} ${x-width},${y} Z`;
+}
+function tail(side,x,y,len,curl){
+  const dir = side==='left'?-1:1;
+  const ex = x+dir*curl;
+  const mx = x+dir*(curl*0.6);
+  return `M${x},${y} C${x+dir*30},${y+len*0.3} ${mx},${y+len*0.7} ${ex},${y+len} `+
+         `C${ex+dir*10},${y+len+8} ${ex-dir*14},${y+len+8} ${ex-dir*18},${y+len} `+
+         `C${mx-dir*10},${y+len*0.7} ${x+dir*14},${y+len*0.3} ${x+dir*6},${y} Z`;
+}
+function strand(x,topY,len,width,wig){
+  return `M${x-width/2},${topY} L${x+width/2},${topY} L${x+wig},${topY+len} Z`;
+}
+function hairHighlights(hairColor){
+  const light = shade(hairColor, 0.4);
+  const lines = [
+    "M82,74 Q92,58 106,53","M98,68 Q110,50 126,47","M138,72 Q152,56 163,63","M76,92 Q70,78 78,66"
+  ];
+  return lines.map(d=>`<path d="${d}" fill="none" stroke="${light}" stroke-width="2.4" stroke-linecap="round" opacity="0.5"/>`).join('');
+}
+
+const HAIRSTYLES = {
+  short:   { label:"Neat & Short", hair:()=>[domeTop(58,98), strand(100,90,15,7,-4), strand(140,90,15,7,4)], accents:[] },
+  spiky:   { label:"Spiky", hair:()=>[jaggedDome(100,[{x:92,y:50},{x:104,y:66},{x:120,y:44},{x:136,y:66},{x:148,y:50}]), strand(104,92,13,6,-3), strand(136,92,13,6,3)], accents:[] },
+  long:    { label:"Long & Straight", hair:()=>[domeTop(58,96), panel('left',70,92,152,26,-16), panel('right',170,92,152,26,16), strand(100,88,16,7,-4), strand(140,88,16,7,4)], accents:[] },
+  pony:    { label:"Ponytail", hair:()=>[domeTop(56,92), tail('right',150,66,168,46), strand(100,86,15,7,-4), strand(140,86,15,7,4)], accents:[{shape:'circle',cx:150,cy:64,r:9,role:'accent'}] },
+  twin:    { label:"Twin Tails", hair:()=>[domeTop(56,92), tail('left',72,96,140,-40), tail('right',168,96,140,40), strand(100,86,15,7,-4), strand(140,86,15,7,4)], accents:[{shape:'circle',cx:74,cy:98,r:8,role:'accent'},{shape:'circle',cx:166,cy:98,r:8,role:'accent'}] },
+  topknot: { label:"Undercut Topknot", hair:()=>[domeTop(70,86), strand(106,80,9,5,-3), strand(134,80,9,5,3)], accents:[{shape:'circle',cx:120,cy:48,r:15,role:'hair'},{shape:'rect',x:104,y:58,w:32,h:8,role:'accent'}] },
+  updo:    { label:"Oiran Updo", hair:()=>[domeTop(30,100), panel('left',66,94,74,18,-10), panel('right',174,94,74,18,10), strand(88,98,44,4,-8)], accents:[{shape:'circle',cx:152,cy:52,r:6,role:'accent'},{shape:'circle',cx:96,cy:40,r:4,role:'accent'}] },
+  ragged:  { label:"Wild & Ragged", hair:()=>[jaggedDome(102,[{x:90,y:56},{x:106,y:70},{x:120,y:50},{x:134,y:70},{x:150,y:56}]),
+             strand(78,96,150,16,-10), strand(96,102,190,14,8), strand(120,104,168,16,-6), strand(146,100,206,15,14), strand(164,94,158,16,-8)], accents:[] },
+};
+const PATTERNS = {
+  plain:   { label:"Plain", shapes:()=>[] },
+  stripe:  { label:"Diagonal Stripe", shapes:()=>[{shape:'poly',pts:"46,224 64,204 76,212 58,232",role:'accent'},{shape:'poly',pts:"146,224 164,204 176,212 158,232",role:'accentdark'}] },
+  check:   { label:"Checkered", shapes:()=>{
+    const cells=[]; const size=13;
+    [46,132].forEach(startX=>{
+      for(let row=0;row<2;row++) for(let col=0;col<3;col++){
+        cells.push({shape:'rect',x:startX+col*size,y:204+row*size,w:size-1.5,h:size-1.5, role:(row+col)%2===0?'accent':'accentdark'});
+      }
+    });
+    return cells;
+  }},
+  triangle:{ label:"Triangle Weave", shapes:()=>[
+    {shape:'poly',pts:"50,248 62,248 56,234",role:'accent'},{shape:'poly',pts:"66,248 78,248 72,234",role:'accentlight'},
+    {shape:'poly',pts:"82,248 94,248 88,234",role:'accent'},{shape:'poly',pts:"140,248 152,248 146,234",role:'accent'},
+    {shape:'poly',pts:"156,248 168,248 162,234",role:'accentlight'},{shape:'poly',pts:"172,248 184,248 178,234",role:'accent'} ]},
+  wave:    { label:"Wave Hem", shapes:()=>[{shape:'path',d:"M40,250 Q55,240 70,250 T100,250 T130,250 T160,250 T190,250",role:'accentline'}] },
+  sash:    { label:"Bound Sash", shapes:()=>[
+    {shape:'poly',pts:"60,178 96,158 200,238 172,256",role:'accent'},
+    {shape:'poly',pts:"60,178 72,172 208,232 200,238",role:'accentlight'},
+    {shape:'poly',pts:"150,214 168,206 180,222 162,231",role:'accentdark'},
+    {shape:'circle',cx:164,cy:216,r:5,role:'accent'} ]},
+  bandage: { label:"Bandage Wraps", shapes:()=>[
+    {shape:'rect',x:44,y:196,w:150,h:9,role:'bandage'},{shape:'rect',x:44,y:214,w:150,h:9,role:'bandagedark'},{shape:'rect',x:44,y:232,w:150,h:9,role:'bandage'},
+    {shape:'poly',pts:"58,196 66,196 48,252 40,252",role:'bandagedark'},{shape:'poly',pts:"180,196 188,196 170,252 162,252",role:'bandagedark'} ]},
+  floral:  { label:"Floral", shapes:()=>[
+    {shape:'circle',cx:58,cy:214,r:5,role:'accent'},{shape:'circle',cx:67,cy:207,r:3,role:'accentlight'},
+    {shape:'circle',cx:78,cy:230,r:5,role:'accent'},{shape:'circle',cx:87,cy:223,r:3,role:'accentlight'},
+    {shape:'circle',cx:172,cy:214,r:5,role:'accent'},{shape:'circle',cx:163,cy:207,r:3,role:'accentlight'},
+    {shape:'circle',cx:158,cy:230,r:5,role:'accent'} ]},
+};
+const HAIR_COLORS = ["#161616","#3a2418","#5b2a20","#7a4a2a","#c9a227","#f3d34a","#f2f2f2","#9c4a6a","#3f6f8f","#e13a63"];
+const SKIN_TONES  = ["#f5dcd0","#f0c9a0","#e8b98c","#caa06f","#a97a4e","#7a5636"];
+const EYE_COLORS  = ["#3a2418","#5b3a29","#2f6f6a","#e2601f","#8a3560","#2fa39c","#e6396f","#4a6fb0","#8a8a2a","#e8c22a"];
+const OUTFIT_COLORS = ["#1b1b2a","#16241c","#241826","#2a2016","#1c2430","#3a1418","#241a0c"];
+const ACCENT_COLORS = ["#d3a440","#c81e4a","#3f8f86","#e58aa0","#e2e2e2","#8a3560","#4a6fb0","#e8c22a"];
+const SHOE_STYLES = { tabi:"Tabi & Sandals", boots:"Wrapped Boots", zori:"Zōri Sandals" };
+const BODY_TYPES = { slim:{label:"Slim",scale:0.9}, athletic:{label:"Athletic",scale:1.0}, broad:{label:"Broad",scale:1.14} };
+
+const BREATHING_STYLES = {
+  water:  { name:"Water Breathing", color:"#2f6fb0", move:"Water Wheel", desc:"A spinning slash that carries momentum into every strike." },
+  flame:  { name:"Flame Breathing", color:"#c0392b", move:"Rising Scorching Sun", desc:"A fierce upward strike wreathed in searing heat." },
+  thunder:{ name:"Thunder Breathing", color:"#f1c40f", move:"Thunderclap and Flash", desc:"A single strike delivered faster than the eye can follow." },
+  wind:   { name:"Wind Breathing", color:"#27ae60", move:"Cold Mountain Wind", desc:"A wide gale-force slash that catches everything in its arc." },
+  stone:  { name:"Stone Breathing", color:"#8a8a8a", move:"Serpent-Headed Boulder", desc:"A crushing blow with the weight of a landslide." },
+  insect: { name:"Insect Breathing", color:"#9b59b6", move:"Dance of the Dragonfly", desc:"A precise, venom-quick stabbing strike." },
+  love:   { name:"Love Breathing", color:"#e75480", move:"Whirling Love, Swaying Heart", desc:"A graceful flurry that's harder to read than it looks." },
+  serpent:{ name:"Serpent Breathing", color:"#16a085", move:"Coiling Slash", desc:"An unpredictable winding strike that slips past guards." },
+  sound:  { name:"Sound Breathing", color:"#8e44ad", move:"Constant Resounding Slashes", desc:"A burst of rhythmic, explosive strikes." },
+  beast:  { name:"Beast Breathing", color:"#d35400", move:"Fang Slicing Fang", desc:"A reckless double-bladed assault, all instinct." },
+};
+
+/* =====================================================================
+   PORTRAIT RENDERER — layered gradients, lighting & fine detail
+   ===================================================================== */
+function shapeSVG(s, colors){
+  const fill = colors[s.role] || colors.accent;
+  if(s.shape==='circle') return `<circle cx="${s.cx}" cy="${s.cy}" r="${s.r}" fill="${fill}" stroke="${colors.line}" stroke-width="2.5"/>`;
+  if(s.shape==='rect') return `<rect x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" rx="2" fill="${fill}" stroke="${colors.line}" stroke-width="2"/>`;
+  if(s.shape==='poly') return `<polygon points="${s.pts}" fill="${fill}" stroke="${colors.line}" stroke-width="2.5"/>`;
+  if(s.shape==='path') return `<path d="${s.d}" fill="none" stroke="${fill}" stroke-width="5" stroke-linecap="round"/>`;
+  return "";
+}
+
+function buildDefs(colors){
+  const skinHi = shade(colors.skin, 0.34), skinLo = shade(colors.skin, -0.22);
+  const hairHi = shade(colors.hair, 0.32), hairLo = shade(colors.hair, -0.38);
+  const outfitHi = shade(colors.outfit, 0.2), outfitLo = shade(colors.outfit, -0.3);
+  const irisHi = shade(colors.eye, 0.42), irisLo = shade(colors.eye, -0.42);
+  return `<defs>
+    <radialGradient id="skinGrad" cx="38%" cy="28%" r="78%">
+      <stop offset="0%" stop-color="${skinHi}"/><stop offset="55%" stop-color="${colors.skin}"/><stop offset="100%" stop-color="${skinLo}"/>
+    </radialGradient>
+    <linearGradient id="hairGrad" x1="15%" y1="0%" x2="88%" y2="100%">
+      <stop offset="0%" stop-color="${hairHi}"/><stop offset="42%" stop-color="${colors.hair}"/><stop offset="100%" stop-color="${hairLo}"/>
+    </linearGradient>
+    <linearGradient id="outfitGrad" x1="0%" y1="0%" x2="12%" y2="100%">
+      <stop offset="0%" stop-color="${outfitHi}"/><stop offset="55%" stop-color="${colors.outfit}"/><stop offset="100%" stop-color="${outfitLo}"/>
+    </linearGradient>
+    <radialGradient id="irisGrad" cx="38%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="${irisHi}"/><stop offset="60%" stop-color="${colors.eye}"/><stop offset="100%" stop-color="${irisLo}"/>
+    </radialGradient>
+    <radialGradient id="cheekGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e0637a" stop-opacity="0.4"/><stop offset="100%" stop-color="#e0637a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignetteGrad" cx="50%" cy="40%" r="62%">
+      <stop offset="0%" stop-color="${colors.accent}" stop-opacity="0.18"/><stop offset="100%" stop-color="${colors.accent}" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="jawShadow" cx="50%" cy="0%" r="85%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.16"/><stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>`;
+}
+
+let __svgSeq = 0;
+function buildFigure(app, full){
+  const bodyScale = (BODY_TYPES[app.body]||BODY_TYPES.athletic).scale;
+  const spread = (170-70)/2 * (bodyScale-1);
+  const shL = 40-spread, shR = 200+spread;
+  const colors = {
+    hair:app.hairColor, skin:app.skin, eye:app.eye, outfit:app.outfitColor,
+    accent:app.accentColor, accentlight:shade(app.accentColor,0.3), accentdark:shade(app.accentColor,-0.3),
+    bandage:"#d8c9a3", bandagedark:"#b39f72", line:"#1a1410"
+  };
+  let parts = [];
+  parts.push(buildDefs(colors));
+  parts.push(`<circle cx="120" cy="${full?150:130}" r="150" fill="url(#vignetteGrad)"/>`);
+
+  // legs + shoes (full body only)
+  if(full){
+    parts.push(`<ellipse cx="120" cy="418" rx="68" ry="9" fill="#000" opacity="0.24"/>`);
+    parts.push(`<rect x="${96-spread*0.3}" y="330" width="${20+spread*0.3}" height="90" fill="#241f1a" stroke="${colors.line}" stroke-width="3"/>`);
+    parts.push(`<rect x="124" y="330" width="${20+spread*0.3}" height="90" fill="#241f1a" stroke="${colors.line}" stroke-width="3"/>`);
+    parts.push(`<rect x="${96-spread*0.3}" y="330" width="6" height="90" fill="#000" opacity="0.18"/>`);
+    parts.push(`<rect x="${124+20+spread*0.3-6}" y="330" width="6" height="90" fill="#fff" opacity="0.06"/>`);
+    const shoeColor = app.shoeColor || "#e8dfc8";
+    if(app.shoes==='boots'){
+      parts.push(`<rect x="94" y="392" width="30" height="28" rx="4" fill="${shoeColor}" stroke="${colors.line}" stroke-width="3"/>`);
+      parts.push(`<rect x="146" y="392" width="30" height="28" rx="4" fill="${shoeColor}" stroke="${colors.line}" stroke-width="3"/>`);
+      parts.push(`<rect x="94" y="392" width="30" height="7" fill="#000" opacity="0.15"/>`);
+      parts.push(`<rect x="146" y="392" width="30" height="7" fill="#000" opacity="0.15"/>`);
+    } else {
+      parts.push(`<ellipse cx="109" cy="412" rx="19" ry="9" fill="${shoeColor}" stroke="${colors.line}" stroke-width="3"/>`);
+      parts.push(`<ellipse cx="161" cy="412" rx="19" ry="9" fill="${shoeColor}" stroke="${colors.line}" stroke-width="3"/>`);
+      parts.push(`<line x1="98" y1="400" x2="120" y2="400" stroke="${colors.line}" stroke-width="3"/>`);
+      parts.push(`<line x1="150" y1="400" x2="172" y2="400" stroke="${colors.line}" stroke-width="3"/>`);
+      parts.push(`<line x1="109" y1="394" x2="109" y2="410" stroke="${colors.line}" stroke-width="2.5"/>`);
+      parts.push(`<line x1="161" y1="394" x2="161" y2="410" stroke="${colors.line}" stroke-width="2.5"/>`);
+    }
+  }
+
+  // shoulders / outfit — gradient sheen + fabric fold lines
+  parts.push(`<polygon points="${shL},260 ${shL},198 90,160 150,160 ${shR},198 ${shR},260" fill="url(#outfitGrad)" stroke="${colors.line}" stroke-width="4"/>`);
+  parts.push(`<path d="M${shL+18},210 Q${shL+34},240 ${shL+30},260" fill="none" stroke="${shade(colors.outfit,-0.32)}" stroke-width="2" opacity="0.5" stroke-linecap="round"/>`);
+  parts.push(`<path d="M${shR-18},210 Q${shR-34},240 ${shR-30},260" fill="none" stroke="${shade(colors.outfit,-0.32)}" stroke-width="2" opacity="0.5" stroke-linecap="round"/>`);
+  parts.push(`<polygon points="92,160 120,200 148,160" fill="#241a1f" stroke="${colors.line}" stroke-width="2.5"/>`);
+  parts.push(`<path d="M97,164 L120,195" stroke="#000" stroke-width="2" opacity="0.3"/>`);
+  const pat = PATTERNS[app.pattern] || PATTERNS.plain;
+  pat.shapes().forEach(s=> parts.push(shapeSVG(s,colors)));
+
+  // neck + ears — skin gradient, subtle contact shadow, ear folds
+  parts.push(`<rect x="105" y="140" width="30" height="26" fill="url(#skinGrad)" stroke="${colors.line}" stroke-width="3"/>`);
+  parts.push(`<rect x="105" y="140" width="30" height="26" fill="url(#jawShadow)"/>`);
+  parts.push(`<circle cx="66" cy="112" r="10" fill="url(#skinGrad)" stroke="${colors.line}" stroke-width="2.5"/>`);
+  parts.push(`<circle cx="174" cy="112" r="10" fill="url(#skinGrad)" stroke="${colors.line}" stroke-width="2.5"/>`);
+  parts.push(`<path d="M63,108 Q68,112 63,118" fill="none" stroke="${shade(colors.skin,-0.28)}" stroke-width="1.6" opacity="0.6"/>`);
+  parts.push(`<path d="M177,108 Q172,112 177,118" fill="none" stroke="${shade(colors.skin,-0.28)}" stroke-width="1.6" opacity="0.6"/>`);
+
+  // head — gradient skin, jaw contour, cheekbone highlight
+  parts.push(`<circle cx="120" cy="110" r="54" fill="url(#skinGrad)" stroke="${colors.line}" stroke-width="4"/>`);
+  parts.push(`<path d="M74,128 Q120,168 166,128" fill="none" stroke="${shade(colors.skin,-0.2)}" stroke-width="3" opacity="0.32" stroke-linecap="round"/>`);
+  parts.push(`<ellipse cx="88" cy="118" rx="8" ry="5" fill="url(#cheekGrad)"/>`);
+  parts.push(`<ellipse cx="152" cy="118" rx="8" ry="5" fill="url(#cheekGrad)"/>`);
+
+  // earrings (hanafuda-style)
+  if(app.earrings){
+    parts.push(`<line x1="66" y1="120" x2="66" y2="128" stroke="#c9a227" stroke-width="1.6"/>`);
+    parts.push(`<polygon points="60,128 72,128 69,140 63,140" fill="#c23a2e" stroke="${colors.line}" stroke-width="1.8"/>`);
+    parts.push(`<circle cx="66" cy="135" r="2" fill="#161010"/>`);
+    parts.push(`<line x1="174" y1="120" x2="174" y2="128" stroke="#c9a227" stroke-width="1.6"/>`);
+    parts.push(`<polygon points="168,128 180,128 177,140 171,140" fill="#c23a2e" stroke="${colors.line}" stroke-width="1.8"/>`);
+    parts.push(`<circle cx="174" cy="135" r="2" fill="#161010"/>`);
+  }
+  // spots (blood boils) — soft two-tone blotches
+  if(app.spots){
+    [[92,130,3.6],[150,128,3],[108,148,2.6],[132,150,3.2],[80,116,2.4],[160,140,2.8]].forEach(([x,y,r])=>{
+      parts.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="#7a1f3d" opacity="0.75"/>`);
+      parts.push(`<circle cx="${x-0.6}" cy="${y-0.6}" r="${r*0.4}" fill="#c24a6a" opacity="0.6"/>`);
+    });
+  }
+
+  // eyebrows — tapered filled shapes (match a shade darker than hair)
+  parts.push(`<path d="M90,97 Q99,88 110,93 Q100,92 90,99 Z" fill="${shade(colors.hair,-0.12)}"/>`);
+  parts.push(`<path d="M150,97 Q141,88 130,93 Q140,92 150,99 Z" fill="${shade(colors.hair,-0.12)}"/>`);
+
+  // eyes — gradient iris, catchlight, lash line + flick, lower-lid shadow
+  [98,142].forEach(ex=>{
+    const lashDir = ex<120 ? -1 : 1;
+    parts.push(`<ellipse cx="${ex}" cy="108" rx="12.5" ry="7.8" fill="#fdfaf3" stroke="${colors.line}" stroke-width="2.4"/>`);
+    parts.push(`<circle cx="${ex}" cy="108.5" r="5.6" fill="url(#irisGrad)" stroke="#161010" stroke-width="0.6"/>`);
+    parts.push(`<circle cx="${ex}" cy="108.5" r="2.1" fill="#100c10"/>`);
+    parts.push(`<circle cx="${ex-1.8}" cy="106.4" r="1.15" fill="#fff" opacity="0.9"/>`);
+    parts.push(`<path d="M${ex-11},105 Q${ex},99.3 ${ex+11},105" fill="none" stroke="${colors.line}" stroke-width="2.6" stroke-linecap="round"/>`);
+    parts.push(`<path d="M${ex+11*lashDir},105 l${lashDir*4},-3" stroke="${colors.line}" stroke-width="1.8" stroke-linecap="round"/>`);
+    parts.push(`<path d="M${ex-10},112 Q${ex},115.5 ${ex+10},112" fill="none" stroke="${shade(colors.skin,-0.32)}" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>`);
+  });
+
+  // nose — soft contour shading instead of a flat line
+  parts.push(`<path d="M120,110 Q116,120 114,124 Q117,127 121,125" fill="none" stroke="${shade(colors.skin,-0.36)}" stroke-width="2" opacity="0.55" stroke-linecap="round"/>`);
+  parts.push(`<ellipse cx="115.5" cy="125.5" rx="1.3" ry="0.9" fill="${shade(colors.skin,-0.42)}" opacity="0.5"/>`);
+
+  // mouth — two-tone lips with a philtrum hint
+  parts.push(`<path d="M107,136 Q120,142 133,136 Q120,140.5 107,136 Z" fill="${shade(colors.skin,-0.3)}" opacity="0.85"/>`);
+  parts.push(`<path d="M108,135.5 Q120,131.5 132,135.5" fill="none" stroke="${shade(colors.skin,-0.42)}" stroke-width="1.3" opacity="0.55" stroke-linecap="round"/>`);
+
+  // hair — gradient fill, ink outline, glossy highlight strokes
+  const hs = HAIRSTYLES[app.hairStyle] || HAIRSTYLES.short;
+  hs.hair().forEach(d=> parts.push(`<path d="${d}" fill="url(#hairGrad)" stroke="${colors.line}" stroke-width="4" stroke-linejoin="round"/>`));
+  parts.push(hairHighlights(colors.hair));
+  hs.accents.forEach(a=>{
+    const c = a.role==='hair'? `url(#hairGrad)` : colors.accent;
+    if(a.shape==='circle'){
+      parts.push(`<circle cx="${a.cx}" cy="${a.cy}" r="${a.r}" fill="${c}" stroke="${colors.line}" stroke-width="2.5"/>`);
+      if(a.role!=='hair') parts.push(`<circle cx="${a.cx-a.r*0.3}" cy="${a.cy-a.r*0.3}" r="${a.r*0.32}" fill="#fff" opacity="0.42"/>`);
+    }
+    if(a.shape==='rect') parts.push(`<rect x="${a.x}" y="${a.y}" width="${a.w}" height="${a.h}" rx="2" fill="${c}" stroke="${colors.line}" stroke-width="2"/>`);
+  });
+
+  // headband — sheen strip + knotted tie
+  if(app.headband){
+    parts.push(`<rect x="70" y="86" width="100" height="12" rx="2" fill="${colors.accent}" stroke="${colors.line}" stroke-width="2.5"/>`);
+    parts.push(`<rect x="70" y="86" width="100" height="5" rx="2" fill="#fff" opacity="0.28"/>`);
+    parts.push(`<polygon points="170,88 186,83 185,91 172,93" fill="${colors.accent}" stroke="${colors.line}" stroke-width="2"/>`);
+    parts.push(`<polygon points="172,93 184,98 180,106 170,98" fill="${colors.accentdark}" stroke="${colors.line}" stroke-width="1.8"/>`);
+  }
+  // forehead gem — faceted highlight
+  if(app.gem){
+    parts.push(`<polygon points="120,91 127,98 120,105 113,98" fill="${colors.accent}" stroke="${colors.line}" stroke-width="2"/>`);
+    parts.push(`<polygon points="120,91 123,98 120,98 117,98" fill="#fff" opacity="0.5"/>`);
+  }
+  // boar mask (Inosuke) — wood-grain lines, shaded eye holes, contoured tusks
+  if(app.mask){
+    parts.push(`<path d="M66,96 C66,66 90,52 120,52 C150,52 174,66 174,96 C174,124 158,148 120,150 C82,148 66,124 66,96 Z" fill="#a89c8c" stroke="${colors.line}" stroke-width="4"/>`);
+    parts.push(`<path d="M66,96 C66,66 90,52 120,52 C150,52 174,66 174,96" fill="none" stroke="#fff" stroke-width="2" opacity="0.25"/>`);
+    [[80,70,120,86],[76,90,118,100],[164,70,120,86],[168,92,122,100]].forEach(([x1,y1,x2,y2])=>{
+      parts.push(`<path d="M${x1},${y1} Q${(x1+x2)/2},${(y1+y2)/2+6} ${x2},${y2}" fill="none" stroke="#7a6f60" stroke-width="1.2" opacity="0.45"/>`);
+    });
+    parts.push(`<ellipse cx="98" cy="104" rx="10" ry="12" fill="url(#skinGrad)" stroke="${colors.line}" stroke-width="2.5"/>`);
+    parts.push(`<ellipse cx="142" cy="104" rx="10" ry="12" fill="url(#skinGrad)" stroke="${colors.line}" stroke-width="2.5"/>`);
+    parts.push(`<circle cx="98" cy="106" r="5" fill="url(#irisGrad)"/><circle cx="98" cy="106" r="2" fill="#141014"/>`);
+    parts.push(`<circle cx="142" cy="106" r="5" fill="url(#irisGrad)"/><circle cx="142" cy="106" r="2" fill="#141014"/>`);
+    parts.push(`<path d="M120,98 Q116,116 120,132" stroke="${colors.line}" stroke-width="3" fill="none"/>`);
+    parts.push(`<polygon points="97,140 109,140 100,160" fill="#f5efe0" stroke="${colors.line}" stroke-width="2"/>`);
+    parts.push(`<polygon points="131,140 143,140 140,160" fill="#f5efe0" stroke="${colors.line}" stroke-width="2"/>`);
+    parts.push(`<polygon points="97,140 109,140 103,148" fill="#000" opacity="0.12"/>`);
+    parts.push(`<polygon points="131,140 143,140 137,148" fill="#000" opacity="0.12"/>`);
+  }
+  // Every gradient id must be unique per rendered SVG: several portraits get injected
+  // as INLINE SVG into the same page (title cast strip, creator preview), and duplicate
+  // ids across sibling inline SVGs break url(#...) references in most browsers. Suffix
+  // every def id (and its references) with a per-render uid to keep each instance isolated.
+  const uid = '_' + (++__svgSeq);
+  const GRAD_IDS = ['skinGrad','hairGrad','outfitGrad','irisGrad','cheekGrad','vignetteGrad','jawShadow'];
+  let out = parts.join("");
+  GRAD_IDS.forEach(id => { out = out.split(id).join(id+uid); });
+  return out;
+}
+function portraitSVG(app){
+  return `<svg viewBox="0 0 240 260" xmlns="http://www.w3.org/2000/svg">${buildFigure(app,false)}</svg>`;
+}
+function figureSVG(app){
+  return `<svg viewBox="0 0 240 430" xmlns="http://www.w3.org/2000/svg">${buildFigure(app,true)}</svg>`;
+}
+function svgToDataURL(svg){ return "data:image/svg+xml;utf8,"+encodeURIComponent(svg); }
+
+/* =====================================================================
+   CAST DATA
+   ===================================================================== */
+const CAST = {
+  tengen: {
+    id:"tengen", name:"Tengen Uzui", title:"Sound Hashira",
+    app:{ hairStyle:'topknot', hairColor:'#f2f2f2', skin:'#caa06f', eye:'#e0538a', outfitColor:'#221b33', accentColor:'#e9c34a', pattern:'stripe', earrings:false, headband:true, gem:true, mask:false, spots:false, body:'broad', shoes:'boots' },
+    voice:{ pitch:1.05, rate:1.08, idx:0 },
+    hp:150, atk:17, moveName:"Twin Blade Slash", special:{name:"Sound Breathing: Constant Resounding Slashes", cd:3, mult:2.0},
+    lines:{ attack:["Extravagantly done!","This is exactly why I'm a Hashira!","Too slow — try to keep up!"], special:["Sound Breathing... let's make some noise!","Time to be EXTRAVAGANT!"], low:["Tch — barely a scratch. Again!"] }
+  },
+  tanjiro: {
+    id:"tanjiro", name:"Tanjiro Kamado", title:"Demon Slayer",
+    app:{ hairStyle:'spiky', hairColor:'#4a231b', skin:'#e8b98c', eye:'#c8481f', outfitColor:'#16241c', accentColor:'#111111', pattern:'check', earrings:true, headband:false, gem:false, mask:false, spots:false, body:'athletic', shoes:'tabi' },
+    voice:{ pitch:1.0, rate:1.0, idx:1 },
+    hp:130, atk:15, moveName:"Water Wheel", special:{name:"Water Breathing: Whirlpool", cd:3, mult:1.9},
+    lines:{ attack:["I won't let you hurt anyone else!","Hold on — just a little longer!","I can smell your next move!"], special:["Water Breathing... First Form!"], low:["I'm still standing. I have to be."] }
+  },
+  zenitsu: {
+    id:"zenitsu", name:"Zenitsu Agatsuma", title:"Demon Slayer",
+    app:{ hairStyle:'spiky', hairColor:'#f3d34a', skin:'#f0c9a0', eye:'#e8951f', outfitColor:'#f2e2c8', accentColor:'#e8891f', pattern:'triangle', earrings:false, headband:false, gem:false, mask:false, spots:false, body:'slim', shoes:'tabi' },
+    voice:{ pitch:1.28, rate:1.22, idx:2 },
+    hp:100, atk:22, moveName:"Panicked Swing", special:{name:"Thunder Breathing: Thunderclap and Flash", cd:4, mult:2.3},
+    lines:{ attack:["I don't wanna be here I don't wanna be here—","Please just fall over already!!","AAAH— wait, that actually hit!"], special:["...(eyes shut, completely unconscious) —First Form!"], low:["I'm going to die, I'm really going to die—"] }
+  },
+  inosuke: {
+    id:"inosuke", name:"Inosuke Hashibira", title:"Demon Slayer",
+    app:{ hairStyle:'ragged', hairColor:'#161616', skin:'#caa06f', eye:'#2fa39c', outfitColor:'#3a2f22', accentColor:'#8a6a4a', pattern:'plain', earrings:false, headband:false, gem:false, mask:true, spots:false, body:'broad', shoes:'boots' },
+    voice:{ pitch:0.8, rate:1.14, idx:3 },
+    hp:140, atk:18, moveName:"Reckless Gouge", special:{name:"Beast Breathing: Fang Slicing Fang", cd:3, mult:2.0},
+    lines:{ attack:["HAH! Feel the might of Inosuke-sama!","Come on, is that ALL you've got?!","I smell fear on you already!"], special:["BEAST BREATHING — double fang, DOUBLE PAIN!"], low:["Grrraaagh— it'll take more than that to drop me!"] }
+  }
+};
+const DAKI = {
+  id:"daki", name:"Daki", title:"Upper Rank Six",
+  app:{ hairStyle:'updo', hairColor:'#e13a63', skin:'#f5dcd0', eye:'#e6396f', outfitColor:'#c81e4a', accentColor:'#f2b8c6', pattern:'sash', earrings:false, headband:false, gem:false, mask:false, spots:false, body:'athletic', shoes:'zori' },
+  voice:{ pitch:1.4, rate:0.96, idx:4 },
+  lines:{ attack:["Ugly little insects, all of you!","Don't you DARE touch my house!","Beautiful things don't lose."], low:["How dare you leave a mark on me—"] }
+};
+const GYUTARO = {
+  id:"gyutaro", name:"Gyutaro", title:"Upper Rank Six",
+  app:{ hairStyle:'ragged', hairColor:'#c9a227', skin:'#cdbfa8', eye:'#e8c22a', outfitColor:'#5a4632', accentColor:'#7a1f3d', pattern:'bandage', earrings:false, headband:false, gem:false, mask:false, spots:true, body:'broad', shoes:'zori' },
+  voice:{ pitch:0.62, rate:0.92, idx:5 },
+  lines:{ attack:["You made her cry. Bad move.","Nobody laughs at us and walks away.","Poison doesn't miss twice."], low:["...heh. Didn't think anyone could actually hurt us."] }
+};
+
+const PLAYER_LINES = {
+  attack:["I've got this!","Hold the line!","One more step forward!"],
+  special:["Let's finish this — full breathing form!"],
+  low:["Not... not yet. I'm still here."]
+};
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const state = {
+  character:{
+    name:"Kanata", hairStyle:'short', hairColor:HAIR_COLORS[0], skin:SKIN_TONES[1], eye:EYE_COLORS[0],
+    body:'athletic', outfitColor:OUTFIT_COLORS[0], accentColor:ACCENT_COLORS[0], pattern:'plain',
+    shoes:'tabi', shoeColor:"#e8dfc8", breathing:'water', voicePitch:1.0
+  },
+  ttsOn:true,
+  mapVisited:{},
+  cutsceneQueue:[], cutsceneIdx:0, currentSceneEl:null,
+  battle:null,
+};
+
+function playerApp(){
+  const c = state.character;
+  return { hairStyle:c.hairStyle, hairColor:c.hairColor, skin:c.skin, eye:c.eye, outfitColor:c.outfitColor,
+    accentColor:c.accentColor, pattern:c.pattern, earrings:false, headband:false, gem:false, mask:false, spots:false,
+    body:c.body, shoes:c.shoes, shoeColor:c.shoeColor };
+}
+function playerVoice(){ return { pitch:state.character.voicePitch, rate:1.02, idx:6 }; }
+
+/* =====================================================================
+   SCREEN SWITCHING
+   ===================================================================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* =====================================================================
+   TTS
+   ===================================================================== */
+let voicesCache = [];
+function loadVoices(){ try{ voicesCache = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; }catch(e){} }
+if('speechSynthesis' in window){ loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(text, voiceParams){
+  if(!state.ttsOn || !('speechSynthesis' in window) || !voiceParams) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[—–]/g," - "));
+    u.pitch = voiceParams.pitch || 1; u.rate = voiceParams.rate || 1; u.volume = 0.85;
+    if(voicesCache && voicesCache.length){ u.voice = voicesCache[(voiceParams.idx||0) % voicesCache.length]; }
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+document.getElementById('ttsToggle').addEventListener('click', ()=>{
+  state.ttsOn = !state.ttsOn;
+  document.getElementById('ttsToggle').setAttribute('aria-pressed', state.ttsOn);
+  document.getElementById('ttsLabel').textContent = state.ttsOn ? "Voice Lines On" : "Voice Lines Off";
+  if(!state.ttsOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+});
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  showScreen('screen-title');
+});
+
+/* =====================================================================
+   TITLE
+   ===================================================================== */
+function renderTitleCast(){
+  const wrap = document.getElementById('titleCast'); wrap.innerHTML="";
+  [CAST.tengen, CAST.tanjiro, CAST.zenitsu, CAST.inosuke].forEach(c=>{
+    const d = document.createElement('div'); d.className='mini';
+    d.innerHTML = portraitSVG(c.app);
+    wrap.appendChild(d);
+  });
+}
+renderTitleCast();
+document.getElementById('btnNewGame').addEventListener('click', ()=>{ buildCreator(); showScreen('screen-creator'); });
+
+/* =====================================================================
+   CREATOR
+   ===================================================================== */
+function refreshPreview(){
+  document.getElementById('previewFrame').innerHTML = figureSVG(playerApp());
+  const c = state.character;
+  const bs = BREATHING_STYLES[c.breathing];
+  document.getElementById('styleReadout').innerHTML =
+    `<b>${HAIRSTYLES[c.hairStyle].label}</b> · ${BODY_TYPES[c.body].label} build<br>`+
+    `${bs.name} <span style="color:${bs.color}">●</span>`;
+}
+function swatchRow(containerId, colors, currentGetter, setter){
+  const el = document.getElementById(containerId); el.innerHTML="";
+  colors.forEach(hex=>{
+    const b = document.createElement('button'); b.className='swatch'; b.style.background=hex; b.type='button';
+    b.setAttribute('aria-label', hex);
+    if(currentGetter()===hex) b.classList.add('selected');
+    b.addEventListener('click', ()=>{ setter(hex); buildCreator(true); });
+    el.appendChild(b);
+  });
+  const well = document.createElement('input'); well.type='color'; well.className='colorwell'; well.value=currentGetter();
+  well.addEventListener('input', (e)=>{ setter(e.target.value); refreshPreview(); document.getElementById('styleReadout'); });
+  well.addEventListener('change', ()=> buildCreator(true));
+  el.appendChild(well);
+}
+function pillRow(containerId, options, currentGetter, setter){
+  const el = document.getElementById(containerId); el.innerHTML="";
+  Object.keys(options).forEach(key=>{
+    const b = document.createElement('button'); b.type='button'; b.className='pill'+(currentGetter()===key?' selected':'');
+    b.textContent = options[key].label || options[key];
+    b.addEventListener('click', ()=>{ setter(key); buildCreator(true); });
+    el.appendChild(b);
+  });
+}
+function buildCreator(preserveScroll){
+  const col = document.getElementById('controlsCol');
+  const scrollTop = preserveScroll ? col.scrollTop : 0;
+  col.innerHTML = `
+    <div class="opt-group"><h3>Hair Style</h3><div class="pillrow" id="grpHairStyle"></div></div>
+    <div class="opt-group"><h3>Hair Color</h3><div class="swatch-row" id="grpHairColor"></div></div>
+    <div class="opt-group"><h3>Skin Tone</h3><div class="swatch-row" id="grpSkin"></div></div>
+    <div class="opt-group"><h3>Eye Color</h3><div class="swatch-row" id="grpEye"></div></div>
+    <div class="opt-group"><h3>Body Type</h3><div class="pillrow" id="grpBody"></div></div>
+    <div class="opt-group"><h3>Outfit Color</h3><div class="swatch-row" id="grpOutfit"></div></div>
+    <div class="opt-group"><h3>Outfit Pattern</h3><div class="pillrow" id="grpPattern"></div></div>
+    <div class="opt-group"><h3>Trim / Accent Color</h3><div class="swatch-row" id="grpAccent"></div></div>
+    <div class="opt-group"><h3>Footwear</h3><div class="pillrow" id="grpShoes"></div></div>
+    <div class="opt-group"><h3>Voice Pitch</h3>
+      <input type="range" min="0.7" max="1.4" step="0.02" id="pitchRange" style="width:100%;" value="${state.character.voicePitch}">
+    </div>
+    <div class="opt-group"><h3>Breathing Style</h3><div class="breathe-grid" id="grpBreathing"></div></div>
+  `;
+  const c = state.character;
+  pillRow('grpHairStyle', HAIRSTYLES, ()=>c.hairStyle, v=>c.hairStyle=v);
+  swatchRow('grpHairColor', HAIR_COLORS, ()=>c.hairColor, v=>c.hairColor=v);
+  swatchRow('grpSkin', SKIN_TONES, ()=>c.skin, v=>c.skin=v);
+  swatchRow('grpEye', EYE_COLORS, ()=>c.eye, v=>c.eye=v);
+  pillRow('grpBody', BODY_TYPES, ()=>c.body, v=>c.body=v);
+  swatchRow('grpOutfit', OUTFIT_COLORS, ()=>c.outfitColor, v=>c.outfitColor=v);
+  pillRow('grpPattern', PATTERNS, ()=>c.pattern, v=>c.pattern=v);
+  swatchRow('grpAccent', ACCENT_COLORS, ()=>c.accentColor, v=>c.accentColor=v);
+  pillRow('grpShoes', SHOE_STYLES, ()=>c.shoes, v=>c.shoes=v);
+
+  const bg = document.getElementById('grpBreathing');
+  Object.keys(BREATHING_STYLES).forEach(key=>{
+    const b = BREATHING_STYLES[key];
+    const card = document.createElement('button'); card.type='button'; card.className='breathe-card'+(c.breathing===key?' selected':'');
+    card.innerHTML = `<div class="bname"><span class="bchip" style="background:${b.color}"></span>${b.name.replace(' Breathing','')}</div><div class="bdesc">${b.move}</div>`;
+    card.addEventListener('click', ()=>{ c.breathing=key; buildCreator(true); });
+    bg.appendChild(card);
+  });
+  document.getElementById('pitchRange').addEventListener('input', e=>{ c.voicePitch = parseFloat(e.target.value); });
+
+  col.scrollTop = scrollTop;
+  refreshPreview();
+}
+document.getElementById('nameInput').addEventListener('input', e=>{ state.character.name = e.target.value.trim() || "Kanata"; });
+document.getElementById('btnRandomize').addEventListener('click', ()=>{
+  const c = state.character;
+  c.hairStyle = pick(Object.keys(HAIRSTYLES));
+  c.hairColor = pick(HAIR_COLORS); c.skin = pick(SKIN_TONES); c.eye = pick(EYE_COLORS);
+  c.body = pick(Object.keys(BODY_TYPES)); c.outfitColor = pick(OUTFIT_COLORS);
+  c.pattern = pick(Object.keys(PATTERNS)); c.accentColor = pick(ACCENT_COLORS);
+  c.shoes = pick(Object.keys(SHOE_STYLES)); c.breathing = pick(Object.keys(BREATHING_STYLES));
+  c.voicePitch = +(0.85 + Math.random()*0.4).toFixed(2);
+  buildCreator();
+});
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+document.getElementById('btnConfirmChar').addEventListener('click', ()=>{
+  startCutscene(SCENE_BRIEFING, ()=> goToMap());
+  showScreen('screen-cutscene');
+});
+
+/* =====================================================================
+   CUTSCENE ENGINE
+   ===================================================================== */
+function speakerData(who){
+  if(who==='player') return { name:state.character.name, app:playerApp(), voice:playerVoice(), color:'var(--lantern)' };
+  if(who==='system') return null;
+  if(CAST[who]) return { name:CAST[who].name, app:CAST[who].app, voice:CAST[who].voice, color:'var(--gold-soft)' };
+  if(who==='daki') return { name:DAKI.name, app:DAKI.app, voice:DAKI.voice, color:'var(--sakura)' };
+  if(who==='gyutaro') return { name:GYUTARO.name, app:GYUTARO.app, voice:GYUTARO.voice, color:'var(--plum)' };
+  return null;
+}
+function fillName(t){ return t.replace(/\{name\}/g, state.character.name); }
+
+let typeTimer = null;
+function startCutscene(scene, onDone){
+  state.cutsceneQueue = scene.lines; state.cutsceneIdx = 0; state.cutsceneOnDone = onDone;
+  document.getElementById('sceneTag').textContent = scene.tag;
+  document.getElementById('sceneVisual').style.background = scene.bg;
+  playCutsceneLine();
+}
+function playCutsceneLine(){
+  if(state.cutsceneIdx >= state.cutsceneQueue.length){
+    if(state.cutsceneOnDone) state.cutsceneOnDone();
+    return;
+  }
+  const line = state.cutsceneQueue[state.cutsceneIdx];
+  const sp = speakerData(line.who);
+  const img = document.getElementById('speakerPortraitImg');
+  const appOverride = line.maskOverride!==undefined && sp ? Object.assign({}, sp.app, {mask:line.maskOverride}) : (sp?sp.app:null);
+  if(sp){
+    img.style.display = 'block';
+    img.src = svgToDataURL(portraitSVG(appOverride));
+    document.getElementById('speakerName').textContent = fillName(sp.name);
+    document.getElementById('speakerName').className = 'speaker-name';
+    document.getElementById('speakerSwatch').style.background = sp.color;
+    document.getElementById('speakerSwatch').style.display='inline-block';
+  } else {
+    img.style.display = 'none';
+    document.getElementById('speakerName').textContent = 'Narrator';
+    document.getElementById('speakerName').className = 'speaker-name narrator';
+    document.getElementById('speakerSwatch').style.display='none';
+  }
+  const full = fillName(line.text);
+  const el = document.getElementById('dialogueText');
+  el.textContent = '';
+  clearInterval(typeTimer);
+  let i = 0;
+  typeTimer = setInterval(()=>{
+    i++; el.textContent = full.slice(0,i);
+    if(i>=full.length) clearInterval(typeTimer);
+  }, 14);
+  if(sp) speak(full, sp.voice);
+}
+function advanceCutscene(){
+  clearInterval(typeTimer);
+  const full = fillName(state.cutsceneQueue[state.cutsceneIdx] ? state.cutsceneQueue[state.cutsceneIdx].text : "");
+  const el = document.getElementById('dialogueText');
+  if(el.textContent.length < full.length){ el.textContent = full; return; } // finish typing first
+  state.cutsceneIdx++;
+  playCutsceneLine();
+}
+document.getElementById('btnNextLine').addEventListener('click', advanceCutscene);
+document.getElementById('sceneVisual').addEventListener('click', advanceCutscene);
+document.getElementById('screen-cutscene').addEventListener('keydown', e=>{ if(e.code==='Space'){ e.preventDefault(); advanceCutscene(); }});
+document.addEventListener('keydown', e=>{
+  if(document.getElementById('screen-cutscene').classList.contains('active') && e.code==='Space'){ e.preventDefault(); advanceCutscene(); }
+});
+document.getElementById('btnSkipScene').addEventListener('click', ()=>{
+  clearInterval(typeTimer);
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  const onDone = state.cutsceneOnDone;
+  state.cutsceneIdx = state.cutsceneQueue.length;
+  if(onDone) onDone();
+});
+
+/* ---- Scene scripts ---- */
+const BG = {
+  briefing:"linear-gradient(180deg, rgba(35,24,30,.2), rgba(21,15,23,.9)), radial-gradient(60% 50% at 50% 100%, rgba(211,164,64,.15), transparent)",
+  street:"linear-gradient(180deg, rgba(60,20,20,.15), rgba(21,15,23,.92)), radial-gradient(70% 60% at 30% 100%, rgba(209,80,47,.25), transparent), radial-gradient(50% 40% at 80% 20%, rgba(211,164,64,.12), transparent)",
+  chamber:"linear-gradient(180deg, rgba(80,10,40,.25), rgba(15,8,15,.94)), radial-gradient(60% 60% at 70% 100%, rgba(200,30,74,.22), transparent)",
+  reveal:"linear-gradient(180deg, rgba(90,10,40,.35), rgba(10,6,10,.95)), radial-gradient(70% 60% at 50% 60%, rgba(122,31,61,.3), transparent)",
+  dawn:"linear-gradient(180deg, rgba(211,164,64,.14), rgba(21,15,23,.94)), radial-gradient(70% 60% at 50% 100%, rgba(211,164,64,.2), transparent)",
+};
+const SCENE_BRIEFING = { tag:"Corps Outpost — Briefing", bg:BG.briefing, lines:[
+  {who:'system', text:"The Demon Slayer Corps has lost contact with two scouts sent into the Entertainment District. A Hashira has been dispatched to investigate personally — and he's decided he needs backup."},
+  {who:'tengen', text:"Announcement! You've been chosen — out of everyone in the Corps — to join me on a mission into the Entertainment District. Feel honored; the chance to work beside a Hashira is extravagantly rare."},
+  {who:'player', text:"I won't slow you down. What exactly are we walking into?"},
+  {who:'tengen', text:"Two of my men went in undercover, chasing demon activity. Three days of silence since. Something in that district is rotten, and it isn't just the sake."},
+  {who:'tanjiro', text:"Uzui-san! Sorry we're late — Zenitsu wouldn't stop complaining the whole way here."},
+  {who:'zenitsu', text:"I wasn't complaining, I was voicing legitimate concerns about dying! There's a difference!"},
+  {who:'inosuke', text:"Hah! If a demon shows its face, I'll crush its skull before it even hears me coming!"},
+  {who:'tengen', text:"Perfect. Then it's the five of us. The district's got hundreds of buildings and thousands of people — we split up, gather information, and regroup at the first sign of real trouble. Extravagant chaos is for the finale, not the opening act."},
+  {who:'tanjiro', text:"{name}, stay close to one of us once we're inside. Whatever's in there was strong enough to go quiet for three days without a trace. That's not normal, even for a demon."},
+  {who:'system', text:"The mission begins now."},
+]};
+const SCENE_ALLEY = { tag:"Entertainment District — Back Alley", bg:BG.street, lines:[
+  {who:'system', text:"A cornered, half-starved demon lunges out of the shadows before you can even reach the main street."},
+  {who:'inosuke', text:"There you are! Come get crushed!"},
+]};
+const SCENE_INFORMANT = { tag:"Entertainment District — Main Street", bg:BG.street, lines:[
+  {who:'tanjiro', text:"...I've got it. That scent — it's faint, but it's the same one from both scouts' trail."},
+  {who:'zenitsu', text:"You can really smell a MISSING PERSON? That's terrifying, please never smell me."},
+  {who:'tanjiro', text:"It leads uphill, toward the grandest oiran house in the district. Whatever we're looking for, it's up there."},
+]};
+const SCENE_NOODLES = { tag:"Entertainment District — Noodle Stall", bg:BG.street, lines:[
+  {who:'inosuke', text:"Food! I smell FOOD! I am eating something before this mission continues, mission or no mission!"},
+  {who:'zenitsu', text:"You ate two hours ago! How are you even built like this—"},
+  {who:'player', text:"...Let's just keep moving before he orders for the whole squad."},
+]};
+const SCENE_DAKI = { tag:"The Grand House — Upper Floor", bg:BG.chamber, lines:[
+  {who:'system', text:"Deep inside the highest-ranked house in the district, {name} and the others finally corner their target."},
+  {who:'daki', text:"Ehh? More insects wandering into my house uninvited. And here I thought the last few were the loud ones. You're all so unbearably ugly it's making my skin crawl."},
+  {who:'tengen', text:"Daki. Word in the district is you've been feeding on your own performers. That ends tonight."},
+  {who:'daki', text:"Feeding? Please. I only take what's already beneath me. Sashes don't apologize for cutting."},
+  {who:'tanjiro', text:"You don't have to keep doing this. Whatever happened to you—"},
+  {who:'daki', text:"Spare me the sympathy, little bug. I am the most beautiful thing in this entire district, and beautiful things don't get lectured by rags in uniform."},
+  {who:'zenitsu', text:"I really, REALLY don't want to be here right now—"},
+  {who:'inosuke', text:"Then get behind me and shut your mouth, or I'll leave you for the boars!"},
+  {who:'daki', text:"How DARE you raise your voice in my house. Let's see how loud you are in pieces."},
+  {who:'system', text:"Her sashes unfurl like living blades. The fight begins."},
+]};
+const SCENE_REVEAL = { tag:"The Grand House — The Truth Surfaces", bg:BG.reveal, lines:[
+  {who:'system', text:"Daki's wounds refuse to close. Something beneath her skin begins to move."},
+  {who:'daki', text:"Get OUT of me — get out, get OUT—"},
+  {who:'gyutaro', text:"...Who's been hurting my little sister."},
+  {who:'system', text:"A second head tears free at the shoulder. The truth surfaces: Daki and Gyutaro were never two demons. They are one — Upper Rank Six, siblings sharing a single body."},
+  {who:'gyutaro', text:"You made her cry. Nobody makes Daki cry and walks out of this district breathing."},
+  {who:'tanjiro', text:"They're bonded — that's why the wounds keep closing! We have to bring them both down together, or she'll just keep healing!"},
+  {who:'tengen', text:"Then it's an extravagant two-for-one. Everyone — hold nothing back!"},
+]};
+const SCENE_VICTORY = { tag:"The Grand House — Dawn", bg:BG.dawn, lines:[
+  {who:'system', text:"The twin blades of Upper Rank Six finally fall still."},
+  {who:'gyutaro', text:"...Daki. Did we... win, for once...?"},
+  {who:'daki', text:"...No, brother. Not this time."},
+  {who:'system', text:"Even monsters were someone's family, once. The two fall together, as they lived — never apart."},
+  {who:'tengen', text:"Upper Rank Six is down. Get word to headquarters — the Entertainment District mission is complete."},
+  {who:'tanjiro', text:"{name}, you held your own out there. Really."},
+  {who:'zenitsu', text:"We're ALIVE. We're actually alive. I am never doubting this plan again — wait, was there ever a plan—"},
+  {who:'inosuke', text:"HAH! Nothing can stop the great Inosuke-sama and his — I mean, our — squad!"},
+  {who:'tengen', text:"Well fought, {name}. Go rest up. Extravagant heroics are exhausting work."},
+]};
+
+/* =====================================================================
+   MAP
+   ===================================================================== */
+const MAP_NODES = [
+  { id:'alley', title:"Back Alley", desc:"Something is stirring in the dark.", icon:'⚔', kind:'battle' },
+  { id:'noodles', title:"Noodle Stall", desc:"Inosuke smells food.", icon:'🍜', kind:'scene', scene:SCENE_NOODLES },
+  { id:'informant', title:"Main Street", desc:"Tanjiro picks up a scent.", icon:'👃', kind:'scene', scene:SCENE_INFORMANT },
+];
+function goToMap(){
+  showScreen('screen-map');
+  renderMap();
+}
+function renderMap(){
+  const road = document.getElementById('mapRoad'); road.innerHTML="";
+  MAP_NODES.forEach(n=>{
+    const el = document.createElement('button'); el.type='button';
+    el.className = 'node'+(state.mapVisited[n.id]?' visited':'');
+    el.innerHTML = `<div class="node-icon" style="font-size:34px; line-height:44px;">${n.icon}</div><div class="node-title">${n.title}</div><div class="node-desc">${n.desc}</div>`;
+    el.addEventListener('click', ()=>{
+      if(state.mapVisited[n.id]) return;
+      state.mapVisited[n.id] = true;
+      if(n.kind==='battle'){ startBattle('mook'); }
+      else { showScreen('screen-cutscene'); startCutscene(n.scene, ()=>{ showScreen('screen-map'); renderMap(); }); }
+    });
+    road.appendChild(el);
+  });
+  const main = document.createElement('button'); main.type='button'; main.className='node main';
+  main.innerHTML = `<div class="node-icon" style="font-size:34px; line-height:44px;">🏮</div><div class="node-title">The Grand House</div><div class="node-desc">Confront the target.</div>`;
+  main.addEventListener('click', ()=>{
+    showScreen('screen-cutscene');
+    startCutscene(SCENE_DAKI, ()=> startBattle('daki'));
+  });
+  road.appendChild(main);
+  const count = Object.keys(state.mapVisited).filter(k=>MAP_NODES.some(n=>n.id===k)).length;
+  document.getElementById('mapProgress').textContent = `${count} / ${MAP_NODES.length} locations explored`;
+}
+
+/* =====================================================================
+   BATTLE ENGINE
+   ===================================================================== */
+function freshPartyMember(id, def, isPlayer){
+  return {
+    id, isPlayer, name: isPlayer?state.character.name:def.name, app: isPlayer?playerApp():def.app,
+    voice: isPlayer?playerVoice():def.voice, lines: isPlayer?PLAYER_LINES:def.lines,
+    maxHp: isPlayer?100:def.hp, hp: isPlayer?100:def.hp, atk: isPlayer?14:def.atk,
+    moveName: isPlayer?BREATHING_STYLES[state.character.breathing].move+" (basic)":def.moveName,
+    specialName: isPlayer?("Breathing Style: "+BREATHING_STYLES[state.character.breathing].name):def.special.name,
+    specialMult: isPlayer?2.0:def.special.mult, cd:0, maxCd: isPlayer?3:def.special.cd, guarding:false, downed:false,
+  };
+}
+function freshBoss(def, hp){
+  return { id:def.id, name:def.name, title:def.title, app:def.app, voice:def.voice, lines:def.lines, maxHp:hp, hp:hp, downed:false, poison:0 };
+}
+
+function startBattle(kind){
+  showScreen('screen-battle');
+  document.getElementById('battleLog').innerHTML = '';
+  document.getElementById('battleOverlay').classList.remove('active');
+  if(kind==='mook'){
+    state.battle = {
+      kind:'mook', gauge:0, log:[],
+      party:[ freshPartyMember('player', null, true) ],
+      solo:true,
+      boss: { id:'mook', name:"Starving Lesser Demon", title:"Nameless Threat", app:{hairStyle:'ragged',hairColor:'#3a1a1a',skin:'#8a7a8a',eye:'#c0392b',outfitColor:'#2a1a1a',accentColor:'#5a1a1a',pattern:'plain',earrings:false,headband:false,gem:false,mask:false,spots:true,body:'athletic',shoes:'zori'},
+        voice:{pitch:0.7,rate:1.3,idx:5}, lines:{attack:["Grrraaahh!!","Fresh blood—"],low:["No— not like this—"]}, maxHp:70, hp:70, downed:false },
+      phase:1, dual:false,
+    };
+    logLine("A starving demon lunges from the shadows — a quick fight to test your blade.", 'sys');
+  } else {
+    const party = [ freshPartyMember('player', null, true), freshPartyMember('tengen', CAST.tengen, false),
+      freshPartyMember('tanjiro', CAST.tanjiro, false), freshPartyMember('zenitsu', CAST.zenitsu, false), freshPartyMember('inosuke', CAST.inosuke, false) ];
+    state.battle = { kind:'daki', gauge:0, log:[], party, solo:false, boss: freshBoss(DAKI, 260), boss2:null, phase:1, dual:false };
+    logLine("Daki's sashes coil like living blades. The house itself seems to lean in to watch.", 'sys');
+  }
+  renderBattle();
+}
+
+function logLine(text, cls){
+  state.battle.log.push({text, cls});
+  const el = document.getElementById('battleLog');
+  const div = document.createElement('div'); div.className='log-line'+(cls?(' '+cls):'');
+  div.innerHTML = text;
+  el.prepend(div);
+}
+function bark(entity, text){
+  logLine(`<b>${entity.name}:</b> ${text}`, entity.isPlayer?'you':(entity.title?'boss':''));
+  speak(text, entity.voice);
+}
+
+function renderBattle(){
+  const b = state.battle;
+  document.getElementById('bossTitle').textContent = b.dual ? "Upper Rank Six — Twin Demons" : (b.boss.title||"");
+  document.getElementById('bossName').textContent = b.dual ? (b.boss.name+" & "+b.boss2.name) : b.boss.name;
+  document.getElementById('bossPortraitImg').src = svgToDataURL(portraitSVG(b.boss.app));
+  const barsEl = document.getElementById('bossBars'); barsEl.innerHTML='';
+  barsEl.appendChild(bossBarEl(b.boss));
+  if(b.dual) barsEl.appendChild(bossBarEl(b.boss2));
+
+  const row = document.getElementById('partyRow'); row.innerHTML='';
+  b.party.forEach((p,idx)=>{
+    const card = document.createElement('div'); card.className='party-card'+(idx===0?' active':'')+(p.downed?' down':'');
+    const pct = Math.max(0, p.hp/p.maxHp*100);
+    card.innerHTML = `<img class="mini-portrait" src="${svgToDataURL(portraitSVG(p.app))}" alt="">
+      <div class="pname">${p.name}</div>
+      <div class="hp-bar ally"><div class="fill${pct<25?' low':''}" style="width:${pct}%"></div></div>
+      ${p.downed?'<div class="status">down</div>':(p.guarding?'<div class="status" style="color:var(--teal)">guard</div>':'')}`;
+    row.appendChild(card);
+  });
+
+  renderActionButtons();
+  document.getElementById('gaugeFill').style.width = b.gauge+"%";
+  document.getElementById('btnAllOut').disabled = b.gauge < 100;
+}
+function bossBarEl(boss){
+  const wrap = document.createElement('div');
+  const pct = Math.max(0,boss.hp/boss.maxHp*100);
+  wrap.innerHTML = `<div class="hp-label"><span>${boss.name}</span><span>${Math.max(0,Math.round(boss.hp))} / ${boss.maxHp}</span></div>
+    <div class="hp-bar"><div class="fill${pct<25?' low':''}" style="width:${pct}%"></div></div>`;
+  return wrap;
+}
+function renderActionButtons(){
+  const b = state.battle;
+  const player = b.party[0];
+  const wrap = document.getElementById('actionButtons'); wrap.innerHTML='';
+  if(player.downed || b.locked){ wrap.innerHTML = `<p style="color:var(--paper-dim); font-size:.8rem;">${player.downed?"You're down — your squad fights on.":""}</p>`; return; }
+  const atkBtn = document.createElement('button'); atkBtn.className='action-btn';
+  atkBtn.innerHTML = `<span>${player.moveName}</span><small>Basic</small>`;
+  atkBtn.addEventListener('click', ()=> resolveRound('attack'));
+  wrap.appendChild(atkBtn);
+
+  const spBtn = document.createElement('button'); spBtn.className='action-btn'; spBtn.disabled = player.cd>0;
+  spBtn.innerHTML = `<span>${player.specialName}</span><small>${player.cd>0? "Cooling ("+player.cd+")" : "Special"}</small>`;
+  spBtn.addEventListener('click', ()=> resolveRound('special'));
+  wrap.appendChild(spBtn);
+
+  const gBtn = document.createElement('button'); gBtn.className='action-btn';
+  gBtn.innerHTML = `<span>Guard</span><small>Halve incoming damage</small>`;
+  gBtn.addEventListener('click', ()=> resolveRound('guard'));
+  wrap.appendChild(gBtn);
+}
+document.getElementById('btnAllOut').addEventListener('click', ()=> resolveRound('allout'));
+
+function livingParty(){ return state.battle.party.filter(p=>!p.downed); }
+function livingAllies(){ return state.battle.party.slice(1).filter(p=>!p.downed); }
+function randTarget(list){ return list[Math.floor(Math.random()*list.length)]; }
+
+function dealPlayerDamage(mult){
+  const player = state.battle.party[0];
+  const base = 14 + Math.random()*6;
+  return Math.round(base*mult);
+}
+function damageBoss(boss, dmg){ boss.hp = Math.max(0, boss.hp-dmg); }
+
+function resolveRound(action){
+  const b = state.battle; if(b.locked) return;
+  const player = b.party[0];
+  player.guarding = false;
+
+  if(action==='allout'){
+    doAllOut(); return;
+  }
+  if(action==='guard'){
+    player.guarding = true; b.gauge = Math.min(100,b.gauge+6);
+    logLine(`${player.name} braces, ready to weather the next blow.`);
+  } else if(action==='attack'){
+    const dmg = dealPlayerDamage(1);
+    damageBoss(currentTarget(), dmg);
+    bark(player, pickLine(player.lines.attack));
+    logLine(`&rarr; ${dmg} damage.`);
+    b.gauge = Math.min(100,b.gauge+10);
+  } else if(action==='special'){
+    if(player.cd>0) return;
+    const dmg = dealPlayerDamage(player.specialMult);
+    damageBoss(currentTarget(), dmg);
+    bark(player, pickLine(player.lines.special));
+    logLine(`&rarr; ${dmg} damage!`);
+    player.cd = player.maxCd + 1;
+    b.gauge = Math.min(100,b.gauge+18);
+  }
+  b.locked = true;
+  renderBattle();
+  setTimeout(allyPhase, 550);
+}
+function currentTarget(){ return state.battle.boss; } // primary target defaults to first boss; used for single-target player actions
+
+function pickLine(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function allyPhase(){
+  const b = state.battle;
+  if(bossDefeatedCheck()) return;
+  const allies = livingAllies();
+  let i = 0;
+  function nextAlly(){
+    if(i>=allies.length){ setTimeout(bossPhase, 500); return; }
+    const ally = allies[i]; i++;
+    const useSpecial = ally.cd<=0 && Math.random()<0.35;
+    const mult = useSpecial ? ally.specialMult : 1;
+    const dmg = Math.round((13+Math.random()*7)*mult);
+    damageBoss(currentTarget(), dmg);
+    bark(ally, pickLine(useSpecial?ally.lines.special:ally.lines.attack));
+    logLine(`&rarr; ${dmg} damage.`);
+    if(useSpecial) ally.cd = ally.maxCd+1;
+    b.gauge = Math.min(100, b.gauge + (useSpecial?14:8));
+    renderBattle();
+    if(bossDefeatedCheck()) return;
+    setTimeout(nextAlly, 480);
+  }
+  nextAlly();
+}
+
+function bossDefeatedCheck(){
+  const b = state.battle;
+  if(b.kind==='mook'){
+    if(b.boss.hp<=0){ endBattle(true); return true; }
+    return false;
+  }
+  if(!b.dual){
+    if(b.boss.hp <= b.boss.maxHp*0.4 && !b.revealed){
+      b.revealed = true; b.locked = true;
+      setTimeout(()=>{ showScreen('screen-cutscene'); startCutscene(SCENE_REVEAL, beginPhase2); }, 400);
+      return true;
+    }
+    return false;
+  } else {
+    if(b.boss.hp<=0 && b.boss2.hp<=0){ endBattle(true); return true; }
+    return false;
+  }
+}
+function beginPhase2(){
+  const b = state.battle;
+  b.dual = true; b.phase = 2;
+  b.boss.maxHp = 140; b.boss.hp = 140;
+  b.boss2 = freshBoss(GYUTARO, 190);
+  b.locked = false;
+  showScreen('screen-battle');
+  logLine("Gyutaro tears free from Daki's shoulder. Two blood sickles hiss through the air.", 'sys');
+  renderBattle();
+}
+function currentTargetDual(){
+  const b = state.battle;
+  if(!b.dual) return b.boss;
+  if(b.boss.hp<=0) return b.boss2;
+  if(b.boss2.hp<=0) return b.boss;
+  return Math.random()<0.5 ? b.boss : b.boss2;
+}
+// override currentTarget when dual
+const _origCurrentTarget = currentTarget;
+currentTarget = function(){ return state.battle.dual ? currentTargetDual() : state.battle.boss; };
+
+function bossPhase(){
+  const b = state.battle;
+  if(bossDefeatedCheck()) return;
+  const targets = livingParty();
+  if(targets.length===0){ endBattle(false); return; }
+
+  function doAttack(attacker, isSecond){
+    const t = randTarget(targets);
+    let dmg = Math.round(16 + Math.random()*10);
+    if(t.guarding) dmg = Math.round(dmg*0.5);
+    t.hp = Math.max(0, t.hp - dmg);
+    bark(attacker, pickLine(attacker.lines.attack));
+    logLine(`&rarr; ${t.name} takes ${dmg} damage.`);
+    if(attacker===b.boss2){ t.poison = (t.poison||0) + 2; logLine(`${t.name} is poisoned.`); }
+    if(t.hp<=0 && !t.downed){ t.downed = true; logLine(`${t.name} can't continue fighting.`, 'sys'); }
+  }
+
+  if(b.dual){
+    if(b.boss.hp>0) doAttack(b.boss, false);
+    if(b.boss2.hp>0) setTimeout(()=>{ doAttack(b.boss2, true); afterBossAttacks(); }, 500);
+    else setTimeout(afterBossAttacks, 400);
+  } else {
+    if(Math.random()<0.75){ doAttack(b.boss, false); }
+    else {
+      const hit = livingParty().slice(0,2);
+      hit.forEach(t=>{ const dmg = Math.round(8+Math.random()*6); t.hp=Math.max(0,t.hp-(t.guarding?dmg*0.5:dmg)); if(t.hp<=0 && !t.downed){t.downed=true; logLine(`${t.name} can't continue fighting.`,'sys');} });
+      bark(b.boss, "You'll all learn to fear my sashes together.");
+      logLine(`&rarr; Sash Flurry strikes ${hit.map(t=>t.name).join(' & ')}.`);
+    }
+    setTimeout(afterBossAttacks, 500);
+  }
+}
+function afterBossAttacks(){
+  const b = state.battle;
+  // poison ticks
+  b.party.forEach(p=>{
+    if(p.poison>0 && !p.downed){
+      const pd = 5; p.hp = Math.max(0,p.hp-pd); p.poison--;
+      logLine(`${p.name} takes ${pd} poison damage.`);
+      if(p.hp<=0 && !p.downed){ p.downed=true; logLine(`${p.name} can't continue fighting.`,'sys'); }
+    }
+  });
+  // Daki regen in phase 1
+  if(!b.dual && b.boss.hp>0){ b.boss.hp = Math.min(b.boss.maxHp, b.boss.hp+14); logLine("Daki's wounds knit themselves shut.", 'boss'); }
+  b.party.forEach(p=>{ if(p.cd>0) p.cd--; });
+  b.locked = false;
+  if(livingParty().length===0){ endBattle(false); return; }
+  renderBattle();
+}
+
+function doAllOut(){
+  const b = state.battle; b.gauge = 0; b.locked = true;
+  logLine("<b>ALL-OUT ATTACK!</b>", 'sys');
+  const seq = livingParty();
+  let i=0; let total=0;
+  function step(){
+    if(i>=seq.length){
+      damageBoss(currentTarget(), total);
+      logLine(`&rarr; A combined ${total} damage tears through the enemy.`);
+      renderBattle();
+      b.locked=false;
+      setTimeout(()=>{ if(!bossDefeatedCheck()) allyPhaseSkipToBoss(); }, 500);
+      return;
+    }
+    const m = seq[i]; i++;
+    const dmg = Math.round(20+Math.random()*8); total+=dmg;
+    bark(m, pickLine(m.lines.special||m.lines.attack));
+    setTimeout(step, 420);
+  }
+  step();
+}
+function allyPhaseSkipToBoss(){ if(!bossDefeatedCheck()) setTimeout(bossPhase, 400); }
+
+function endBattle(victory){
+  const b = state.battle;
+  const overlay = document.getElementById('battleOverlay');
+  overlay.classList.add('active');
+  if(b.kind==='mook'){
+    document.getElementById('overlayTitle').textContent = victory ? "Threat Cleared" : "Overwhelmed";
+    document.getElementById('overlayText').textContent = victory ? "A quick blade, a quiet alley. The district's dangers are only beginning." : "The demon slips away into the dark. You'll need to be sharper at the grand house.";
+    document.getElementById('overlayBtn').onclick = ()=>{ overlay.classList.remove('active'); showScreen('screen-map'); renderMap(); };
+  } else {
+    if(victory){
+      document.getElementById('overlayTitle').textContent = "Upper Rank Six — Defeated";
+      document.getElementById('overlayText').textContent = "The twin demons fall still.";
+      document.getElementById('overlayBtn').onclick = ()=>{ overlay.classList.remove('active'); showScreen('screen-cutscene'); startCutscene(SCENE_VICTORY, showEnding); };
+    } else {
+      document.getElementById('overlayTitle').textContent = "The Squad Falls Back";
+      document.getElementById('overlayText').textContent = "Upper Rank Six is stronger than expected. Regroup and try again.";
+      document.getElementById('overlayBtn').onclick = ()=>{ overlay.classList.remove('active'); startBattle('daki'); };
+    }
+  }
+}
+
+/* =====================================================================
+   ENDING
+   ===================================================================== */
+function showEnding(){
+  showScreen('screen-ending');
+  document.getElementById('endingText').textContent =
+    `${state.character.name} and the squad make it out of the Entertainment District alive. Upper Rank Six is gone, the missing scouts are found and safe, and dawn finally breaks over Yoshiwara's lanterns.`;
+  const row = document.getElementById('creditsRow'); row.innerHTML='';
+  const cast = [ {name:state.character.name, app:playerApp()}, {name:'Tengen Uzui', app:CAST.tengen.app}, {name:'Tanjiro Kamado', app:CAST.tanjiro.app}, {name:'Zenitsu Agatsuma', app:CAST.zenitsu.app}, {name:'Inosuke Hashibira', app:CAST.inosuke.app} ];
+  cast.forEach(c=>{
+    const d = document.createElement('div'); d.className='credit-card';
+    d.innerHTML = `<img class="mini-portrait" src="${svgToDataURL(portraitSVG(c.app))}" alt=""><span>${c.name}</span>`;
+    row.appendChild(d);
+  });
+}
+document.getElementById('btnPlayAgain').addEventListener('click', ()=>{ showScreen('screen-title'); });
+document.getElementById('btnNewCharacter').addEventListener('click', ()=>{ buildCreator(); showScreen('screen-creator'); });
+
+/* =====================================================================
+   AMBIENT CANVAS (lantern bokeh)
+   ===================================================================== */
+(function(){
+  const canvas = document.getElementById('bgfx');
+  const ctx = canvas.getContext('2d');
+  let w,h,dots=[];
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function resize(){
+    const rect = document.getElementById('stage').getBoundingClientRect();
+    w = canvas.width = rect.width; h = canvas.height = rect.height;
+  }
+  function init(){
+    resize();
+    dots = Array.from({length:16}, ()=>({
+      x: Math.random()*w, y: Math.random()*h*0.7 + h*0.1, r: 30+Math.random()*70,
+      hue: Math.random()<0.5?'209,80,47':'211,164,64', a: 0.03+Math.random()*0.05, dx:(Math.random()-0.5)*0.06, dy:(Math.random()-0.5)*0.03
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    dots.forEach(d=>{
+      const g = ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r);
+      g.addColorStop(0, `rgba(${d.hue},${d.a})`); g.addColorStop(1, `rgba(${d.hue},0)`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
+      if(!reduced){ d.x+=d.dx; d.y+=d.dy; if(d.x<-80)d.x=w+80; if(d.x>w+80)d.x=-80; if(d.y<-80)d.y=h+80; if(d.y>h+80)d.y=-80; }
+    });
+    if(!reduced) requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  init(); draw();
+})();
+
+/* init */
+buildCreator();
+
+})();
+</script>

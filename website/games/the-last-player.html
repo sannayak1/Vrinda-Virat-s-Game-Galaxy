@@ -1,0 +1,1541 @@
+<title>The Last Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#0a0b10;
+    --ground-2:#111219;
+    --panel:#15161f;
+    --panel-2:#1b1d29;
+    --line:#2a2c3a;
+    --text:#e8eaf1;
+    --text-dim:#9198ac;
+    --text-faint:#5c6377;
+    --crimson:#ff3366;
+    --crimson-dim:#7a1f3b;
+    --teal:#1fe0c4;
+    --teal-dim:#0e5a4e;
+    --gold:#e8b84b;
+    --danger-glow: 0 0 24px rgba(255,51,102,.45);
+    --safe-glow: 0 0 24px rgba(31,224,196,.35);
+    --font-display:'Big Shoulders Display', 'Arial Narrow', sans-serif;
+    --font-body:'Archivo', -apple-system, 'Segoe UI', sans-serif;
+    --font-mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ground);
+    color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* ambient surveillance-monitor backdrop */
+  #ambient{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% -10%, rgba(255,51,102,.10), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 100% 110%, rgba(31,224,196,.08), transparent 60%),
+      var(--ground);
+  }
+  #ambient::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(to bottom, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 1px, transparent 1px, transparent 3px);
+    opacity:.5;
+  }
+  #ambient::after{
+    content:"";
+    position:absolute; left:0; right:0; height:140px;
+    background:linear-gradient(to bottom, transparent, rgba(255,51,102,.05), transparent);
+    animation:scan 9s linear infinite;
+  }
+  @keyframes scan{ 0%{top:-140px;} 100%{top:100%;} }
+  @media (prefers-reduced-motion: reduce){ #ambient::after{ animation:none; display:none;} }
+
+  #app{ position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* ---------- HUD ---------- */
+  #hud{
+    display:none;
+    align-items:center; gap:16px;
+    padding:10px 20px;
+    background:linear-gradient(to bottom, rgba(21,22,31,.96), rgba(21,22,31,.86));
+    border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:20;
+    backdrop-filter:blur(6px);
+  }
+  #hud.show{ display:flex; }
+  .hud-avatar{ width:38px; height:38px; border-radius:50%; border:2px solid var(--teal); flex:none; overflow:hidden; position:relative; background:#333; }
+  .hud-id{ display:flex; flex-direction:column; line-height:1.1; margin-right:auto; }
+  .hud-name{ font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:.02em; }
+  .hud-number{ font-family:var(--font-mono); font-size:11px; color:var(--teal); letter-spacing:.06em; }
+  .hud-stat{ text-align:right; }
+  .hud-stat .k{ font-size:9px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-faint); }
+  .hud-stat .v{ font-family:var(--font-mono); font-size:15px; font-weight:600; color:var(--gold); font-variant-numeric:tabular-nums; }
+  .hud-stat.remain .v{ color:var(--text); }
+
+  /* ---------- screens ---------- */
+  .screen{ display:none; flex:1; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px 56px; }
+  .screen.active{ display:flex; }
+  .stage{
+    width:100%; max-width:720px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.03);
+    overflow:hidden;
+  }
+  .stage-head{
+    padding:18px 26px 16px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel-2);
+  }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--crimson); display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--crimson); box-shadow:0 0 8px var(--crimson); }
+  h1.stage-title{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(28px,5vw,40px);
+    margin:4px 0 0; letter-spacing:.01em; text-wrap:balance; line-height:1;
+  }
+  .stage-body{ padding:26px; }
+  .stage-foot{ padding:18px 26px; border-top:1px solid var(--line); display:flex; gap:12px; justify-content:flex-end; background:var(--panel-2); }
+
+  p{ line-height:1.65; color:var(--text-dim); margin:0 0 14px; max-width:62ch; }
+  p:last-child{ margin-bottom:0; }
+  strong{ color:var(--text); font-weight:600; }
+
+  .btn{
+    font-family:var(--font-body); font-weight:700; font-size:14px;
+    padding:12px 24px; border-radius:3px; border:1px solid transparent;
+    cursor:pointer; letter-spacing:.03em; text-transform:uppercase;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    user-select:none; -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .btn-primary{ background:var(--crimson); color:#fff; box-shadow:0 6px 20px -6px rgba(255,51,102,.6); }
+  .btn-primary:hover{ background:#ff4d7d; }
+  .btn-ghost{ background:transparent; color:var(--text-dim); border-color:var(--line); }
+  .btn-ghost:hover{ color:var(--text); border-color:var(--text-faint); }
+  .btn-teal{ background:var(--teal); color:#062621; box-shadow:0 6px 20px -6px rgba(31,224,196,.5); }
+  .btn-teal:hover{ background:#3ff0d5; }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+  .btn-block{ width:100%; }
+  .btn-lg{ padding:16px 32px; font-size:15px; }
+
+  /* ---------- start / customize screen ---------- */
+  .customize-grid{ display:grid; grid-template-columns:180px 1fr; gap:28px; }
+  @media (max-width:560px){ .customize-grid{ grid-template-columns:1fr; } }
+
+  .avatar-col{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .avatar-figure{ width:150px; height:210px; position:relative; }
+  .avatar-body{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:110px; height:100px; border-radius:14px 14px 6px 6px; }
+  .avatar-head{ position:absolute; top:16px; left:50%; transform:translateX(-50%); width:82px; height:82px; border-radius:50%; z-index:2; }
+  .avatar-eye{ position:absolute; top:38px; width:6px; height:8px; border-radius:50%; background:#20222c; }
+  .avatar-eye.l{ left:29px; } .avatar-eye.r{ right:29px; }
+  .avatar-hair{ position:absolute; top:6px; left:50%; transform:translateX(-50%); z-index:3; }
+  .hair-bald{ display:none; }
+  .hair-short{ width:88px; height:46px; border-radius:50% 50% 10% 10%/60% 60% 10% 10%; top:6px; }
+  .hair-long{ width:100px; height:90px; border-radius:50% 50% 30% 30%/60% 60% 30% 30%; top:6px; }
+  .hair-mohawk{ width:20px; height:56px; border-radius:8px; top:-8px; }
+  .avatar-glasses{ position:absolute; top:40px; left:50%; transform:translateX(-50%); width:56px; height:14px; border:2px solid #20222c; border-radius:4px; background:rgba(255,255,255,.08); z-index:4; }
+  .avatar-number-badge{
+    font-family:var(--font-mono); font-size:11px; color:var(--teal); letter-spacing:.06em;
+    border:1px solid var(--teal-dim); padding:3px 10px; border-radius:20px; background:rgba(31,224,196,.06);
+  }
+
+  .field{ margin-bottom:20px; }
+  .field:last-child{ margin-bottom:0; }
+  .field label.field-label{
+    display:block; font-family:var(--font-mono); font-size:10px; text-transform:uppercase;
+    letter-spacing:.14em; color:var(--text-faint); margin-bottom:8px;
+  }
+  input[type="text"]{
+    width:100%; background:var(--ground-2); border:1px solid var(--line); color:var(--text);
+    font-family:var(--font-body); font-size:16px; padding:12px 14px; border-radius:4px;
+  }
+  input[type="text"]:focus{ outline:none; border-color:var(--teal); }
+  .swatch-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .swatch{
+    width:30px; height:30px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+    transition:transform .1s ease, border-color .1s ease;
+  }
+  .swatch:hover{ transform:scale(1.08); }
+  .swatch.sel{ border-color:#fff; box-shadow:0 0 0 2px var(--ground); }
+  .opt-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .opt-chip{
+    font-family:var(--font-body); font-size:12px; font-weight:600; padding:8px 14px; border-radius:20px;
+    border:1px solid var(--line); background:var(--ground-2); color:var(--text-dim); cursor:pointer;
+  }
+  .opt-chip.sel{ border-color:var(--teal); color:var(--teal); background:rgba(31,224,196,.08); }
+  .check-row{ display:flex; align-items:center; gap:10px; }
+  .check-row input{ width:18px; height:18px; accent-color:var(--teal); }
+
+  /* ---------- ddakji recruit ---------- */
+  .tile-wrap{ display:flex; flex-direction:column; align-items:center; gap:22px; }
+  .paper-tile{
+    width:120px; height:120px; border-radius:6px;
+    background:linear-gradient(135deg,#eae3d2,#cfc4a5);
+    border:2px solid #b3a682; position:relative;
+    box-shadow:0 10px 30px -8px rgba(0,0,0,.6);
+    transition:transform .5s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .paper-tile::before{ content:""; position:absolute; inset:10px; border:1px dashed rgba(0,0,0,.15); border-radius:3px; }
+  .paper-tile.flipped{ transform:rotateY(180deg) rotateX(20deg) scale(1.05); background:linear-gradient(135deg,#cfc4a5,#eae3d2); }
+  .timing-track{ width:100%; max-width:420px; height:34px; background:var(--ground-2); border:1px solid var(--line); border-radius:20px; position:relative; overflow:hidden; }
+  .timing-zone{ position:absolute; top:0; bottom:0; background:rgba(31,224,196,.28); border-left:2px solid var(--teal); border-right:2px solid var(--teal); }
+  .timing-cursor{ position:absolute; top:-4px; bottom:-4px; width:4px; background:var(--crimson); box-shadow:0 0 10px var(--crimson); border-radius:2px; }
+  .tile-msg{ font-family:var(--font-mono); font-size:13px; color:var(--text-dim); min-height:18px; text-align:center; }
+
+  /* ---------- narrative cards ---------- */
+  .card-fade{ animation:fadeUp .5s ease both; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---------- lobby ---------- */
+  .round-badge{ font-family:var(--font-mono); font-size:12px; color:var(--gold); letter-spacing:.1em; margin-bottom:6px; }
+  .stat-strip{ display:flex; gap:22px; margin-top:18px; padding-top:18px; border-top:1px solid var(--line); flex-wrap:wrap; }
+  .stat-block .k{ font-size:9px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-faint); }
+  .stat-block .v{ font-family:var(--font-mono); font-size:20px; font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
+  .stat-block.gold .v{ color:var(--gold); }
+  .stat-block.teal .v{ color:var(--teal); }
+
+  /* ---------- generic game chrome ---------- */
+  .game-wrap{ display:flex; flex-direction:column; gap:14px; }
+  .game-top-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  .status-pill{
+    font-family:var(--font-mono); font-weight:600; font-size:13px; letter-spacing:.08em;
+    padding:6px 14px; border-radius:20px; text-transform:uppercase;
+  }
+  .status-pill.green{ background:rgba(31,224,196,.14); color:var(--teal); box-shadow:var(--safe-glow); }
+  .status-pill.red{ background:rgba(255,51,102,.14); color:var(--crimson); box-shadow:var(--danger-glow); }
+  .timer-chip{ font-family:var(--font-mono); font-size:13px; color:var(--text-dim); }
+  .timer-chip b{ color:var(--text); }
+  .log-box{
+    font-family:var(--font-mono); font-size:11.5px; color:var(--text-faint); background:var(--ground-2);
+    border:1px solid var(--line); border-radius:4px; padding:10px 12px; max-height:78px; overflow-y:auto;
+  }
+  .log-box div{ margin-bottom:3px; }
+  .hint{ font-size:12.5px; color:var(--text-faint); font-family:var(--font-mono); }
+
+  /* ---- red light green light ---- */
+  .doll-box{ display:flex; justify-content:center; margin-bottom:6px; }
+  .doll{ width:70px; height:70px; position:relative; transition:transform .35s ease; }
+  .doll-head{ width:70px; height:70px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #f0e2c8, #cbb98f); border:2px solid #8a7c58; position:relative; }
+  .doll-eye{ position:absolute; top:26px; width:14px; height:14px; border-radius:50%; background:var(--teal); box-shadow:0 0 10px var(--teal); transition:background .25s, box-shadow .25s; }
+  .doll-eye.l{ left:14px; } .doll-eye.r{ right:14px; }
+  .doll.red .doll-eye{ background:var(--crimson); box-shadow:0 0 14px var(--crimson); }
+  .doll.turning{ transform:rotate(8deg); }
+  .rlgl-track{ position:relative; height:64px; background:linear-gradient(to right, var(--ground-2), #1a1c26 92%, rgba(255,51,102,.12)); border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .rlgl-track::after{ content:"FINISH"; position:absolute; right:8px; top:50%; transform:translateY(-50%); font-family:var(--font-mono); font-size:9px; color:var(--crimson); letter-spacing:.1em; }
+  .runner{ position:absolute; top:50%; transform:translate(-50%,-50%); width:20px; height:20px; border-radius:50%; transition:left .12s linear; box-shadow:0 0 8px rgba(0,0,0,.5); z-index:2; }
+  .runner.me{ box-shadow:0 0 12px var(--teal); border:2px solid var(--teal); }
+  .runner.npc{ opacity:.55; }
+  .runner.gone{ opacity:0; transform:translate(-50%,-50%) scale(.3) rotate(90deg); }
+  .progress-track{ height:8px; background:var(--ground-2); border-radius:4px; overflow:hidden; border:1px solid var(--line); }
+  .progress-fill{ height:100%; background:linear-gradient(to right, var(--teal-dim), var(--teal)); width:0%; transition:width .1s linear; }
+  .hold-btn{
+    font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:.04em; text-transform:uppercase;
+    padding:20px; text-align:center; border-radius:6px; border:1px solid var(--line); background:var(--panel-2);
+    color:var(--text); cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; touch-action:none;
+  }
+  .hold-btn.pressed{ background:var(--teal-dim); border-color:var(--teal); color:#fff; }
+
+  /* ---- tug of war ---- */
+  .rope-track{ position:relative; height:26px; background:var(--ground-2); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .rope-fill{ position:absolute; top:0; bottom:0; left:0; background:linear-gradient(to right, var(--crimson-dim), var(--teal-dim)); width:100%; }
+  .rope-marker{ position:absolute; top:-7px; width:6px; height:40px; background:var(--gold); box-shadow:0 0 10px var(--gold); border-radius:3px; transition:left .12s linear; }
+  .rope-thresh{ position:absolute; top:0; bottom:0; width:2px; background:rgba(255,255,255,.25); }
+  .mash-btn{
+    font-family:var(--font-display); font-weight:800; font-size:26px; letter-spacing:.03em; text-transform:uppercase;
+    padding:26px; text-align:center; border-radius:8px; border:1px solid var(--crimson-dim); background:var(--panel-2);
+    color:var(--text); cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; touch-action:none;
+  }
+  .mash-btn:active, .mash-btn.pressed{ background:var(--crimson); color:#fff; }
+
+  /* ---- marbles ---- */
+  .marble-row{ display:flex; justify-content:space-between; gap:16px; }
+  .marble-side{ flex:1; background:var(--ground-2); border:1px solid var(--line); border-radius:6px; padding:14px; text-align:center; }
+  .marble-side .name{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-faint); margin-bottom:8px; }
+  .marble-count{ font-family:var(--font-display); font-size:34px; font-weight:800; }
+  .marble-side.you .marble-count{ color:var(--teal); }
+  .marble-side.opp .marble-count{ color:var(--crimson); }
+  .marble-dots{ display:flex; gap:4px; justify-content:center; flex-wrap:wrap; margin-top:8px; max-width:160px; margin-inline:auto; }
+  .marble-dot{ width:9px; height:9px; border-radius:50%; }
+  .guess-row{ display:flex; gap:10px; justify-content:center; }
+  .guess-btn{
+    width:64px; height:64px; border-radius:50%; border:2px solid var(--line); background:var(--panel-2);
+    color:var(--text); font-family:var(--font-display); font-size:26px; font-weight:800; cursor:pointer;
+  }
+  .guess-btn:hover:not(:disabled){ border-color:var(--teal); color:var(--teal); }
+  .guess-btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+  /* ---- glass bridge ---- */
+  .bridge-scroll{ overflow-x:auto; padding-bottom:6px; }
+  .bridge-row{ display:flex; gap:8px; width:max-content; margin:0 auto; }
+  .bridge-step{ display:flex; flex-direction:column; gap:5px; opacity:.35; transition:opacity .2s; }
+  .bridge-step.active{ opacity:1; }
+  .bridge-step.done{ opacity:.6; }
+  .pane{
+    width:46px; height:70px; border-radius:4px; cursor:pointer; position:relative;
+    background:linear-gradient(160deg, rgba(31,224,196,.14), rgba(31,224,196,.05));
+    border:1px solid rgba(31,224,196,.35);
+  }
+  .pane[data-safe="false"]{}
+  .pane.disabled{ pointer-events:none; }
+  .pane.safe-hit{ background:linear-gradient(160deg, rgba(31,224,196,.35), rgba(31,224,196,.1)); border-color:var(--teal); box-shadow:var(--safe-glow); }
+  .pane.break-hit{ background:linear-gradient(160deg, rgba(255,51,102,.4), rgba(255,51,102,.1)); border-color:var(--crimson); animation:shatter .4s ease; }
+  @keyframes shatter{ 0%{transform:scale(1);} 40%{transform:scale(1.08) rotate(-3deg);} 100%{transform:scale(.2) rotate(12deg); opacity:0;} }
+  .step-num{ font-family:var(--font-mono); font-size:9px; text-align:center; color:var(--text-faint); }
+  .bridge-timerbar{ height:6px; background:var(--ground-2); border-radius:3px; overflow:hidden; border:1px solid var(--line); }
+  .bridge-timerfill{ height:100%; background:linear-gradient(to right, var(--teal), var(--gold), var(--crimson)); width:100%; transition:width .3s linear; }
+
+  /* ---- dalgona ---- */
+  .dalgona-wrap{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+  #dalgonaCanvas{ background:#c99a52; border-radius:8px; touch-action:none; box-shadow:0 12px 30px -10px rgba(0,0,0,.6); cursor:crosshair; }
+  .meter-row{ display:flex; gap:16px; width:100%; max-width:380px; }
+  .meter{ flex:1; }
+  .meter .k{ font-family:var(--font-mono); font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-faint); margin-bottom:4px; display:flex; justify-content:space-between; }
+  .meter-track{ height:8px; background:var(--ground-2); border-radius:4px; overflow:hidden; border:1px solid var(--line); }
+  .meter-fill{ height:100%; width:0%; transition:width .1s linear; }
+  .meter-fill.coverage{ background:linear-gradient(to right, var(--teal-dim), var(--teal)); }
+  .meter-fill.crack{ background:linear-gradient(to right, var(--gold), var(--crimson)); }
+
+  /* ---- final duel ---- */
+  .duel-arena{ position:relative; height:120px; background:radial-gradient(ellipse at center, #2a1c1c, var(--ground-2)); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .duel-fighter{ position:absolute; top:50%; transform:translate(-50%,-50%); width:46px; height:46px; border-radius:50%; transition:left .15s linear; }
+  .duel-fighter.you{ background:var(--teal); box-shadow:0 0 18px var(--teal); }
+  .duel-fighter.rival{ background:var(--crimson); box-shadow:0 0 18px var(--crimson); }
+  .duel-center-line{ position:absolute; left:50%; top:0; bottom:0; width:1px; background:rgba(255,255,255,.2); }
+
+  /* ---------- result / eliminated / victory ---------- */
+  .result-icon{ width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-family:var(--font-display); font-size:30px; font-weight:800; }
+  .result-icon.win{ background:rgba(31,224,196,.12); color:var(--teal); border:2px solid var(--teal); }
+  .result-icon.lose{ background:rgba(255,51,102,.12); color:var(--crimson); border:2px solid var(--crimson); animation:pulseLose 1.4s ease infinite; }
+  @keyframes pulseLose{ 0%,100%{ box-shadow:0 0 0 rgba(255,51,102,.5);} 50%{ box-shadow:0 0 26px rgba(255,51,102,.5);} }
+  .center-text{ text-align:center; }
+  .center-text p{ margin-inline:auto; }
+
+  .pot-counter{ font-family:var(--font-mono); font-weight:600; font-size:clamp(26px,6vw,40px); color:var(--gold); text-align:center; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+
+  /* confetti */
+  #confettiLayer{ position:fixed; inset:0; pointer-events:none; z-index:50; overflow:hidden; }
+  .confetti-piece{ position:absolute; top:-20px; width:8px; height:14px; opacity:.9; animation:fall linear forwards; }
+  @keyframes fall{ to{ transform:translateY(110vh) rotate(540deg); opacity:.2; } }
+
+  .footer-note{ text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--text-faint); padding:14px; letter-spacing:.05em; }
+
+  ::-webkit-scrollbar{ height:8px; width:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+</style>
+
+<div id="ambient"></div>
+<div id="confettiLayer"></div>
+<div id="app">
+
+  <div id="hud">
+    <div class="hud-avatar" id="hudAvatar"></div>
+    <div class="hud-id">
+      <div class="hud-name" id="hudName">—</div>
+      <div class="hud-number" id="hudNumber">NO. ---</div>
+    </div>
+    <div class="hud-stat remain">
+      <div class="k">Remaining</div>
+      <div class="v" id="hudRemaining">—</div>
+    </div>
+    <div class="hud-stat">
+      <div class="k">Prize Pool</div>
+      <div class="v" id="hudPrize">$0</div>
+    </div>
+  </div>
+
+  <!-- START / CUSTOMIZE -->
+  <section class="screen active" id="screen-start">
+    <div class="stage">
+      <div class="stage-head">
+        <div class="eyebrow"><span class="dot"></span>Invitation Received</div>
+        <h1 class="stage-title">The Last Player</h1>
+      </div>
+      <div class="stage-body">
+        <p>A card arrived with no return address. No rules, no name — just a number to call if you're ever tired of losing. Everyone who plays says the same thing: <strong>the games are simple. Surviving them isn't.</strong> Before you're taken, choose who you'll be down there.</p>
+        <div class="customize-grid" style="margin-top:22px;">
+          <div class="avatar-col">
+            <div class="avatar-figure" id="avatarPreview">
+              <div class="avatar-body" id="avBody"></div>
+              <div class="avatar-hair" id="avHair"></div>
+              <div class="avatar-head" id="avHead">
+                <div class="avatar-eye l"></div>
+                <div class="avatar-eye r"></div>
+              </div>
+              <div class="avatar-glasses" id="avGlasses" style="display:none;"></div>
+            </div>
+            <div class="avatar-number-badge">CANDIDATE</div>
+          </div>
+          <div>
+            <div class="field">
+              <label class="field-label" for="nameInput">Your Name</label>
+              <input type="text" id="nameInput" maxlength="18" placeholder="Enter a name" autocomplete="off">
+            </div>
+            <div class="field">
+              <label class="field-label">Skin Tone</label>
+              <div class="swatch-row" id="skinRow"></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Hair</label>
+              <div class="opt-row" id="hairStyleRow"></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Hair Color</label>
+              <div class="swatch-row" id="hairColorRow"></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Your Look, Before The Uniform</label>
+              <div class="swatch-row" id="outfitRow"></div>
+            </div>
+            <div class="field">
+              <div class="check-row">
+                <input type="checkbox" id="glassesToggle">
+                <label class="field-label" style="margin:0;" for="glassesToggle">Wear Glasses</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-foot">
+        <button class="btn btn-primary btn-lg" id="startBtn">Answer The Call</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DDAKJI RECRUITMENT -->
+  <section class="screen" id="screen-recruit">
+    <div class="stage">
+      <div class="stage-head">
+        <div class="eyebrow"><span class="dot"></span>A Stranger's Game</div>
+        <h1 class="stage-title">Flip The Tile</h1>
+      </div>
+      <div class="stage-body">
+        <p class="card-fade" id="recruitIntroText">A man in a sharp suit crouches in front of you with a folded paper tile. <strong>"Win, and you get money,"</strong> he says. <strong>"Lose, and you owe me."</strong> Slap the tile at the right moment to flip it.</p>
+        <div class="tile-wrap">
+          <div class="paper-tile" id="paperTile"></div>
+          <div class="timing-track" id="timingTrack">
+            <div class="timing-zone" id="timingZone"></div>
+            <div class="timing-cursor" id="timingCursor"></div>
+          </div>
+          <div class="tile-msg" id="tileMsg">Press FLIP when the marker is inside the bright zone.</div>
+          <button class="btn btn-teal btn-lg" id="flipBtn">Flip!</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUTSCENE -->
+  <section class="screen" id="screen-cutscene">
+    <div class="stage">
+      <div class="stage-head">
+        <div class="eyebrow"><span class="dot"></span>Somewhere Underground</div>
+        <h1 class="stage-title" id="cutsceneTitle">You Wake Up</h1>
+      </div>
+      <div class="stage-body">
+        <p class="card-fade" id="cutsceneText"></p>
+      </div>
+      <div class="stage-foot">
+        <button class="btn btn-primary" id="cutsceneNextBtn">Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOBBY (round intro, reused) -->
+  <section class="screen" id="screen-lobby">
+    <div class="stage">
+      <div class="stage-head">
+        <div class="round-badge" id="lobbyRoundBadge">GAME 1 / 6</div>
+        <h1 class="stage-title" id="lobbyTitle">Red Light, Green Light</h1>
+      </div>
+      <div class="stage-body">
+        <p id="lobbyDesc"></p>
+        <div class="stat-strip">
+          <div class="stat-block">
+            <div class="k">Players Remaining</div>
+            <div class="v" id="lobbyRemaining">300</div>
+          </div>
+          <div class="stat-block gold">
+            <div class="k">Prize Pool</div>
+            <div class="v" id="lobbyPrize">$0</div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-foot">
+        <button class="btn btn-primary btn-lg" id="lobbyBeginBtn">Begin</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME (dynamic content mounted here) -->
+  <section class="screen" id="screen-game">
+    <div class="stage">
+      <div class="stage-head">
+        <div class="round-badge" id="gameRoundBadge">GAME 1 / 6</div>
+        <h1 class="stage-title" id="gameTitle">Red Light, Green Light</h1>
+      </div>
+      <div class="stage-body" id="gameContainer"></div>
+    </div>
+  </section>
+
+  <!-- ROUND RESULT -->
+  <section class="screen" id="screen-roundresult">
+    <div class="stage">
+      <div class="stage-body center-text" style="padding-top:34px;">
+        <div class="result-icon win">✓</div>
+        <h1 class="stage-title" style="margin-bottom:10px;" id="resultTitle">You Survived</h1>
+        <p id="resultText">The gate opens. You're herded back toward the dormitory with the others who made it.</p>
+        <div class="stat-strip" style="justify-content:center;">
+          <div class="stat-block">
+            <div class="k">Players Remaining</div>
+            <div class="v" id="resultRemaining">220</div>
+          </div>
+          <div class="stat-block gold">
+            <div class="k">Prize Pool</div>
+            <div class="v" id="resultPrize">$0</div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-foot" style="justify-content:center;">
+        <button class="btn btn-primary btn-lg" id="resultNextBtn">Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ELIMINATED -->
+  <section class="screen" id="screen-eliminated">
+    <div class="stage">
+      <div class="stage-body center-text" style="padding-top:34px;">
+        <div class="result-icon lose">✕</div>
+        <h1 class="stage-title" style="margin-bottom:10px;">Eliminated</h1>
+        <p id="elimText">You didn't make it. A number is crossed off a list somewhere, and the game goes on without you.</p>
+        <div class="stat-strip" style="justify-content:center;">
+          <div class="stat-block">
+            <div class="k">Games Survived</div>
+            <div class="v" id="elimSurvived">0</div>
+          </div>
+          <div class="stat-block gold">
+            <div class="k">Pool You Left Behind</div>
+            <div class="v" id="elimPrize">$0</div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-foot" style="justify-content:center; gap:12px;">
+        <button class="btn btn-ghost" id="elimRestartBtn">Restart From The Beginning</button>
+        <button class="btn btn-primary" id="elimRetryBtn">Try Again</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VICTORY -->
+  <section class="screen" id="screen-victory">
+    <div class="stage">
+      <div class="stage-body center-text" style="padding-top:34px;">
+        <div class="eyebrow" style="justify-content:center;"><span class="dot"></span>Game Over</div>
+        <h1 class="stage-title" style="margin:6px 0 16px;">You Are The Last Player</h1>
+        <p>Of everyone who answered the call, only you are left standing. The masked circle applauds, once, and means none of it. The number on your chest doesn't matter anymore — the pool does.</p>
+        <div class="pot-counter" id="victoryPrize">$0</div>
+      </div>
+      <div class="stage-foot" style="justify-content:center;">
+        <button class="btn btn-teal btn-lg" id="victoryReplayBtn">Play Again</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">A fictional survival game, built for fun — not affiliated with or endorsed by any TV series.</div>
+</div>
+
+<script>
+"use strict";
+(function(){
+
+  /* ================= STATE ================= */
+  var S = {
+    name:"", skin:"#e0b189", hairStyle:"short", hairColor:"#2b2320",
+    outfit:"#3a6b8a", glasses:false,
+    number:"", prize:0, remaining:300, gamesSurvived:0, roundIdx:0
+  };
+
+  var SKIN_COLORS = ["#f4d3b3","#e0b189","#c98d5e","#9c6a42","#6b4429"];
+  var HAIR_COLORS = ["#0c0c0c","#2b2320","#5a3825","#8a5a2b","#c9a227","#7a1f3b"];
+  var OUTFIT_COLORS = ["#3a6b8a","#7a1f3b","#3a5a3a","#5a4a7a","#8a6a2a","#4a4a4a"];
+  var TOTAL_PLAYERS = 300;
+  var ROUND_REMAINING_AFTER = [220,150,90,40,14,1];
+  var PRIZE_PER_ELIM = 12000000;
+
+  /* ================= UTIL ================= */
+  function $(id){ return document.getElementById(id); }
+  function fmtMoney(n){ return "$" + Math.round(n).toLocaleString("en-US"); }
+  function showScreen(id){
+    var all = document.querySelectorAll(".screen");
+    for(var i=0;i<all.length;i++){ all[i].classList.remove("active"); }
+    $(id).classList.add("active");
+    window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+  }
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+  function randInt(min,max){ return Math.floor(rand(min,max+1)); }
+  function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+  function pick(arr){ return arr[randInt(0,arr.length-1)]; }
+
+  var activeCleanup = null;
+  function setCleanup(fn){ activeCleanup = fn; }
+  function runCleanup(){ if(activeCleanup){ try{ activeCleanup(); }catch(e){} activeCleanup = null; } }
+
+  /* ================= AVATAR RENDER ================= */
+  function renderAvatar(root){
+    var body = root.querySelector(".avatar-body") || root.querySelector("#avBody");
+    var head = root.querySelector(".avatar-head") || root.querySelector("#avHead");
+    var hair = root.querySelector(".avatar-hair") || root.querySelector("#avHair");
+    var glasses = root.querySelector(".avatar-glasses") || root.querySelector("#avGlasses");
+    if(body) body.style.background = S.outfit;
+    if(head) head.style.background = S.skin;
+    if(hair){
+      hair.className = "avatar-hair hair-" + S.hairStyle;
+      hair.style.background = S.hairColor;
+    }
+    if(glasses){ glasses.style.display = S.glasses ? "block" : "none"; }
+  }
+
+  function renderAvatarMini(el){
+    el.innerHTML = "";
+    el.style.background = S.skin;
+    var hairDiv = document.createElement("div");
+    hairDiv.style.position = "absolute";
+    hairDiv.style.left = "0"; hairDiv.style.right="0"; hairDiv.style.top="0";
+    hairDiv.style.height = "45%";
+    hairDiv.style.background = S.hairStyle === "bald" ? "transparent" : S.hairColor;
+    hairDiv.style.borderRadius = "50% 50% 0 0";
+    el.appendChild(hairDiv);
+  }
+
+  /* ================= CUSTOMIZE SCREEN SETUP ================= */
+  function buildSwatchRow(container, colors, key, onPick){
+    container.innerHTML = "";
+    colors.forEach(function(c){
+      var d = document.createElement("div");
+      d.className = "swatch";
+      d.style.background = c;
+      d.setAttribute("role","button");
+      d.setAttribute("aria-label", key + " " + c);
+      if(S[key] === c) d.classList.add("sel");
+      d.addEventListener("click", function(){
+        S[key] = c;
+        Array.prototype.forEach.call(container.children, function(ch){ ch.classList.remove("sel"); });
+        d.classList.add("sel");
+        renderAvatar(document.getElementById("avatarPreview"));
+        onPick && onPick();
+      });
+      container.appendChild(d);
+    });
+  }
+
+  function buildChipRow(container, options, key){
+    container.innerHTML = "";
+    options.forEach(function(opt){
+      var d = document.createElement("div");
+      d.className = "opt-chip";
+      d.textContent = opt.label;
+      if(S[key] === opt.value) d.classList.add("sel");
+      d.setAttribute("role","button");
+      d.addEventListener("click", function(){
+        S[key] = opt.value;
+        Array.prototype.forEach.call(container.children, function(ch){ ch.classList.remove("sel"); });
+        d.classList.add("sel");
+        renderAvatar(document.getElementById("avatarPreview"));
+      });
+      container.appendChild(d);
+    });
+  }
+
+  function initCustomizeScreen(){
+    buildSwatchRow($("skinRow"), SKIN_COLORS, "skin");
+    buildSwatchRow($("hairColorRow"), HAIR_COLORS, "hairColor");
+    buildSwatchRow($("outfitRow"), OUTFIT_COLORS, "outfit");
+    buildChipRow($("hairStyleRow"), [
+      {label:"Short", value:"short"}, {label:"Long", value:"long"},
+      {label:"Mohawk", value:"mohawk"}, {label:"Bald", value:"bald"}
+    ], "hairStyle");
+    $("glassesToggle").addEventListener("change", function(e){
+      S.glasses = e.target.checked;
+      renderAvatar($("avatarPreview"));
+    });
+    $("nameInput").addEventListener("input", function(e){ S.name = e.target.value; });
+    renderAvatar($("avatarPreview"));
+
+    $("startBtn").addEventListener("click", function(){
+      var n = $("nameInput").value.trim();
+      S.name = n.length ? n.slice(0,18) : "Player";
+      S.number = String(randInt(1,300)).padStart(3,"0");
+      startRecruitScreen();
+    });
+  }
+
+  /* ================= DDAKJI RECRUIT SCREEN ================= */
+  function startRecruitScreen(){
+    showScreen("screen-recruit");
+    $("tileMsg").textContent = "Press FLIP when the marker is inside the bright zone.";
+    $("paperTile").classList.remove("flipped");
+
+    var track = $("timingTrack");
+    var zone = $("timingZone");
+    var cursor = $("timingCursor");
+    var trackWidth = track.clientWidth || 420;
+    var zoneWidthPct = 30;
+    var zoneLeftPct = rand(5, 100-zoneWidthPct-5);
+    zone.style.left = zoneLeftPct + "%";
+    zone.style.width = zoneWidthPct + "%";
+
+    var pos = 0, dir = 1, raf = null, resolved = false;
+    var speed = 0.9; // % per frame approx
+
+    function frame(){
+      pos += dir*speed;
+      if(pos >= 100){ pos = 100; dir = -1; }
+      if(pos <= 0){ pos = 0; dir = 1; }
+      cursor.style.left = pos + "%";
+      raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+
+    function tryFlip(){
+      if(resolved) return;
+      var inZone = pos >= zoneLeftPct && pos <= (zoneLeftPct+zoneWidthPct);
+      if(inZone){
+        resolved = true;
+        cancelAnimationFrame(raf);
+        $("paperTile").classList.add("flipped");
+        $("tileMsg").textContent = "The tile flips clean over. \"Not bad,\" he smiles.";
+        setTimeout(function(){
+          resolved = false;
+          startCutscene();
+        }, 1300);
+      } else {
+        $("tileMsg").textContent = "The tile barely moves. \"Again,\" he says, resetting it.";
+        $("paperTile").style.transform = "translateX(-4px)";
+        setTimeout(function(){ $("paperTile").style.transform = ""; }, 150);
+      }
+    }
+    $("flipBtn").onclick = tryFlip;
+
+    setCleanup(function(){
+      if(raf) cancelAnimationFrame(raf);
+      $("flipBtn").onclick = null;
+    });
+  }
+
+  /* ================= CUTSCENE ================= */
+  var CUTSCENE_CARDS = [
+    {title:"You Wake Up", text:"Your head is pounding. The room is dim, lined with bunks stacked three high, dozens of strangers stirring awake around you — all wearing the same track suit you now find yourself in."},
+    {title:"A Number, Not A Name", text:"Stitched over your heart is a number: {NUMBER}. Down here, that's what you answer to. Nobody explains why. Nobody asks your name again."},
+    {title:"The Rules Are Read", text:"A calm voice explains it plainly: there are six games left to play. Win them all, and the prize pool — swelling with every player who doesn't make it — is yours alone."},
+    {title:"They Come For You", text:"A door hisses open. Guards in rose-red uniforms and blank geometric masks file in without a word and gesture for everyone to move. The first game is about to begin."}
+  ];
+  var cutsceneIdx = 0;
+  function startCutscene(){
+    cutsceneIdx = 0;
+    showScreen("screen-cutscene");
+    showCutsceneCard();
+    $("cutsceneNextBtn").onclick = function(){
+      cutsceneIdx++;
+      if(cutsceneIdx >= CUTSCENE_CARDS.length){
+        $("hud").classList.add("show");
+        updateHud();
+        startRound(0);
+      } else {
+        showCutsceneCard();
+      }
+    };
+    setCleanup(function(){ $("cutsceneNextBtn").onclick = null; });
+  }
+  function showCutsceneCard(){
+    var c = CUTSCENE_CARDS[cutsceneIdx];
+    $("cutsceneTitle").textContent = c.title;
+    var txt = $("cutsceneText");
+    txt.textContent = c.text.replace("{NUMBER}", S.number);
+    txt.classList.remove("card-fade");
+    void txt.offsetWidth;
+    txt.classList.add("card-fade");
+    $("cutsceneNextBtn").textContent = (cutsceneIdx === CUTSCENE_CARDS.length-1) ? "Enter The Arena" : "Continue";
+  }
+
+  /* ================= HUD ================= */
+  function updateHud(){
+    $("hudName").textContent = S.name;
+    $("hudNumber").textContent = "NO. " + S.number;
+    $("hudRemaining").textContent = S.remaining + " / " + TOTAL_PLAYERS;
+    $("hudPrize").textContent = fmtMoney(S.prize);
+    renderAvatarMini($("hudAvatar"));
+  }
+
+  /* ================= GAMES DEFINITIONS ================= */
+  var GAMES = [
+    {key:"redlight", title:"Red Light, Green Light",
+      desc:"A giant doll faces a wall at the far end of the field. While she sings, you may run. When she turns, everything must be still — a single twitch and you're out. Reach the finish line before time runs out.",
+      resultWin:"You freeze a heartbeat before she turns. The doll's painted eyes sweep past you and find someone else instead.",
+      init:initRedLight},
+    {key:"tugofwar", title:"Tug of War",
+      desc:"Teams are picked at random, and yours is smaller. On the far side of the rope is a drop into nothing. Pull harder than they do, or go over the edge with everyone counting on you.",
+      resultWin:"Your team plants their heels and hauls the rope back inch by inch. The other side goes over together.",
+      init:initTugOfWar},
+    {key:"marbles", title:"Marble Duel",
+      desc:"Paired off with a stranger for one last quiet game before the real ones resume. Ten marbles each. Guess how many your opponent is holding — win them all, or lose everything you came in with.",
+      resultWin:"Your opponent's hand opens, empty. You scoop the last of their marbles into your pocket and don't look at their face.",
+      init:initMarbles},
+    {key:"glassbridge", title:"Glass Stepping Bridge",
+      desc:"Sixteen steps of tempered glass stretch out over a long drop. Only one panel in each pair will hold your weight. Choose wrong, and there's no going back. Choose right, sixteen times.",
+      resultWin:"You land on the far platform, glass dust on your shoes, and don't allow yourself to look back down the line of panels behind you.",
+      init:initGlassBridge},
+    {key:"dalgona", title:"Dalgona Candy Carving",
+      desc:"A honeycomb toffee disc, stamped with a shape, and a single needle. Carve the outline free without cracking it, before time — or your nerves — run out.",
+      resultWin:"The shape lifts free of the toffee in one clean piece. Your hands are shaking, but it's whole.",
+      init:initDalgona},
+    {key:"finalduel", title:"The Final Standoff",
+      desc:"It's down to two. One ring, no rules explained, and a single guard watching to see who's still standing when it's over. Push, and don't stop pushing.",
+      resultWin:"The other player stumbles past the line first. For the first time since you arrived, the room goes completely silent.",
+      init:initFinalDuel, isFinal:true}
+  ];
+
+  /* ================= ROUND CONTROLLER ================= */
+  function startRound(idx){
+    S.roundIdx = idx;
+    runCleanup();
+    var g = GAMES[idx];
+    $("lobbyRoundBadge").textContent = "GAME " + (idx+1) + " / " + GAMES.length;
+    $("lobbyTitle").textContent = g.title;
+    $("lobbyDesc").textContent = g.desc;
+    $("lobbyRemaining").textContent = S.remaining;
+    $("lobbyPrize").textContent = fmtMoney(S.prize);
+    $("lobbyBeginBtn").textContent = g.isFinal ? "Face Them" : "Begin";
+    showScreen("screen-lobby");
+    $("lobbyBeginBtn").onclick = function(){ launchGame(idx); };
+    setCleanup(function(){ $("lobbyBeginBtn").onclick = null; });
+  }
+
+  function launchGame(idx){
+    runCleanup();
+    var g = GAMES[idx];
+    $("gameRoundBadge").textContent = "GAME " + (idx+1) + " / " + GAMES.length;
+    $("gameTitle").textContent = g.title;
+    var container = $("gameContainer");
+    container.innerHTML = "";
+    showScreen("screen-game");
+    g.init(container, function(survived){ onGameComplete(idx, survived); });
+  }
+
+  function onGameComplete(idx, survived){
+    runCleanup();
+    var g = GAMES[idx];
+    if(survived){
+      var before = S.remaining;
+      var after = ROUND_REMAINING_AFTER[idx];
+      var eliminated = Math.max(0, before - after);
+      S.remaining = after;
+      S.prize += eliminated * PRIZE_PER_ELIM;
+      S.gamesSurvived++;
+      updateHud();
+
+      if(g.isFinal){
+        showVictory();
+        return;
+      }
+
+      $("resultTitle").textContent = "You Survived";
+      $("resultText").textContent = g.resultWin + " Of the players who started this round, " + eliminated + " didn't make it.";
+      $("resultRemaining").textContent = S.remaining;
+      $("resultPrize").textContent = fmtMoney(S.prize);
+      showScreen("screen-roundresult");
+      $("resultNextBtn").textContent = "Continue";
+      $("resultNextBtn").onclick = function(){ startRound(idx+1); };
+      setCleanup(function(){ $("resultNextBtn").onclick = null; });
+    } else {
+      $("elimSurvived").textContent = S.gamesSurvived;
+      $("elimPrize").textContent = fmtMoney(S.prize);
+      showScreen("screen-eliminated");
+      $("elimRetryBtn").onclick = function(){ startRound(idx); };
+      $("elimRestartBtn").onclick = function(){ fullRestart(); };
+      setCleanup(function(){
+        $("elimRetryBtn").onclick = null;
+        $("elimRestartBtn").onclick = null;
+      });
+    }
+  }
+
+  function showVictory(){
+    $("victoryPrize").textContent = fmtMoney(S.prize);
+    showScreen("screen-victory");
+    launchConfetti();
+    $("victoryReplayBtn").onclick = function(){ fullRestart(); };
+    setCleanup(function(){ $("victoryReplayBtn").onclick = null; });
+  }
+
+  function fullRestart(){
+    runCleanup();
+    S.prize = 0; S.remaining = TOTAL_PLAYERS; S.gamesSurvived = 0; S.roundIdx = 0;
+    $("hud").classList.remove("show");
+    showScreen("screen-start");
+  }
+
+  function launchConfetti(){
+    var layer = $("confettiLayer");
+    layer.innerHTML = "";
+    var colors = ["#ff3366","#1fe0c4","#e8b84b","#e8eaf1"];
+    for(var i=0;i<70;i++){
+      var p = document.createElement("div");
+      p.className = "confetti-piece";
+      p.style.left = rand(0,100) + "%";
+      p.style.background = pick(colors);
+      p.style.animationDuration = rand(2.4,4.2) + "s";
+      p.style.animationDelay = rand(0,1.2) + "s";
+      layer.appendChild(p);
+    }
+    setTimeout(function(){ layer.innerHTML = ""; }, 6000);
+  }
+
+  /* ================= GAME 1: RED LIGHT GREEN LIGHT ================= */
+  function initRedLight(container, done){
+    container.innerHTML =
+      '<div class="game-wrap">'+
+      '  <div class="game-top-row">'+
+      '    <div class="status-pill green" id="rlglStatus">GREEN LIGHT</div>'+
+      '    <div class="timer-chip">Time left: <b id="rlglTimer">45</b>s</div>'+
+      '  </div>'+
+      '  <div class="doll-box"><div class="doll" id="rlglDoll"><div class="doll-head"><div class="doll-eye l"></div><div class="doll-eye r"></div></div></div></div>'+
+      '  <div class="rlgl-track" id="rlglTrack"></div>'+
+      '  <div class="progress-track"><div class="progress-fill" id="rlglBar"></div></div>'+
+      '  <button class="hold-btn" id="rlglMoveBtn">HOLD TO MOVE  ·  or hold SPACE</button>'+
+      '  <div class="hint">Freeze completely the instant the doll turns red, or you are out.</div>'+
+      '  <div class="log-box" id="rlglLog"></div>'+
+      '</div>';
+
+    var track = $("rlglTrack");
+    var runner = document.createElement("div");
+    runner.className = "runner me";
+    runner.style.background = S.skin;
+    runner.style.left = "3%";
+    track.appendChild(runner);
+
+    var npcCount = 5;
+    var npcs = [];
+    for(var i=0;i<npcCount;i++){
+      var n = document.createElement("div");
+      n.className = "runner npc";
+      n.style.background = ["#8a8fa0","#6b7080","#a08a8a","#7a9a8a","#9a8a6b"][i%5];
+      n.style.left = rand(2,10) + "%";
+      track.appendChild(n);
+      npcs.push({el:n, pos:rand(2,10), speed:rand(0.15,0.5), alive:true});
+    }
+
+    var pos = 0, moving = false, isGreen = true, done_ = false, timeLeft = 45;
+    var lightTimeout = null, tickInterval = null, secInterval = null;
+
+    function setLight(green){
+      isGreen = green;
+      var doll = $("rlglDoll");
+      var pill = $("rlglStatus");
+      if(green){
+        pill.textContent = "GREEN LIGHT"; pill.className = "status-pill green";
+        doll.classList.remove("red");
+        doll.classList.add("turning");
+        setTimeout(function(){ doll.classList.remove("turning"); }, 350);
+        scheduleNext(rand(1600,3200), false);
+      } else {
+        pill.textContent = "RED LIGHT"; pill.className = "status-pill red";
+        doll.classList.add("red");
+        doll.classList.add("turning");
+        setTimeout(function(){ doll.classList.remove("turning"); }, 350);
+        scheduleNext(rand(1400,2600), true);
+      }
+    }
+    function scheduleNext(delay, currentlyGreenFalse){
+      lightTimeout = setTimeout(function(){ setLight(!isGreen); }, delay);
+    }
+
+    function log(msg){
+      var box = $("rlglLog");
+      var d = document.createElement("div");
+      d.textContent = msg;
+      box.insertBefore(d, box.firstChild);
+    }
+
+    function finish(success){
+      if(done_) return;
+      done_ = true;
+      clearTimeout(lightTimeout);
+      clearInterval(tickInterval);
+      clearInterval(secInterval);
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keyup", onKeyUp);
+      moveBtn.removeEventListener("pointerdown", onPressStart);
+      window.removeEventListener("pointerup", onPressEnd);
+      done(success);
+    }
+
+    var moveBtn = $("rlglMoveBtn");
+    function onPressStart(e){ e.preventDefault(); moving = true; moveBtn.classList.add("pressed"); checkMoveViolation(); }
+    function onPressEnd(){ moving = false; moveBtn.classList.remove("pressed"); }
+    moveBtn.addEventListener("pointerdown", onPressStart);
+    window.addEventListener("pointerup", onPressEnd);
+    moveBtn.addEventListener("pointercancel", onPressEnd);
+
+    function onKeyDown(e){
+      if(e.code === "Space"){ e.preventDefault(); if(!moving){ moving = true; moveBtn.classList.add("pressed"); } checkMoveViolation(); }
+    }
+    function onKeyUp(e){
+      if(e.code === "Space"){ moving = false; moveBtn.classList.remove("pressed"); }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
+
+    function checkMoveViolation(){
+      if(!isGreen && moving && !done_){
+        log("You twitched during red light.");
+        finish(false);
+      }
+    }
+
+    tickInterval = setInterval(function(){
+      if(done_) return;
+      if(!isGreen && moving){
+        checkMoveViolation();
+        return;
+      }
+      if(isGreen && moving){
+        pos = clamp(pos + 1.6, 0, 100);
+        runner.style.left = pos + "%";
+        $("rlglBar").style.width = pos + "%";
+        if(pos >= 100){ finish(true); return; }
+      }
+      // npc flavor movement
+      npcs.forEach(function(npc){
+        if(!npc.alive) return;
+        if(isGreen && Math.random() < 0.85){
+          npc.pos = clamp(npc.pos + npc.speed, 0, 100);
+          npc.el.style.left = npc.pos + "%";
+        }
+        if(!isGreen && Math.random() < 0.05){
+          npc.alive = false;
+          npc.el.classList.add("gone");
+          log("Player " + String(randInt(1,300)).padStart(3,"0") + " was eliminated.");
+        }
+      });
+    }, 90);
+
+    secInterval = setInterval(function(){
+      if(done_) return;
+      timeLeft--;
+      $("rlglTimer").textContent = Math.max(0,timeLeft);
+      if(timeLeft <= 0){
+        log("Too slow — the guards move in.");
+        finish(false);
+      }
+    }, 1000);
+
+    setLight(true);
+
+    setCleanup(function(){
+      clearTimeout(lightTimeout);
+      clearInterval(tickInterval);
+      clearInterval(secInterval);
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keyup", onKeyUp);
+    });
+  }
+
+  /* ================= GAME 2: TUG OF WAR ================= */
+  function initTugOfWar(container, done){
+    container.innerHTML =
+      '<div class="game-wrap">'+
+      '  <p style="margin-bottom:2px;">Your team of five against theirs. Mash the button (or SPACE) faster than they can pull.</p>'+
+      '  <div class="game-top-row"><div class="timer-chip">Time left: <b id="towTimer">25</b>s</div></div>'+
+      '  <div class="rope-track"><div class="rope-fill"></div><div class="rope-thresh" id="towThreshL" style="left:20%;"></div><div class="rope-thresh" id="towThreshR" style="left:80%;"></div><div class="rope-marker" id="towMarker" style="left:50%;"></div></div>'+
+      '  <button class="mash-btn" id="towBtn">PULL!</button>'+
+      '  <div class="hint">Marker past the left line and your team goes over. Past the right, and theirs does.</div>'+
+      '</div>';
+
+    var marker = 50, timeLeft = 25, done_ = false;
+    var lastPress = 0;
+    var tickInterval = null, secInterval = null;
+
+    function render(){
+      $("towMarker").style.left = marker + "%";
+    }
+    function finish(success){
+      if(done_) return;
+      done_ = true;
+      clearInterval(tickInterval); clearInterval(secInterval);
+      document.removeEventListener("keydown", onKeyDown);
+      btn.removeEventListener("pointerdown", onPress);
+      done(success);
+    }
+
+    var btn = $("towBtn");
+    function pull(){
+      var now = performance.now();
+      if(now - lastPress < 85) return;
+      lastPress = now;
+      marker = clamp(marker + 4.2, 0, 100);
+      btn.classList.add("pressed");
+      setTimeout(function(){ btn.classList.remove("pressed"); }, 90);
+    }
+    function onPress(e){ e.preventDefault(); pull(); }
+    btn.addEventListener("pointerdown", onPress);
+    function onKeyDown(e){ if(e.code === "Space"){ e.preventDefault(); pull(); } }
+    document.addEventListener("keydown", onKeyDown);
+
+    tickInterval = setInterval(function(){
+      if(done_) return;
+      marker = clamp(marker - (1.1 + Math.random()*0.6), 0, 100);
+      if(Math.random() < 0.05) marker = clamp(marker - 6, 0, 100);
+      render();
+      if(marker >= 82){ finish(true); return; }
+      if(marker <= 18){ finish(false); return; }
+    }, 200);
+
+    secInterval = setInterval(function(){
+      if(done_) return;
+      timeLeft--;
+      $("towTimer").textContent = Math.max(0,timeLeft);
+      if(timeLeft <= 0){
+        finish(marker > 50);
+      }
+    }, 1000);
+
+    setCleanup(function(){
+      clearInterval(tickInterval); clearInterval(secInterval);
+      document.removeEventListener("keydown", onKeyDown);
+    });
+  }
+
+  /* ================= GAME 3: MARBLES ================= */
+  function initMarbles(container, done){
+    container.innerHTML =
+      '<div class="game-wrap">'+
+      '  <p style="margin-bottom:2px;">Guess how many marbles your opponent is holding — 1, 2, or 3. Guess right and you take one of theirs. Guess wrong and you hand one over.</p>'+
+      '  <div class="marble-row">'+
+      '    <div class="marble-side you"><div class="name">You</div><div class="marble-count" id="marYou">10</div><div class="marble-dots" id="marYouDots"></div></div>'+
+      '    <div class="marble-side opp"><div class="name">Opponent · No. '+String(randInt(1,300)).padStart(3,"0")+'</div><div class="marble-count" id="marOpp">10</div><div class="marble-dots" id="marOppDots"></div></div>'+
+      '  </div>'+
+      '  <div class="guess-row" id="marGuessRow">'+
+      '    <button class="guess-btn" data-g="1">1</button>'+
+      '    <button class="guess-btn" data-g="2">2</button>'+
+      '    <button class="guess-btn" data-g="3">3</button>'+
+      '  </div>'+
+      '  <div class="log-box" id="marLog"></div>'+
+      '</div>';
+
+    var you = 10, opp = 10, round = 0, done_ = false;
+
+    function dots(el, count, color){
+      el.innerHTML = "";
+      for(var i=0;i<count;i++){
+        var d = document.createElement("div");
+        d.className = "marble-dot";
+        d.style.background = color;
+        el.appendChild(d);
+      }
+    }
+    function render(){
+      $("marYou").textContent = you;
+      $("marOpp").textContent = opp;
+      dots($("marYouDots"), you, "var(--teal)");
+      dots($("marOppDots"), opp, "var(--crimson)");
+    }
+    function log(msg){
+      var box = $("marLog");
+      var d = document.createElement("div");
+      d.textContent = msg;
+      box.insertBefore(d, box.firstChild);
+    }
+    render();
+
+    var btns = container.querySelectorAll(".guess-btn");
+    function onGuess(e){
+      if(done_) return;
+      var g = parseInt(e.currentTarget.getAttribute("data-g"),10);
+      var actual = randInt(1,3);
+      round++;
+      if(g === actual){
+        you++; opp--;
+        log("Round "+round+": you guessed "+g+", they held "+actual+". Correct — you take a marble.");
+      } else {
+        you--; opp++;
+        log("Round "+round+": you guessed "+g+", they held "+actual+". Wrong — you hand one over.");
+      }
+      render();
+      if(opp <= 0){ finish(true); return; }
+      if(you <= 0){ finish(false); return; }
+      if(round >= 14){ finish(you >= opp); return; }
+    }
+    btns.forEach(function(b){ b.addEventListener("click", onGuess); });
+
+    function finish(success){
+      if(done_) return;
+      done_ = true;
+      btns.forEach(function(b){ b.disabled = true; });
+      setTimeout(function(){ done(success); }, 900);
+    }
+
+    setCleanup(function(){
+      btns.forEach(function(b){ b.removeEventListener("click", onGuess); });
+    });
+  }
+
+  /* ================= GAME 4: GLASS BRIDGE ================= */
+  function initGlassBridge(container, done){
+    var STEPS = 12;
+    var safe = [];
+    for(var i=0;i<STEPS;i++){ safe.push(Math.random() < 0.5 ? "L" : "R"); }
+
+    var rowHtml = "";
+    for(var s=0;s<STEPS;s++){
+      rowHtml +=
+        '<div class="bridge-step'+(s===0?' active':'')+'" data-step="'+s+'">'+
+        '  <div class="step-num">'+(s+1)+'</div>'+
+        '  <div class="pane" data-side="L" data-step="'+s+'"></div>'+
+        '  <div class="pane" data-side="R" data-step="'+s+'"></div>'+
+        '</div>';
+    }
+
+    container.innerHTML =
+      '<div class="game-wrap">'+
+      '  <p style="margin-bottom:2px;">Tap left or right for each step. One holds, one shatters. You get one Guardian\'s Mercy if you guess wrong — after that, there\'s no saving you.</p>'+
+      '  <div class="bridge-timerbar"><div class="bridge-timerfill" id="bridgeTimerFill"></div></div>'+
+      '  <div class="bridge-scroll"><div class="bridge-row" id="bridgeRow">'+rowHtml+'</div></div>'+
+      '  <div class="hint" id="bridgeHint">Step 1 of '+STEPS+'. Guardian\'s Mercy: available.</div>'+
+      '</div>';
+
+    var current = 0, mercyUsed = false, done_ = false;
+    var TOTAL_TIME = 75000;
+    var startTime = performance.now();
+    var raf = null;
+
+    function updateActive(){
+      var steps = container.querySelectorAll(".bridge-step");
+      steps.forEach(function(st){
+        var idx = parseInt(st.getAttribute("data-step"),10);
+        st.classList.toggle("active", idx === current);
+        st.classList.toggle("done", idx < current);
+      });
+    }
+    updateActive();
+
+    function lockStep(idx){
+      var panes = container.querySelectorAll('.pane[data-step="'+idx+'"]');
+      panes.forEach(function(p){ p.classList.add("disabled"); });
+    }
+
+    function onPaneClick(e){
+      if(done_) return;
+      var pane = e.currentTarget;
+      var idx = parseInt(pane.getAttribute("data-step"),10);
+      if(idx !== current) return;
+      var side = pane.getAttribute("data-side");
+      var isSafe = side === safe[idx];
+      var panes = container.querySelectorAll('.pane[data-step="'+idx+'"]');
+
+      if(isSafe){
+        pane.classList.add("safe-hit");
+        lockStep(idx);
+        advance();
+      } else if(!mercyUsed){
+        mercyUsed = true;
+        pane.classList.add("break-hit");
+        $("bridgeHint").textContent = "Guardian's Mercy saves you — but it's gone now.";
+        lockStep(idx);
+        setTimeout(function(){ advance(); }, 450);
+      } else {
+        pane.classList.add("break-hit");
+        lockStep(idx);
+        finish(false);
+      }
+    }
+    var paneEls = container.querySelectorAll(".pane");
+    paneEls.forEach(function(p){ p.addEventListener("click", onPaneClick); });
+
+    function advance(){
+      current++;
+      updateActive();
+      if(current >= STEPS){ finish(true); return; }
+      $("bridgeHint").textContent = "Step "+(current+1)+" of "+STEPS+". Guardian's Mercy: "+(mercyUsed?"used":"available")+".";
+    }
+
+    function tick(){
+      if(done_) return;
+      var elapsed = performance.now() - startTime;
+      var pct = clamp(100 - (elapsed/TOTAL_TIME)*100, 0, 100);
+      $("bridgeTimerFill").style.width = pct + "%";
+      if(pct <= 0){ finish(false); return; }
+      raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+
+    function finish(success){
+      if(done_) return;
+      done_ = true;
+      if(raf) cancelAnimationFrame(raf);
+      paneEls.forEach(function(p){ p.removeEventListener("click", onPaneClick); });
+      setTimeout(function(){ done(success); }, success ? 500 : 700);
+    }
+
+    setCleanup(function(){
+      if(raf) cancelAnimationFrame(raf);
+      paneEls.forEach(function(p){ p.removeEventListener("click", onPaneClick); });
+    });
+  }
+
+  /* ================= GAME 5: DALGONA ================= */
+  function initDalgona(container, done){
+    var shapeName = pick(["circle","triangle","star","square"]);
+    container.innerHTML =
+      '<div class="dalgona-wrap">'+
+      '  <p style="margin-bottom:2px; text-align:center;">Your shape: <strong style="text-transform:capitalize;">'+shapeName+'</strong>. Drag the needle right along the line to carve it free. Stray off the line and the candy cracks.</p>'+
+      '  <div class="game-top-row" style="width:100%; max-width:380px;"><div class="timer-chip">Time left: <b id="dalTimer">60</b>s</div></div>'+
+      '  <canvas id="dalgonaCanvas" width="360" height="360"></canvas>'+
+      '  <div class="meter-row">'+
+      '    <div class="meter"><div class="k"><span>Carved</span><span id="dalCovVal">0%</span></div><div class="meter-track"><div class="meter-fill coverage" id="dalCovFill"></div></div></div>'+
+      '    <div class="meter"><div class="k"><span>Crack Risk</span><span id="dalCrackVal">0%</span></div><div class="meter-track"><div class="meter-fill crack" id="dalCrackFill"></div></div></div>'+
+      '  </div>'+
+      '</div>';
+
+    var canvas = $("dalgonaCanvas");
+    var ctx = canvas.getContext("2d");
+    var W = canvas.width, H = canvas.height;
+    var cx = W/2, cy = H/2;
+
+    function buildPoints(){
+      var pts = [];
+      if(shapeName === "circle"){
+        var r = 120;
+        for(var a=0;a<360;a+=2){
+          var rad = a*Math.PI/180;
+          pts.push({x:cx+r*Math.cos(rad), y:cy+r*Math.sin(rad)});
+        }
+      } else if(shapeName === "square"){
+        var s = 90;
+        var corners = [{x:cx-s,y:cy-s},{x:cx+s,y:cy-s},{x:cx+s,y:cy+s},{x:cx-s,y:cy+s},{x:cx-s,y:cy-s}];
+        pts = interpEdges(corners, 200);
+      } else if(shapeName === "triangle"){
+        var r2 = 130;
+        var corners2 = [];
+        for(var k=0;k<3;k++){
+          var ang = -Math.PI/2 + k*(2*Math.PI/3);
+          corners2.push({x:cx+r2*Math.cos(ang), y:cy+r2*Math.sin(ang)});
+        }
+        corners2.push(corners2[0]);
+        pts = interpEdges(corners2, 200);
+      } else if(shapeName === "star"){
+        var outerR = 130, innerR = 55;
+        var corners3 = [];
+        for(var j=0;j<10;j++){
+          var ang2 = -Math.PI/2 + j*(Math.PI/5);
+          var rr = (j%2===0) ? outerR : innerR;
+          corners3.push({x:cx+rr*Math.cos(ang2), y:cy+rr*Math.sin(ang2)});
+        }
+        corners3.push(corners3[0]);
+        pts = interpEdges(corners3, 220);
+      }
+      return pts;
+    }
+    function interpEdges(corners, totalPts){
+      var pts = [];
+      var perEdge = Math.floor(totalPts / (corners.length-1));
+      for(var i=0;i<corners.length-1;i++){
+        var a = corners[i], b = corners[i+1];
+        for(var t=0;t<perEdge;t++){
+          var f = t/perEdge;
+          pts.push({x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f});
+        }
+      }
+      return pts;
+    }
+
+    var points = buildPoints();
+    var visited = new Array(points.length).fill(false);
+    var visitedCount = 0;
+
+    function drawBase(){
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle = "#c99a52";
+      ctx.beginPath(); ctx.arc(cx,cy,150,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(60,38,10,0.55)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4,5]);
+      ctx.beginPath();
+      points.forEach(function(p,i){ if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); });
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    drawBase();
+
+    function drawVisitedDot(p){
+      ctx.fillStyle = "#f3dca6";
+      ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.beginPath(); ctx.arc(p.x,p.y,1.6,0,Math.PI*2); ctx.fill();
+    }
+
+    var coverage = 0, crack = 0, timeLeft = 60, done_ = false, dragging = false;
+    var tickInterval = null;
+
+    function nearestDist(px,py){
+      var best = Infinity;
+      for(var i=0;i<points.length;i++){
+        var dx = points[i].x-px, dy = points[i].y-py;
+        var d = dx*dx+dy*dy;
+        if(d < best) best = d;
+      }
+      return Math.sqrt(best);
+    }
+    function markNear(px,py,tolerance){
+      for(var i=0;i<points.length;i++){
+        var dx = points[i].x-px, dy = points[i].y-py;
+        if((dx*dx+dy*dy) <= tolerance*tolerance && !visited[i]){
+          visited[i] = true; visitedCount++;
+          drawVisitedDot(points[i]);
+        }
+      }
+    }
+
+    function setMeters(){
+      coverage = Math.round((visitedCount/points.length)*100);
+      $("dalCovVal").textContent = coverage + "%";
+      $("dalCovFill").style.width = coverage + "%";
+      $("dalCrackVal").textContent = Math.round(crack) + "%";
+      $("dalCrackFill").style.width = clamp(crack,0,100) + "%";
+    }
+
+    function pointerPos(e){
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = W/rect.width, scaleY = H/rect.height;
+      return {x:(e.clientX-rect.left)*scaleX, y:(e.clientY-rect.top)*scaleY};
+    }
+
+    function onDown(e){ e.preventDefault(); dragging = true; onMove(e); }
+    function onUp(){ dragging = false; }
+    function onMove(e){
+      if(!dragging || done_) return;
+      var p = pointerPos(e);
+      var dist = nearestDist(p.x,p.y);
+      if(dist <= 16){
+        markNear(p.x,p.y,16);
+      } else if(dist <= 34){
+        crack = clamp(crack + 0.6, 0, 100);
+      } else {
+        crack = clamp(crack + 1.4, 0, 100);
+      }
+      setMeters();
+      if(coverage >= 92){ finish(true); return; }
+      if(crack >= 100){ finish(false); return; }
+    }
+    canvas.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+
+    tickInterval = setInterval(function(){
+      if(done_) return;
+      timeLeft--;
+      $("dalTimer").textContent = Math.max(0,timeLeft);
+      if(timeLeft <= 0){ finish(false); }
+    }, 1000);
+
+    function finish(success){
+      if(done_) return;
+      done_ = true;
+      clearInterval(tickInterval);
+      canvas.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      setTimeout(function(){ done(success); }, success ? 500 : 700);
+    }
+
+    setCleanup(function(){
+      clearInterval(tickInterval);
+      canvas.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    });
+  }
+
+  /* ================= GAME 6: FINAL DUEL ================= */
+  function initFinalDuel(container, done){
+    container.innerHTML =
+      '<div class="game-wrap">'+
+      '  <p style="margin-bottom:2px;">One opponent left. Mash PUSH (or SPACE) to drive them back across the ring. They get more desperate as the clock runs down.</p>'+
+      '  <div class="game-top-row"><div class="timer-chip">Time left: <b id="duelTimer">30</b>s</div></div>'+
+      '  <div class="duel-arena"><div class="duel-center-line"></div><div class="duel-fighter you" id="duelYou" style="left:35%;"></div><div class="duel-fighter rival" id="duelRival" style="left:65%;"></div></div>'+
+      '  <button class="mash-btn" id="duelBtn">PUSH!</button>'+
+      '</div>';
+
+    var pos = 50, timeLeft = 30, done_ = false, lastPress = 0;
+    var tickInterval = null, secInterval = null;
+
+    function render(){
+      $("duelYou").style.left = clamp(pos-15,2,96) + "%";
+      $("duelRival").style.left = clamp(pos+15,4,98) + "%";
+    }
+    render();
+
+    var btn = $("duelBtn");
+    function push(){
+      var now = performance.now();
+      if(now - lastPress < 75) return;
+      lastPress = now;
+      pos = clamp(pos + 4.5, 0, 100);
+      btn.classList.add("pressed");
+      setTimeout(function(){ btn.classList.remove("pressed"); }, 90);
+    }
+    function onPress(e){ e.preventDefault(); push(); }
+    btn.addEventListener("pointerdown", onPress);
+    function onKeyDown(e){ if(e.code === "Space"){ e.preventDefault(); push(); } }
+    document.addEventListener("keydown", onKeyDown);
+
+    function finish(success){
+      if(done_) return;
+      done_ = true;
+      clearInterval(tickInterval); clearInterval(secInterval);
+      btn.removeEventListener("pointerdown", onPress);
+      document.removeEventListener("keydown", onKeyDown);
+      done(success);
+    }
+
+    tickInterval = setInterval(function(){
+      if(done_) return;
+      var elapsedFrac = 1 - (timeLeft/30);
+      var opponentPull = 1.0 + elapsedFrac*2.0 + Math.random()*0.8;
+      pos = clamp(pos - opponentPull, 0, 100);
+      render();
+      if(pos >= 85){ finish(true); return; }
+      if(pos <= 15){ finish(false); return; }
+    }, 200);
+
+    secInterval = setInterval(function(){
+      if(done_) return;
+      timeLeft--;
+      $("duelTimer").textContent = Math.max(0,timeLeft);
+      if(timeLeft <= 0){ finish(pos > 50); }
+    }, 1000);
+
+    setCleanup(function(){
+      clearInterval(tickInterval); clearInterval(secInterval);
+      btn.removeEventListener("pointerdown", onPress);
+      document.removeEventListener("keydown", onKeyDown);
+    });
+  }
+
+  /* ================= INIT ================= */
+  initCustomizeScreen();
+
+})();
+</script>
