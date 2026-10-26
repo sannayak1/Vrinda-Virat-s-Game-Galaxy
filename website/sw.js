@@ -7,13 +7,15 @@ const CACHE = 'arcade-v1';
 const SHELL = ['./', 'index.html', 'help.html', 'games.js', 'app.js', 'app-back.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'];
 const SAVE_FROM = ['cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+// GitHub Pages lets browsers reuse files for 10 minutes; always ask GitHub whether there's a newer copy instead
+const FRESH = { cache: 'no-cache' };
 
 importScripts('games.js');
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    await Promise.allSettled([...SHELL, ...GAMES.flatMap(g => [g.file, g.thumb])].map(f => cache.add(f)));
+    await Promise.allSettled([...SHELL, ...GAMES.flatMap(g => [g.file, g.thumb])].map(f => cache.add(new Request(f, FRESH))));
     // also save the scripts the games load from the internet (the 3D engines)
     const urls = new Set();
     for (const g of GAMES) {
@@ -51,17 +53,24 @@ self.addEventListener('fetch', e => {
 async function networkFirst(req) {
   const cache = await caches.open(CACHE);
   const saved = await cache.match(req, { ignoreSearch: true });
-  const net = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; });
-  if (!saved) return net;
+  const net = fetch(req, FRESH).then(res => { if (res.ok) cache.put(req, res.clone()); return res; });
+  if (!saved) return net.then(mustCheck);
   // on very slow Wi-Fi, don't wait forever when there's a saved copy
   const slow = new Promise(r => setTimeout(() => r(saved), 4000));
-  return Promise.race([net.catch(() => saved), slow]);
+  return mustCheck(await Promise.race([net.catch(() => saved), slow]));
+}
+
+// stop the page from reusing its own copy next time, so a new game list is always picked up
+function mustCheck(res) {
+  const headers = new Headers(res.headers);
+  headers.set('Cache-Control', 'no-cache');
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
 async function staleWhileRevalidate(req, e) {
   const cache = await caches.open(CACHE);
   const saved = await cache.match(req, { ignoreSearch: true });
-  const net = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; }).catch(() => null);
+  const net = fetch(req, FRESH).then(res => { if (res.ok) cache.put(req, res.clone()); return res; }).catch(() => null);
   if (saved) { e.waitUntil(net); return saved; }
   return (await net) || Response.error();
 }
