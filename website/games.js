@@ -21,22 +21,6 @@ function feedbackURL(game){
 
 const GAMES = [
  {
-  "title": "Escape Kiki's Prison Run",
-  "file": "games/escape-kikis-prison-run.html",
-  "thumb": "thumbs/escape-kikis-prison-run.jpg",
-  "blurb": "Officer Kiki caught you! Sneak, jump and dash out of her very pink prison, and bounce on Muffin Blaze.",
-  "tags": [
-   "Sneaky",
-   "2 players"
-  ],
-  "by": "",
-  "updated": "2026-10-26",
-  "older": [],
-  "phone": true,
-  "laptopControls": "Arrows or A/D move · ↑, W or Space jump · hold ↓ or S in a pink locker to hide · P pause. Friend mode: player 1 uses arrows, player 2 uses W A D.",
-  "phoneControls": "Use the ◀ ▶, Jump and Hide buttons on screen. Friend mode needs a keyboard."
- },
- {
   "title": "Galactic Run",
   "file": "games/galactic-run.html",
   "thumb": "thumbs/galactic-run.jpg",
