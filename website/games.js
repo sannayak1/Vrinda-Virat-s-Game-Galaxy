@@ -21,6 +21,39 @@ function feedbackURL(game){
 
 const GAMES = [
  {
+  "title": "Aunt Chippy's Waymo",
+  "file": "games/aunt-chippys-waymo.html",
+  "thumb": "thumbs/aunt-chippys-waymo.jpg",
+  "blurb": "The robotaxi drives itself. Aunt Chippy does not let it. Ferry tourists around Las Vegas before your 90-second shift ends.",
+  "tags": [
+   "Funny"
+  ],
+  "by": "",
+  "updated": "2026-10-26",
+  "older": [],
+  "phone": true,
+  "laptopControls": "WASD or arrows drive and steer · Space brake · H honk · M sound on/off",
+  "phoneControls": "Use the ◀ ▶ steer, ▲ go, ■ brake and 📯 honk buttons on screen."
+ },
+ {
+  "title": "MeeMeow Kingdom Rumble",
+  "file": "games/meemeow-kingdom-rumble.html",
+  "thumb": "thumbs/meemeow-kingdom-rumble.jpg",
+  "blurb": "Monsters are coming out of the Whispering Forest! Build your cat kingdom by day and defend the castle by night.",
+  "tags": [
+   "Adventure",
+   "Fighting"
+  ],
+  "by": "",
+  "updated": "2026-10-26",
+  "older": [
+   "games/meemeow-kingdom-rumble-v1.html"
+  ],
+  "phone": true,
+  "laptopControls": "WASD or arrows move · Shift run · Space jump · E hero special · click to build in the day",
+  "phoneControls": "Tap to move and build · use the ⬆ Jump and ⭐ Special buttons on screen."
+ },
+ {
   "title": "Escape Kiki's Prison Run",
   "file": "games/escape-kikis-prison-run.html",
   "thumb": "thumbs/escape-kikis-prison-run.jpg",
